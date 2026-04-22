@@ -1,0 +1,20 @@
+/* app/theme.css */
+:root {
+  --bg: #FAFAFA;      /* Very soft, premium off-white */
+  --text: #171717;    /* Deep but slightly softer than pure black */
+  --accent: #E53935; /* Personalized, elegant striking red alias */
+  --ruby-red: #E53935; 
+  
+  --muted: #E5E5E5;
+  --muted-fg: #737373;
+}
+
+.dark {
+  --bg: #0A0A0B;      /* Rich, cinematic deep dark */
+  --text: #F5F5F5;    /* Soft elegant white */
+  --accent: #FF5252; /* Vivid premium red in dark mode */
+  --ruby-red: #FF5252;
+
+  --muted: #1F1F22;
+  --muted-fg: #A1A1AA;
+}
