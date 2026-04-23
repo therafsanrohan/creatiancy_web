@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import fs from "fs";
 import path from "path";
+import { recentProjects } from "@/config/projects";
 
 export default function Home() {
   let brands: string[] = [];
@@ -70,18 +71,7 @@ export default function Home() {
           </div>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
-          {[
-            { id: 1, title: "Project Title 1", industry: "Industry / Service", link: "#" },
-            { id: 2, title: "Project Title 2", industry: "Industry / Service", link: "#" },
-            { id: 3, title: "Project Title 3", industry: "Industry / Service", link: "#" },
-            { 
-              id: 4, 
-              title: "ODL Ads Creative", 
-              industry: "Real Estate", 
-              link: "https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design",
-              image: "/images/project real.png"
-            }
-          ].map((project) => (
+          {recentProjects.map((project) => (
             <a 
               key={project.id} 
               href={project.link} 
@@ -95,8 +85,9 @@ export default function Home() {
                     src={project.image} 
                     alt={project.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    unoptimized
+                    priority={project.id === '4'}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-tr from-[var(--muted)] to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />

@@ -1,52 +1,62 @@
-# Creatiancy
+# Creatiancy Digital Studio
 
-## 1. Project Overview
-Creatiancy is a bespoke digital brand experience and premium studio portfolio. 
-The purpose of the website is to communicate precision, creative intelligence, and controlled boldness, functioning less as a flashy agency and more as a confident, intentional digital studio. Recently updated with a fully responsive architecture, refined soft-blur animations, and highly optimized, SEO-driven marketing layouts.
+## 1. Architecture Overview
+Creatiancy is an elite, high-performance digital brand experience and premium studio portfolio. 
+The application operates as a globally-scaled Next.js application designed to function as a flawless sales engine, brand narrative, and contact conduit.
 
-## 2. BRS (Business Requirements)
-- **Brand positioning:** High-end, premium, intentional creative agency.
-- **Target audience:** Clients seeking professional, high-quality digital marketing experiences and pristine brand narratives.
-- **Goals:** Lead generation, portfolio showcase, building trust, and communicating a high standard of work through modern, dynamic UI and precise marketing structure.
+This codebase has been strictly engineered to prioritize **Enterprise Security**, **Centralized Architectural States**, and **Search Engine Visibility**.
 
-## 3. FRS (Functional Requirements)
-- **Dynamic pages:** Home, Work/Portfolio, Services, About, Contact, Privacy Policy, Terms of Service.
-- **Responsive Navigation:** Clean, optimized mobile and desktop navigation.
-- **Dynamic Animations:** Floating 3D-like liquid background elements and scroll-linked framer-motion reveals.
-- **Content Synchronization:** Centralized array-based "Trusted Brands" logic via `lib/data.ts`.
-- **Theme Mechanics:** Dark mode configured natively. Light theme fully activated and togglabe.
-- **Enterprise Security:** Embedded advanced headers (`X-Frame-Options`, `Content-Security-Policy`, `Strict-Transport-Security`) alongside strict `productionBrowserSourceMaps: false` logic to prevent reverse engineering and mitigate XSS/Clickjacking.
+---
 
-## 4. SRS (System Requirements)
-- **Framework:** Next.js (App Router) + TypeScript
-- **Dependencies:** Tailwind CSS, Framer Motion, Lucide React, Next Themes
-- **Typography:** Helvetica Neue (applied globally for premium aesthetic)
-- **Hosting / Deployment Environment:** Vercel / Node Edge ecosystem.
+## 2. Technical Stack
+- **Core Engine:** Next.js 15 (App Router natively forced Server-Side execution logic)
+- **Styling:** Vanilla Tailwind CSS + Modular `theme.css` tokens
+- **Animations:** Framer Motion (Spring Physics arrays)
+- **Security:** Root `middleware.ts` bot deflection & heavy native CSP Next hooks
+- **Environment:** Node Edge Ecosystem (Vercel)
 
-## 5. Folder Explanation
-- `/app`: Next.js App Router root layout and pages.
-- `/components`: Reusable UI components (Navbar, Footer, Hero, ThemeToggle, BrandsMarquee, etc.).
-- `/lib`: Utility functions, centralized arrays (`data.ts`), and SEO configuration.
-- `/public`: Static assets (images, logos, icons, SVGs).
+---
 
-## 6. How to Run (Setup Instructions)
-1. Clone the repository to your local machine:
-```bash
-git clone <repo>
-cd creatiancy_web
-```
-2. Install dependencies:
+## 3. Configuration Subsystems (Single Source of Truth)
+We have eradicated deep-nested UI hardcoding. Absolute data control is maintained from structural configurations:
+
+- **`config/footerConfig.ts`**: The singular interface controller for the entire application's connect capabilities. Holds email records, physical studio addresses, WhatsApp APIs, and all Social vectors.
+- **`config/projects.ts`**: The decoupled data spine for rendering dynamic Case Studies and Recent Project Grids natively across the marketing pages. Scales instantly into JSON backends (e.g., Sanity/Strapi).
+
+---
+
+## 4. Enterprise Security Blueprint
+This application is armed natively against external friction. No third-party plugins were bolted on; the security is woven into the Next.js runtime.
+
+* **Bot Deflection (`middleware.ts`)**: Actively catches and responds with strict 403s against headless scrapers routing through physical paths.
+* **X-Frame / Clickjacking Shield (`next.config.ts`)**: Bound to `DENY` to enforce absolute window isolation.
+* **Content Security Policy (CSP)**: Mapped explicitly to permit only local and strictly validated data endpoints.
+* **Permission Stripping**: Blocks cross-origin microphone, camera, and generic browsing-topic profiling.
+
+---
+
+## 5. Folder Directory
+- **`/app`**: The Next.js routing architecture and metadata layouts.
+- **`/components`**: Reusable isolated client-rendering components (Footer, Marquees, Responsive Interactors).
+- **`/config`**: The centralized dynamic data mappings (Footer Data, Project Matrices).
+- **`/lib`**: Utility integrations, deep `seo.ts` logic mapping, and isolated `animations/` packages.
+- **`/public`**: Critical static brand SVGs and core imagery.
+- **`middleware.ts`**: Active security perimeter hook for Next Edge layers.
+
+---
+
+## 6. How to Run Locally
+1. Clone the repository to your environment.
+2. Install the necessary dependencies:
 ```bash
 npm install
 ```
-3. Run the development server smoothly:
+3. Boot the environment locally:
 ```bash
 npm run dev
 ```
 
-## 7. Deployment Steps
-This project is deeply optimized for deployment on **Vercel**. 
-1. Push your latest code changes to your Git provider (GitHub, GitLab, Bitbucket).
-2. Create an account or log in to Vercel.
-3. Import the exact cloned project via the "Add New..." -> "Project" dashboard.
-4. Framework details (Next.js) will be auto-detected. Click **Deploy** for zero-configuration, instant Edge CDN deployment.
+---
+
+## 7. Zero-Config Deployment
+This architecture maps fluidly into Vercel's zero-build Edge networks. Simply connect your Git provider branch and trigger a deploy stream. The `robots.ts`, `sitemap.ts`, and core SEO `metadataBase` will automatically index securely into Google.

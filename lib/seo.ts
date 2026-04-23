@@ -6,6 +6,9 @@ export const defaultSEO: Metadata = {
     default: 'Creatiancy | Premier Creative Digital Studio & Tech Powerhouse',
     template: '%s | Creatiancy',
   },
+  alternates: {
+    canonical: '/',
+  },
   description: 'Creatiancy is an elite digital studio engineering bespoke brand experiences, online-first strategies, and high-ROI technical marketing campaigns. We build scale.',
   keywords: ['Digital Studio', 'Creative Agency', 'Web Development', 'Content Marketing', 'Brand Identity', 'Tailor-made Campaigns'],
   openGraph: {
