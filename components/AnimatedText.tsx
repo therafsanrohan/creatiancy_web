@@ -9,8 +9,8 @@ interface AnimatedTextProps {
   staggerDelay?: number;
 }
 
-export default function AnimatedText({ 
-  text, 
+export default function AnimatedText({
+  text,
   className,
   staggerDelay = 0.05
 }: AnimatedTextProps) {

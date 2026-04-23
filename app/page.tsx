@@ -1,6 +1,8 @@
 import Hero from "@/components/Hero";
 import BrandsMarquee from "@/components/BrandsMarquee";
+import AnimatedText from "@/components/AnimatedText";
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import fs from "fs";
 import path from "path";
@@ -31,9 +33,10 @@ export default function Home() {
         <div className="grid md:grid-cols-2 gap-12">
           <div>
             <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--text)] opacity-50 mb-4">Our Expertise</h2>
-            <h3 className="text-3xl md:text-5xl font-heading tracking-tight mb-6">
-              A creative agency engineering strategic design & intelligent development.
-            </h3>
+            <AnimatedText 
+              text="A creative agency engineering strategic design & intelligent development."
+              className="text-3xl md:text-5xl font-heading tracking-tight mb-6 -ml-1 text-left justify-start"
+            />
             <p className="text-[var(--muted-fg)] max-w-md text-lg">
               We provide end-to-end branding services and full-spectrum digital marketing to accelerate business performance.
             </p>
@@ -46,10 +49,13 @@ export default function Home() {
               { title: "Technical powerhouse", desc: "We utilize all the latest tech stack for your marketing - from websites, apps, AI, to social media." },
               { title: "Tailor-made campaigns", desc: "We go beyond social media by integrating your content to create meaningful campaigns." }
             ].map((service, i) => (
-              <div key={i} className="group border-b border-[var(--muted)] pb-6">
-                <h4 className="text-xl font-bold mb-2 group-hover:text-[var(--accent)] transition-colors">{service.title}</h4>
+              <Link href="/services" key={i} className="group border-b border-[var(--muted)] pb-6 block cursor-pointer">
+                <h4 className="text-xl font-bold mb-2 group-hover:text-[var(--accent)] transition-colors inline-flex items-center gap-2">
+                  {service.title}
+                  <ArrowUpRight className="w-4 h-4 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
+                </h4>
                 <p className="text-[var(--muted-fg)]">{service.desc}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
