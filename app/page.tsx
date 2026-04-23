@@ -1,12 +1,30 @@
 import Hero from "@/components/Hero";
 import BrandsMarquee from "@/components/BrandsMarquee";
-import { trustedBrands } from "@/lib/data";
+import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
+import fs from "fs";
+import path from "path";
 
 export default function Home() {
+  let brands: string[] = [];
+  try {
+    const brandsDir = path.join(process.cwd(), 'public/brands');
+    if (fs.existsSync(brandsDir)) {
+      brands = fs.readdirSync(brandsDir).filter(f => f.match(/\.(png|jpe?g|svg|webp)$/i));
+    }
+  } catch (error) {
+    console.error("Brands directory could not be read:", error);
+  }
+
+  // Fallback so the marquee visually exists immediately before user uploads files!
+  if (brands.length === 0) {
+    brands = ["placeholder_1", "placeholder_2", "placeholder_3", "placeholder_4"];
+  }
+
   return (
     <div className="flex flex-col gap-24 md:gap-32 pb-24">
       <Hero />
-      {trustedBrands && trustedBrands.length > 0 && <BrandsMarquee brands={trustedBrands} />}
+      {brands.length > 0 && <BrandsMarquee brands={brands} />}
       
       {/* Services Snapshot */}
       <section className="container mx-auto px-4">
@@ -41,20 +59,49 @@ export default function Home() {
       <section className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] mb-4">Selected Work</h2>
+            <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--accent)] mb-4">Selected Work</h2>
             <h3 className="text-3xl md:text-5xl font-heading tracking-tight">Recent Projects</h3>
           </div>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="group cursor-pointer">
+          {[
+            { id: 1, title: "Project Title 1", industry: "Industry / Service", link: "#" },
+            { id: 2, title: "Project Title 2", industry: "Industry / Service", link: "#" },
+            { id: 3, title: "Project Title 3", industry: "Industry / Service", link: "#" },
+            { 
+              id: 4, 
+              title: "ODL Ads Creative", 
+              industry: "Real Estate", 
+              link: "https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design",
+              image: "/images/project real.png"
+            }
+          ].map((project) => (
+            <a 
+              key={project.id} 
+              href={project.link} 
+              target={project.link !== "#" ? "_blank" : undefined}
+              rel="noopener noreferrer"
+              className="group cursor-pointer block"
+            >
               <div className="relative aspect-[4/3] bg-[var(--muted)] rounded-lg overflow-hidden mb-6">
-                {/* Image placeholder */}
-                <div className="absolute inset-0 bg-gradient-to-tr from-[var(--muted)] to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />
+                {project.image ? (
+                  <Image 
+                    src={project.image} 
+                    alt={project.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    unoptimized
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-tr from-[var(--muted)] to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />
+                )}
               </div>
-              <h4 className="text-2xl font-bold mb-2">Project Title {i}</h4>
-              <p className="text-[var(--muted-fg)]">Industry / Service</p>
-            </div>
+              <h4 className="text-2xl font-bold mb-2 group-hover:text-[var(--accent)] transition-colors inline-flex items-center gap-2">
+                {project.title}
+                {project.link !== "#" && <ArrowUpRight className="w-5 h-5 opacity-0 -translate-y-2 translate-x-2 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />}
+              </h4>
+              <p className="text-[var(--muted-fg)]">{project.industry}</p>
+            </a>
           ))}
         </div>
       </section>

@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Sparkles, Target, Zap, Rocket, CheckCircle2 } from "lucide-react";
+import { Sparkles, Target, Zap, Rocket, CheckCircle2, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function AboutPage() {
   const containerVariants = {
@@ -102,7 +103,7 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="space-y-8 relative before:content-[''] before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-[var(--muted-fg)]/20 before:to-transparent">
+            <div className="space-y-8 relative before:content-[''] before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-[var(--text)]/20 before:to-transparent">
               {[{
                 icon: <Zap className="w-5 h-5 text-[var(--bg)]" />,
                 title: "1. Precision Strategy",
@@ -133,6 +134,36 @@ export default function AboutPage() {
 
         </motion.div>
       </div>
+
+      {/* Marketing Action Section */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="container mx-auto mt-24 md:mt-32 px-4"
+      >
+        <div className="relative rounded-3xl overflow-hidden bg-[var(--text)] text-[var(--bg)] px-6 sm:px-10 py-16 sm:py-20 md:py-32 flex items-center justify-center text-center shadow-2xl">
+          <div className="absolute inset-0 bg-gradient-to-tr from-[var(--ruby-red)]/20 to-transparent mix-blend-overlay" />
+          <div className="relative z-10 max-w-3xl mx-auto space-y-6 md:space-y-8">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tighter text-balance">
+              Ready to dominate your market?
+            </h2>
+            <p className="text-lg sm:text-xl opacity-80 font-light max-w-xl mx-auto text-balance">
+              Stop settling for average digital experiences. Let's engineer a solution that positions your brand as the undisputed leader.
+            </p>
+            <div className="pt-6 md:pt-8 flex flex-col items-center">
+              <Link 
+                href="/contact" 
+                className="inline-flex w-full sm:w-auto justify-center items-center gap-3 bg-[var(--ruby-red)] text-white px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 shadow-xl shadow-[var(--ruby-red)]/30"
+              >
+                Start a Conversation
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

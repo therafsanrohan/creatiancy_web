@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "./ThemeToggle";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import Image from "next/image";
@@ -98,7 +97,6 @@ export default function Navbar() {
           </nav>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <ThemeToggle className="rounded-full shadow-sm w-9 h-9 md:w-10 md:h-10 flex items-center justify-center border border-[var(--muted)]/50 bg-[var(--bg)]/50 backdrop-blur-md" />
             <Link 
               href="/contact" 
               className="hidden lg:flex items-center gap-2 text-sm font-medium bg-[var(--text)] text-[var(--bg)] px-6 py-2.5 rounded-full hover:bg-[var(--accent)] hover:text-white transition-all duration-300 shadow-sm active:scale-95"
