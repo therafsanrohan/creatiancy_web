@@ -1,9 +1,13 @@
 import Hero from "@/components/Hero";
-import BrandsMarquee from "@/components/BrandsMarquee";
 import AnimatedText from "@/components/AnimatedText";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import dynamic from "next/dynamic";
+
+const BrandsMarquee = dynamic(() => import("@/components/BrandsMarquee"), { 
+  ssr: true,
+});
 import fs from "fs";
 import path from "path";
 import { recentProjects } from "@/config/projects";

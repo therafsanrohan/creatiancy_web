@@ -4,6 +4,13 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Script from "next/script";
+import { Inter } from "next/font/google";
+
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-sans",
+});
 
 export const metadata = defaultSEO;
 
@@ -46,7 +53,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className="font-sans antialiased min-h-screen flex flex-col"
+        className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider
           attribute="class"

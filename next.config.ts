@@ -40,6 +40,9 @@ const nextConfig: NextConfig = {
   productionBrowserSourceMaps: false, 
   /* Removes explicit Next.js platform signature */
   poweredByHeader: false, 
+  images: {
+    formats: ['image/avif', 'image/webp'],
+  },
   async headers() {
     return [
       {
