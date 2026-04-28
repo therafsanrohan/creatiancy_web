@@ -7,6 +7,16 @@ import Script from "next/script";
 
 export const metadata = defaultSEO;
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+  ],
+  colorScheme: "dark light",
+};
 export default function RootLayout({
   children,
 }: Readonly<{
