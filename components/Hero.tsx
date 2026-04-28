@@ -50,11 +50,11 @@ export default function Hero() {
 
       <motion.div
         style={{ y, opacity, scale, willChange: "transform, opacity" }}
-        className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-24 sm:mt-16 md:mt-[-2vh]"
+        className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-[-8vh] sm:mt-[-6vh] md:mt-[-4vh]"
       >
         <AnimatedText
-          text="We build precision brand experiences."
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-[7rem] leading-[1.05] font-heading font-extrabold max-w-[90vw] sm:max-w-4xl lg:max-w-6xl tracking-tighter text-balance bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm"
+          text={`We build\nprecision\nbrand experiences.`}
+          className="text-5xl sm:text-7xl md:text-[7rem] lg:text-[8rem] leading-[1] font-heading font-extrabold w-full px-2 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm"
         />
 
         <motion.p
@@ -76,7 +76,7 @@ export default function Hero() {
             href="/work"
             className="group flex w-full sm:w-auto items-center justify-center gap-3 bg-[var(--text)] text-[var(--bg)] px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-[var(--accent)] hover:text-white transition-all duration-300 shadow-xl shadow-black/5 hover:shadow-[var(--accent)]/20 active:scale-95 active:bg-[var(--accent)] active:text-white"
           >
-            <span>View Selected Work</span>
+            <span>Selected Work</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link

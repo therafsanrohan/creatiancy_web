@@ -55,8 +55,8 @@ export default function ContactPage() {
               variants={item}
               className="text-5xl sm:text-6xl md:text-8xl font-heading font-extrabold tracking-tighter mb-6 relative"
             >
-              <span className="relative z-10">
-                Let's build<br />something<br />remarkable.
+              <span className="relative z-10 text-balance block max-w-[90vw]">
+                Let's build something<br />remarkable.
               </span>
             </motion.h1>
 

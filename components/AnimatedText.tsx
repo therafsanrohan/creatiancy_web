@@ -21,7 +21,8 @@ export default function AnimatedText({
   className,
   staggerDelay = 0.05,
 }: AnimatedTextProps) {
-  const words = text.split(" ");
+  // Split by whitespace but keep newlines as separate tokens
+  const words = text.split(/(\n| )/).filter(w => w !== "" && w !== " ");
 
   const container: Variants = {
     hidden: { opacity: 0 },
@@ -56,16 +57,21 @@ export default function AnimatedText({
       initial="hidden"
       animate="visible"
     >
-      {words.map((word, index) => (
-        <motion.span
-          key={index}
-          variants={child}
-          style={{ marginRight: "0.25em" }}
-          className="inline-block"
-        >
-          {word}
-        </motion.span>
-      ))}
+      {words.map((word, index) => {
+        if (word === "\n") {
+          return <div key={index} className="basis-full h-0" />;
+        }
+        return (
+          <motion.span
+            key={index}
+            variants={child}
+            style={{ marginRight: "0.25em" }}
+            className="inline-block"
+          >
+            {word}
+          </motion.span>
+        );
+      })}
     </motion.h1>
   );
 }
