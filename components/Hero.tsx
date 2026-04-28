@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import AnimatedText from "./AnimatedText";
 import Link from "next/link";
-import { ArrowRight, Sparkles, PlayCircle } from "lucide-react";
+import { ArrowRight, PlayCircle } from "lucide-react";
 
 export default function Hero() {
   const ref = useRef(null);
@@ -52,16 +52,6 @@ export default function Hero() {
         style={{ y, opacity, scale, willChange: "transform, opacity" }}
         className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-[-5vh]"
       >
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="inline-flex items-center gap-2 text-sm sm:text-base font-medium mb-6 sm:mb-8 text-[var(--muted-fg)] tracking-widest uppercase"
-        >
-          <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-          <span>Creative Digital Studio</span>
-        </motion.div>
-
         <AnimatedText
           text="We build precision brand experiences."
           className="text-6xl md:text-7xl lg:text-[7rem] leading-[1.05] font-heading font-extrabold max-w-6xl tracking-tighter text-balance bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm"
@@ -99,16 +89,7 @@ export default function Hero() {
         </motion.div>
       </motion.div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 1 }}
-        className="absolute bottom-6 sm:bottom-10 lg:bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 sm:gap-3 text-[var(--muted-fg)]"
-      >
-        <span className="text-[10px] sm:text-xs uppercase tracking-widest font-bold">Scroll</span>
-        <div className="w-[1px] h-8 sm:h-12 bg-gradient-to-b from-[var(--muted-fg)] to-transparent" />
-      </motion.div>
+
     </section>
   );
 }
