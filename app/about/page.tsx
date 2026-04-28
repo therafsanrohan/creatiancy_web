@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { Sparkles, Target, Zap, Rocket, CheckCircle2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -8,47 +8,47 @@ import Link from "next/link";
 export default function AboutPage() {
   const containerVariants = {
     hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 } 
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15, delayChildren: 0.2 }
     }
   };
 
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
-    visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
+    visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100 } }
   };
 
   return (
     <div className="min-h-screen pt-32 pb-24 overflow-hidden relative">
       {/* Liquid Creative Backgrounds */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.2, 1],
             rotate: [0, 90, 0],
             opacity: [0.1, 0.2, 0.1],
             borderRadius: ["40% 60% 70% 30%", "30% 80% 40% 70%", "40% 60% 70% 30%"]
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[var(--accent)] blur-[100px] -z-10" 
+          className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[var(--accent)] blur-[100px] -z-10"
           style={{ willChange: "transform, border-radius, opacity" }}
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.3, 1],
             rotate: [0, -90, 0],
             opacity: [0.1, 0.2, 0.1],
             borderRadius: ["60% 40% 30% 70%", "40% 60% 80% 20%", "60% 40% 30% 70%"]
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[40%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-[var(--text)] blur-[120px] -z-10" 
+          className="absolute top-[40%] -right-[10%] w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] bg-[var(--text)] blur-[120px] -z-10"
           style={{ willChange: "transform, border-radius, opacity" }}
         />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -66,7 +66,7 @@ export default function AboutPage() {
           </p>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -93,7 +93,7 @@ export default function AboutPage() {
               </div>
             </div>
           </motion.div>
-          
+
           {/* Methodology Section */}
           <motion.div variants={itemVariants} className="space-y-12">
             <div className="mb-0">
@@ -117,9 +117,9 @@ export default function AboutPage() {
                 title: "3. Focused Execution",
                 desc: "Careful implementation with attention to performance, visibility, and measurable outcomes."
               }].map((step, i) => (
-                <motion.div 
+                <motion.div
                   key={i}
-                  variants={itemVariants} 
+                  variants={itemVariants}
                   className="relative pl-16 group"
                 >
                   <div className="absolute left-0 top-0 w-12 h-12 rounded-full bg-[var(--text)] flex items-center justify-center shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
@@ -136,7 +136,7 @@ export default function AboutPage() {
       </div>
 
       {/* Marketing Action Section */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -153,8 +153,8 @@ export default function AboutPage() {
               Stop settling for average digital experiences. Let's engineer a solution that positions your brand as the undisputed leader.
             </p>
             <div className="pt-6 md:pt-8 flex flex-col items-center">
-              <Link 
-                href="/contact" 
+              <Link
+                href="/contact"
                 className="inline-flex w-full sm:w-auto justify-center items-center gap-3 bg-[var(--ruby-red)] text-white px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 shadow-xl shadow-[var(--ruby-red)]/30"
               >
                 Start a Conversation

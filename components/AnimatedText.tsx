@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, Variants, Transition } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface AnimatedTextProps {
@@ -9,34 +9,40 @@ interface AnimatedTextProps {
   staggerDelay?: number;
 }
 
+/* Safe spring config (prevents TypeScript error) */
+const spring: Transition = {
+  type: "spring",
+  damping: 12,
+  stiffness: 100,
+};
+
 export default function AnimatedText({
   text,
   className,
-  staggerDelay = 0.05
+  staggerDelay = 0.05,
 }: AnimatedTextProps) {
   const words = text.split(" ");
 
-  const container = {
+  const container: Variants = {
     hidden: { opacity: 0 },
-    visible: (i = 1) => ({
+    visible: (i: number = 1) => ({
       opacity: 1,
-      transition: { staggerChildren: staggerDelay, delayChildren: 0.1 * i },
+      transition: {
+        staggerChildren: staggerDelay,
+        delayChildren: 0.1 * i,
+      },
     }),
   };
 
-  const child = {
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        damping: 12,
-        stiffness: 100,
-      },
-    },
+  const child: Variants = {
     hidden: {
       opacity: 0,
       y: 40,
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: spring,
     },
   };
 
@@ -49,9 +55,9 @@ export default function AnimatedText({
     >
       {words.map((word, index) => (
         <motion.span
+          key={index}
           variants={child}
           style={{ marginRight: "0.25em" }}
-          key={index}
           className="inline-block"
         >
           {word}
