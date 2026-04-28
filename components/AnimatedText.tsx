@@ -9,7 +9,7 @@ interface AnimatedTextProps {
   staggerDelay?: number;
 }
 
-/* Safe spring config (prevents TypeScript error) */
+/* Safe spring config */
 const spring: Transition = {
   type: "spring",
   damping: 12,
@@ -42,7 +42,10 @@ export default function AnimatedText({
     visible: {
       opacity: 1,
       y: 0,
-      transition: spring,
+      transition: {
+        ...spring,
+        type: "spring" as const,
+      },
     },
   };
 

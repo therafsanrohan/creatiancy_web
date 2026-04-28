@@ -3,7 +3,7 @@
 import { motion, Variants, Transition } from "framer-motion";
 import { ArrowRight, Mail, Briefcase } from "lucide-react";
 
-/* Reusable spring config (fixes TypeScript error properly) */
+/* Safe spring config */
 const spring: Transition = {
   type: "spring",
   stiffness: 80,
@@ -21,13 +21,16 @@ const container: Variants = {
   },
 };
 
-/* Item animation (FIXED) */
+/* FIXED item animation */
 const item: Variants = {
   hidden: { opacity: 0, y: 30 },
   show: {
     opacity: 1,
     y: 0,
-    transition: spring,
+    transition: {
+      ...spring,
+      type: "spring" as const,
+    },
   },
 };
 
