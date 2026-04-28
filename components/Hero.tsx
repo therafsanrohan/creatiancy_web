@@ -20,7 +20,7 @@ export default function Hero() {
   return (
     <section
       ref={ref}
-      className="relative h-[100vh] min-h-[700px] flex items-center justify-center overflow-hidden"
+      className="relative min-h-[100vh] py-32 flex items-center justify-center overflow-hidden"
     >
       {/* Gentle & Optimized Motion Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -52,15 +52,26 @@ export default function Hero() {
         style={{ y, opacity, scale, willChange: "transform, opacity" }}
         className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-[-8vh] sm:mt-[-6vh] md:mt-[-4vh]"
       >
-        <AnimatedText
-          text={`We build\nprecision\nbrand experiences.`}
-          className="text-5xl sm:text-7xl md:text-[7rem] lg:text-[8rem] leading-[1] font-heading font-extrabold w-full px-2 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm"
-        />
+        {/* Mobile & Small Tablet (3 lines) */}
+        <div className="md:hidden w-full">
+          <AnimatedText
+            text={`We build\nprecision brand\nexperiences.`}
+            className="text-[clamp(2.5rem,12vw,4.5rem)] leading-[1] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
+          />
+        </div>
+
+        {/* Desktop, Laptop & Large iPads (2 lines) */}
+        <div className="hidden md:block w-full">
+          <AnimatedText
+            text={`We build precision\nbrand experiences.`}
+            className="text-[clamp(4.5rem,8vw,8rem)] leading-[1] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
+          />
+        </div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.28, delay: 0.15, ease: "easeOut" }}
           className="mt-8 text-lg md:text-2xl text-[var(--muted-fg)] max-w-3xl text-balance font-light"
         >
           Creative intelligence and controlled boldness for ambitious brands. We transform your vision into an undeniable digital reality.
@@ -69,7 +80,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
+          transition={{ duration: 0.28, delay: 0.28, ease: "easeOut" }}
           className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full px-4"
         >
           <Link

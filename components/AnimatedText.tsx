@@ -44,8 +44,9 @@ export default function AnimatedText({
       opacity: 1,
       y: 0,
       transition: {
-        ...spring,
-        type: "spring" as const,
+        type: "tween",
+        duration: 0.28,
+        ease: "easeOut"
       },
     },
   };
