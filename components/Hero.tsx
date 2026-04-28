@@ -50,7 +50,7 @@ export default function Hero() {
 
       <motion.div
         style={{ y, opacity, scale, willChange: "transform, opacity" }}
-        className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-[-5vh]"
+        className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-24 sm:mt-16 md:mt-[-2vh]"
       >
         <AnimatedText
           text="We build precision brand experiences."
