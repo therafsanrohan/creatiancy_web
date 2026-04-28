@@ -45,17 +45,24 @@ export default function Footer() {
           </div>
           
           {/* Main Navigation Alignment */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 md:justify-end text-left w-full">
+          <div className="grid grid-cols-2 gap-8 md:justify-end text-left w-full">
+
             <div className="flex flex-col gap-4">
-              <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2">Menu</span>
-              <Link href="/work" className="text-sm font-medium text-[var(--muted-fg)] hover:text-[var(--ruby-red)] transition-colors inline-block w-fit">Work</Link>
-              <Link href="/services" className="text-sm font-medium text-[var(--muted-fg)] hover:text-[var(--ruby-red)] transition-colors inline-block w-fit">Services</Link>
-              <Link href="/about" className="text-sm font-medium text-[var(--muted-fg)] hover:text-[var(--ruby-red)] transition-colors inline-block w-fit">About</Link>
-            </div>
-            
-            <div className="flex flex-col gap-4">
-              <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2">Studio</span>
-              <Link href="/contact" className="text-sm font-medium text-[var(--muted-fg)] hover:text-[var(--ruby-red)] transition-colors inline-block w-fit">Contact</Link>
+              <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2">Global Presence</span>
+              <div className="text-sm font-medium text-[var(--muted-fg)]">
+                <span className="flex items-center gap-2 text-[var(--text)] mb-0.5">
+                  Bangladesh
+                  <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-5 h-3.5 object-cover rounded-[2px] shadow-sm" loading="lazy" />
+                </span>
+                Dhaka
+              </div>
+              <div className="text-sm font-medium text-[var(--muted-fg)]">
+                <span className="flex items-center gap-2 text-[var(--text)] mb-0.5">
+                  United States
+                  <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-5 h-3.5 object-cover rounded-[2px] shadow-sm" loading="lazy" />
+                </span>
+                Wyoming
+              </div>
             </div>
             
             <div className="flex flex-col gap-4">

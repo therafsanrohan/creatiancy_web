@@ -54,7 +54,7 @@ export default function Hero() {
       >
         <AnimatedText
           text="We build precision brand experiences."
-          className="text-6xl md:text-7xl lg:text-[7rem] leading-[1.05] font-heading font-extrabold max-w-6xl tracking-tighter text-balance bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm"
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-[7rem] leading-[1.05] font-heading font-extrabold max-w-[90vw] sm:max-w-4xl lg:max-w-6xl tracking-tighter text-balance bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm"
         />
 
         <motion.p
@@ -70,18 +70,18 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-          className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto px-4"
+          className="mt-10 sm:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full px-4"
         >
           <Link
             href="/work"
-            className="group flex items-center justify-center gap-3 bg-[var(--text)] text-[var(--bg)] px-8 py-4 rounded-full font-semibold hover:bg-[var(--accent)] hover:text-white transition-all duration-300 w-full sm:w-auto shadow-xl shadow-black/5 hover:shadow-[var(--accent)]/20 active:scale-95 active:bg-[var(--accent)] active:text-white"
+            className="group flex w-full sm:w-auto items-center justify-center gap-3 bg-[var(--text)] text-[var(--bg)] px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-[var(--accent)] hover:text-white transition-all duration-300 shadow-xl shadow-black/5 hover:shadow-[var(--accent)]/20 active:scale-95 active:bg-[var(--accent)] active:text-white"
           >
             <span>View Selected Work</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
           <Link
             href="/services"
-            className="group flex items-center justify-center gap-3 bg-[var(--bg)]/50 backdrop-blur-md border border-[var(--muted)] text-[var(--text)] px-8 py-4 rounded-full font-semibold hover:bg-[var(--muted)] transition-all duration-300 w-full sm:w-auto active:scale-95 active:bg-[var(--muted)]"
+            className="group flex w-full sm:w-auto items-center justify-center gap-3 bg-[var(--bg)]/50 backdrop-blur-md border border-[var(--muted)] text-[var(--text)] px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-[var(--muted)] transition-all duration-300 active:scale-95 active:bg-[var(--muted)]"
           >
             <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform text-[var(--accent)]" />
             <span>Our Approach</span>

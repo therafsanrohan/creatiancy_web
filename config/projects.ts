@@ -1,34 +1,55 @@
+/**
+ * CREATIANCY DIGITAL STUDIO - PROJECT CONFIGURATION
+ * 
+ * Use this file as your dynamic local CMS (Content Management System).
+ * To upload and display new "Selected Work" case studies:
+ * 
+ * 1. Add your project images to the `public/images/` folder (e.g. `public/images/my-project.jpg`)
+ * 2. Add a new object to the `recentProjects` array below.
+ * 3. The website will automatically update to display your new work.
+ */
+
 export interface Project {
   id: string;
-  title: string;
-  shortDescription: string;
-  industry: string;
-  link: string;
-  image?: string;
-  problem?: string;
-  solution?: string;
-  result?: string;
+  title: string;          // Name of the project / case study
+  shortDescription: string; // A brief 1-sentence summary
+  industry: string;       // E.g., Real Estate, Technology, Branding
+  link: string;           // URL to the live project, Behance, or a detailed case study page
+  image?: string;         // PATH to the image (e.g., "/images/project1.png"). Best size: 4:3 ratio
+  problem?: string;       // Optional: Detailed case study problem
+  solution?: string;      // Optional: Detailed case study solution
+  result?: string;        // Optional: Detailed case study result
 }
 
 export const recentProjects: Project[] = [
-  { id: '1', title: 'Project Title 1', shortDescription: 'Strategic branding and interface.', industry: 'Industry / Service', link: '#' },
-  { id: '2', title: 'Project Title 2', shortDescription: 'Strategic branding and interface.', industry: 'Industry / Service', link: '#' },
-  { id: '3', title: 'Project Title 3', shortDescription: 'Strategic branding and interface.', industry: 'Industry / Service', link: '#' },
   { 
-    id: '4', 
+    id: '1', 
     title: 'ODL Ads Creative', 
     shortDescription: 'Social media creative advertising.',
     industry: 'Real Estate', 
     image: '/images/project real.png', 
     link: 'https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design' 
-  }
+  },
+  { 
+    id: '2', 
+    title: 'Your Next Project', 
+    shortDescription: 'Strategic branding and intelligent interface design.',
+    industry: 'Technology', 
+    image: '', // ADD IMAGE PATH HERE
+    link: '#' 
+  },
+  { 
+    id: '3', 
+    title: 'Global Rebrand', 
+    shortDescription: 'Complete visual identity and system overhaul.',
+    industry: 'Finance', 
+    image: '', // ADD IMAGE PATH HERE
+    link: '#' 
+  },
 ];
 
 export const caseStudies: Project[] = [
+  // You can use this array if you decide to build dedicated, long-form Case Study pages later.
   { id: 'cs-1', title: 'Detailed Case Study 1', shortDescription: 'Problem • Approach • Result', industry: 'E-commerce', link: '#' },
-  { id: 'cs-2', title: 'Detailed Case Study 2', shortDescription: 'Problem • Approach • Result', industry: 'Finance', link: '#' },
-  { id: 'cs-3', title: 'Detailed Case Study 3', shortDescription: 'Problem • Approach • Result', industry: 'Healthcare', link: '#' },
-  { id: 'cs-4', title: 'Detailed Case Study 4', shortDescription: 'Problem • Approach • Result', industry: 'Technology', link: '#' },
-  { id: 'cs-5', title: 'Detailed Case Study 5', shortDescription: 'Problem • Approach • Result', industry: 'Logistics', link: '#' },
-  { id: 'cs-6', title: 'Detailed Case Study 6', shortDescription: 'Problem • Approach • Result', industry: 'Education', link: '#' },
 ];
+

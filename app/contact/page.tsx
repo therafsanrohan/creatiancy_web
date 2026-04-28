@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, Variants, Transition } from "framer-motion";
-import { ArrowRight, Mail, Briefcase } from "lucide-react";
+import { ArrowRight, Mail, Briefcase, MapPin } from "lucide-react";
 
 /* Safe spring config */
 const spring: Transition = {
@@ -46,10 +46,10 @@ export default function ContactPage() {
         animate="show"
         className="container mx-auto px-4 relative z-10"
       >
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24">
+        <div className="max-w-3xl mx-auto w-full">
 
-          {/* LEFT CONTENT */}
-          <div className="max-w-2xl flex flex-col justify-center">
+          {/* CONTENT */}
+          <div className="flex flex-col justify-center">
 
             <motion.h1
               variants={item}
@@ -106,43 +106,30 @@ export default function ContactPage() {
               </div>
 
             </motion.div>
+            
+            {/* Global Presence */}
+            <motion.div variants={item} className="mt-10 pt-10 border-t border-[var(--muted)]/50">
+              <h3 className="text-sm font-bold uppercase text-[var(--ruby-red)] mb-6 flex items-center gap-2">
+                <MapPin className="w-4 h-4" /> Global Presence
+              </h3>
+              <div className="grid grid-cols-2 gap-8">
+                <div>
+                  <h4 className="text-xl font-bold mb-1 flex items-center gap-3">
+                    Bangladesh
+                    <img src="https://flagcdn.com/bd.svg" alt="Bangladesh" className="w-7 h-5 object-cover rounded-sm shadow-sm" loading="lazy" />
+                  </h4>
+                  <p className="text-[var(--muted-fg)] font-medium">Dhaka</p>
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold mb-1 flex items-center gap-3">
+                    United States
+                    <img src="https://flagcdn.com/us.svg" alt="United States" className="w-7 h-5 object-cover rounded-sm shadow-sm" loading="lazy" />
+                  </h4>
+                  <p className="text-[var(--muted-fg)] font-medium">Wyoming</p>
+                </div>
+              </div>
+            </motion.div>
           </div>
-
-          {/* RIGHT FORM */}
-          <motion.div variants={item} className="flex justify-end">
-            <div className="w-full max-w-lg bg-[var(--bg)]/50 backdrop-blur-3xl p-8 rounded-3xl border border-[var(--muted)]">
-
-              <h2 className="text-3xl font-bold mb-8">Send a message</h2>
-
-              <form className="space-y-6">
-
-                <input
-                  className="w-full p-4 rounded-xl border bg-[var(--muted)]/20"
-                  placeholder="Your Name"
-                />
-
-                <input
-                  className="w-full p-4 rounded-xl border bg-[var(--muted)]/20"
-                  placeholder="Email"
-                />
-
-                <textarea
-                  rows={5}
-                  className="w-full p-4 rounded-xl border bg-[var(--muted)]/20"
-                  placeholder="Your message"
-                />
-
-                <button
-                  type="button"
-                  className="w-full flex items-center justify-center gap-2 bg-black text-white p-4 rounded-xl hover:scale-[1.02] transition"
-                >
-                  Submit <ArrowRight className="w-5 h-5" />
-                </button>
-
-              </form>
-
-            </div>
-          </motion.div>
 
         </div>
       </motion.div>
