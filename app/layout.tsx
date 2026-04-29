@@ -32,26 +32,27 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <Script
-          id="organization-json-ld"
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "ProfessionalService",
-              "name": "Creatiancy",
-              "url": "https://creatiancy.com",
-              "logo": "https://creatiancy.com/og-image.jpg",
-              "description": "Creatiancy is an elite digital studio engineering bespoke brand experiences. We are your technical powerhouse.",
-              "sameAs": [
-                "https://x.com/creatiancy",
-                "https://linkedin.com/company/creatiancy"
-              ]
-            })
-          }}
-          strategy="worker"
-        />
-      </head>
+          <Script
+            id="organization-json-ld"
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "ProfessionalService",
+                "name": "Creatiancy",
+                "url": "https://creatiancy.com",
+                "logo": "https://creatiancy.com/og-image.jpg",
+                "description": "Creatiancy is an elite digital studio engineering bespoke brand experiences. We are your technical powerhouse.",
+                "sameAs": [
+                  "https://x.com/creatiancy",
+                  "https://linkedin.com/company/creatiancy"
+                ]
+              })
+            }}
+            strategy="worker"
+          />
+          <script dangerouslySetInnerHTML={{ __html: "document.addEventListener('touchstart', function() {}, {passive: true});" }} />
+        </head>
       <body
         className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
