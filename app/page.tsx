@@ -49,10 +49,10 @@ export default function Home() {
           <div className="grid gap-8">
             {[
               { title: "Brand Identity", desc: "Creating distinct visual systems that communicate value and intent." },
-              { title: "Online-first strategy", desc: "We combine strategy, design and technology to help you connect with the modern-day audiences." },
-              { title: "Content marketing", desc: "A creative team of designers and copywriters execute your vision of your brand flawlessly!" },
-              { title: "Technical powerhouse", desc: "We utilize all the latest tech stack for your marketing - from websites, apps, AI, to social media." },
-              { title: "Tailor-made campaigns", desc: "We go beyond social media by integrating your content to create meaningful campaigns." }
+              { title: "Online-first Strategy", desc: "We combine strategy, design and technology to help you connect with the modern-day audiences." },
+              { title: "Content Marketing", desc: "A creative team of designers and copywriters execute your vision of your brand flawlessly!" },
+              { title: "Technical Powerhouse", desc: "We utilize all the latest tech stack for your marketing - from websites, apps, AI, to social media." },
+              { title: "Tailor-made Campaigns", desc: "We go beyond social media by integrating your content to create meaningful campaigns." }
             ].map((service, i) => (
               <Link href="/services" key={i} className="group border-b border-[var(--muted)] pb-6 block cursor-pointer">
                 <h4 className="text-xl font-bold mb-2 group-hover:text-[var(--accent)] transition-colors inline-flex items-center gap-2">

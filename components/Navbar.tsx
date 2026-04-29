@@ -47,12 +47,12 @@ export default function Navbar() {
           className={cn(
             "pointer-events-auto flex items-center justify-between transition-all duration-500 ease-out origin-center",
             isScrolled 
-              ? "w-full max-w-5xl bg-[var(--bg)]/70 backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--bg)]/50 border border-[var(--muted)]/50 shadow-xl shadow-black/5 rounded-full px-4 md:px-6 py-3"
+              ? "w-full max-w-5xl bg-[var(--bg)]/70 backdrop-blur-xl supports-[backdrop-filter]:bg-[var(--bg)]/50 border border-[var(--muted)]/50 shadow-xl shadow-black/5 rounded-full px-4 md:px-6 py-2 md:py-3"
               : "w-full container mx-auto px-4 py-4 bg-transparent border-transparent shadow-none"
           )}
         >
           <Link href="/" className="flex items-center group outline-none" aria-label="Creatiancy Homepage">
-            <div className="relative w-32 h-8 transition-transform duration-300 group-hover:scale-105 flex items-center justify-start">
+            <div className={cn("relative transition-all duration-500 ease-out group-hover:scale-105 flex items-center justify-start", isScrolled ? "w-20 h-5 md:w-24 md:h-6" : "w-28 h-7 md:w-32 md:h-8")}>
               <div 
                 className="w-full h-full bg-[#9B1C22] dark:bg-white transition-colors duration-300"
                 style={{
@@ -69,14 +69,14 @@ export default function Navbar() {
             </div>
           </Link>
           
-          <nav className="hidden md:flex items-center gap-2 bg-[var(--bg)]/50 p-1.5 rounded-full border border-[var(--muted)]/50 shadow-sm backdrop-blur-md">
+          <nav className="hidden md:flex items-center gap-1 lg:gap-2 bg-[var(--bg)]/50 p-1.5 rounded-full border border-[var(--muted)]/50 shadow-sm backdrop-blur-md">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="relative px-6 py-2 rounded-full text-sm font-medium transition-colors outline-none group"
+                  className={cn("relative rounded-full font-medium transition-all duration-500 ease-out outline-none group", isScrolled ? "px-3 py-1.5 md:px-4 text-[11px] md:text-xs" : "px-4 py-2 md:px-6 text-xs md:text-sm")}
                 >
                   {isActive && (
                     <motion.div
@@ -99,17 +99,23 @@ export default function Navbar() {
           <div className="flex items-center gap-2 md:gap-3">
             <Link 
               href="/contact" 
-              className="hidden lg:flex items-center gap-2 text-sm font-medium bg-[var(--text)] text-[var(--bg)] px-6 py-2.5 rounded-full hover:bg-[var(--accent)] hover:text-white transition-all duration-300 shadow-sm active:scale-95"
+              className={cn(
+                "hidden md:flex items-center gap-2 font-medium bg-[var(--text)] text-[var(--bg)] rounded-full hover:bg-[var(--accent)] hover:text-white transition-all duration-500 ease-out shadow-sm active:scale-95",
+                isScrolled ? "text-[11px] md:text-xs px-4 py-1.5 md:px-5 md:py-2" : "text-xs md:text-sm px-5 py-2 md:px-6 md:py-2.5"
+              )}
             >
               Start Project
             </Link>
 
             {/* Mobile menu toggle */}
             <button 
-              className="md:hidden flex items-center justify-center w-10 h-10 rounded-full bg-[var(--bg)]/50 border border-[var(--muted)]/50 text-[var(--text)] active:bg-[var(--muted)]/50 transition-colors pointer-events-auto backdrop-blur-md"
+              className={cn(
+                "md:hidden flex items-center justify-center rounded-full bg-[var(--bg)]/50 border border-[var(--muted)]/50 text-[var(--text)] active:bg-[var(--muted)]/50 transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md",
+                isScrolled ? "w-8 h-8" : "w-10 h-10"
+              )}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X className={cn("transition-all duration-500", isScrolled ? "w-4 h-4" : "w-5 h-5")} /> : <Menu className={cn("transition-all duration-500", isScrolled ? "w-4 h-4" : "w-5 h-5")} />}
             </button>
           </div>
         </div>

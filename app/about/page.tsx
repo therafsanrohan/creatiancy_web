@@ -1,11 +1,20 @@
 "use client";
 
-import { motion, Variants } from "framer-motion";
+import { useRef } from "react";
+import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Target, Zap, Rocket, CheckCircle2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function AboutPage() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start center", "end center"]
+  });
+  
+  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -103,29 +112,38 @@ export default function AboutPage() {
               </p>
             </div>
 
-            <div className="space-y-8 relative before:content-[''] before:absolute before:left-6 before:top-4 before:bottom-4 before:w-0.5 before:bg-gradient-to-b before:from-[var(--text)]/20 before:to-transparent">
+            <div ref={containerRef} className="space-y-8 relative">
+              {/* Static background line */}
+              <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-[var(--text)]/20 to-transparent" />
+              {/* Animated scroll line */}
+              <motion.div 
+                className="absolute left-6 top-4 bottom-4 w-0.5 bg-[var(--accent)] origin-top z-0"
+                style={{ scaleY: lineHeight }}
+              />
               {[{
-                icon: <Zap className="w-5 h-5 text-[var(--bg)]" />,
+                icon: <Zap className="w-5 h-5 text-[var(--bg)] group-hover:text-white group-active:text-white transition-colors duration-300" />,
                 title: "1. Precision Strategy",
                 desc: "Defined positioning based on real market insight and clear differentiation."
               }, {
-                icon: <Rocket className="w-5 h-5 text-[var(--bg)]" />,
+                icon: <Rocket className="w-5 h-5 text-[var(--bg)] group-hover:text-white group-active:text-white transition-colors duration-300" />,
                 title: "2. Fluid Structure",
                 desc: "Connected brand and digital systems designed for clarity, usability, and consistency."
               }, {
-                icon: <CheckCircle2 className="w-5 h-5 text-[var(--bg)]" />,
+                icon: <CheckCircle2 className="w-5 h-5 text-[var(--bg)] group-hover:text-white group-active:text-white transition-colors duration-300" />,
                 title: "3. Focused Execution",
                 desc: "Careful implementation with attention to performance, visibility, and measurable outcomes."
               }].map((step, i) => (
                 <motion.div
                   key={i}
                   variants={itemVariants}
-                  className="relative pl-16 group"
+                  className="relative pl-16 group cursor-pointer"
                 >
-                  <div className="absolute left-0 top-0 w-12 h-12 rounded-full bg-[var(--text)] flex items-center justify-center shadow-lg shadow-black/10 group-hover:scale-110 transition-transform">
+                  <div 
+                    className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center shadow-lg shadow-black/10 z-10 rounded-full bg-[var(--text)] group-hover:bg-[var(--accent)] group-active:bg-[var(--accent)] transition-colors duration-300"
+                  >
                     {step.icon}
                   </div>
-                  <h3 className="text-2xl font-bold font-heading mb-3 pt-1 group-hover:text-[var(--accent)] transition-colors">{step.title}</h3>
+                  <h3 className="text-2xl font-bold font-heading mb-3 pt-1 transition-colors group-hover:text-[var(--accent)] group-active:text-[var(--accent)]">{step.title}</h3>
                   <p className="text-[var(--muted-fg)] text-lg">{step.desc}</p>
                 </motion.div>
               ))}

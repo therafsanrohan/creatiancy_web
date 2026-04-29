@@ -40,16 +40,16 @@ export const recentProjects: Project[] = [
   },
   { 
     id: '3', 
-    title: 'Global Rebrand', 
+    title: 'OMNI CONNECTS Branding', 
     shortDescription: 'Complete visual identity and system overhaul.',
-    industry: 'Finance', 
-    image: '', // ADD IMAGE PATH HERE
+    industry: 'SaaS Industry', 
+    image: '/images/omni_branding.png', 
     link: '#' 
   },
 ];
 
 export const caseStudies: Project[] = [
   // You can use this array if you decide to build dedicated, long-form Case Study pages later.
-  { id: 'cs-1', title: 'Detailed Case Study 1', shortDescription: 'Problem • Approach • Result', industry: 'E-commerce', link: '#' },
+  { id: 'cs-1', title: 'Coming Soon', shortDescription: 'Problem • Approach • Result', industry: 'E-commerce', link: '#' },
 ];
 

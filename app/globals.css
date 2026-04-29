@@ -40,6 +40,13 @@
     font-weight: 600;
     letter-spacing: -0.02em;
   }
+
+  /* Smooth UI Resizing Across the Entire Website */
+  h1, h2, h3, h4, h5, h6, p, span, a, div, section, main, nav, header, footer, button {
+    transition-property: font-size, padding, margin, gap, border-radius, line-height, width, height, max-width;
+    transition-duration: 500ms;
+    transition-timing-function: ease-out;
+  }
 }
 
 @layer utilities {

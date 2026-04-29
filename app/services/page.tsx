@@ -13,28 +13,28 @@ const services = [
     features: ["Market Research", "Visual Identity Systems", "Brand Guidelines", "Tone of Voice"]
   },
   {
-    title: "Online-first strategy",
+    title: "Online-first Strategy",
     problem: "Companies lacking a specialized digital approach and losing market share to competitors.",
     for: "Established businesses pivoting to prioritize digital growth.",
     outcome: "We combine strategy, design and technology to help you connect with the modern-day audiences.",
     features: ["Digital Workshops", "Market Positioning", "Growth Mapping", "KPI Definition"]
   },
   {
-    title: "Content marketing",
+    title: "Content Marketing",
     problem: "Failing to engage the right audience and convert traffic into meaningful loyal action.",
     for: "Brands that need to elevate their storytelling and customer engagement.",
     outcome: "A creative team of designers and copywriters execute your vision of your brand flawlessly!",
     features: ["Content Strategy", "Copywriting", "SEO Authority", "Campaign Narratives"]
   },
   {
-    title: "Technical powerhouse",
+    title: "Technical Powerhouse",
     problem: "Legacy websites that are slow, hard to manage, or crumble under high traffic demands.",
     for: "Ambitious product teams needing elite software and unshakeable web infrastructures.",
     outcome: "We utilize all the latest tech stack for your marketing - from websites, apps, AI, to social media.",
-    features: ["Next.js & React", "Headless CMS", "Technical SEO", "Custom E-commerce"]
+    features: ["Modern Language", "Headless CMS", "Technical SEO", "Custom E-commerce"]
   },
   {
-    title: "Tailor-made campaigns",
+    title: "Tailor-made Campaigns",
     problem: "Wasting advertising budget on generic, untargeted campaigns with weak ROI.",
     for: "High-growth brands preparing for significant product launches or market penetration.",
     outcome: "We go beyond social media by integrating your content to create meaningful campaigns.",
@@ -74,7 +74,7 @@ export default function ServicesPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.7, delay: i * 0.1 }}
-            className="group grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--muted)]/50 bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--accent)]/5"
+            className="group cursor-pointer grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--muted)]/50 bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--accent)]/5 active:bg-[var(--muted)]/20 active:shadow-[var(--accent)]/5"
           >
             <div className="space-y-6">
               <h2 className="text-3xl md:text-4xl font-heading font-bold">{svc.title}</h2>
