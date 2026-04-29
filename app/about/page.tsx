@@ -121,15 +121,15 @@ export default function AboutPage() {
                 style={{ scaleY: lineHeight }}
               />
               {[{
-                icon: <Zap className="w-5 h-5 text-[var(--bg)] group-hover:text-white group-active:text-white transition-colors duration-300" />,
+                icon: <Zap className="w-5 h-5 transition-colors duration-300" />,
                 title: "1. Precision Strategy",
                 desc: "Defined positioning based on real market insight and clear differentiation."
               }, {
-                icon: <Rocket className="w-5 h-5 text-[var(--bg)] group-hover:text-white group-active:text-white transition-colors duration-300" />,
+                icon: <Rocket className="w-5 h-5 transition-colors duration-300" />,
                 title: "2. Fluid Structure",
                 desc: "Connected brand and digital systems designed for clarity, usability, and consistency."
               }, {
-                icon: <CheckCircle2 className="w-5 h-5 text-[var(--bg)] group-hover:text-white group-active:text-white transition-colors duration-300" />,
+                icon: <CheckCircle2 className="w-5 h-5 transition-colors duration-300" />,
                 title: "3. Focused Execution",
                 desc: "Careful implementation with attention to performance, visibility, and measurable outcomes."
               }].map((step, i) => (
@@ -137,13 +137,36 @@ export default function AboutPage() {
                   key={i}
                   variants={itemVariants}
                   className="relative pl-16 group cursor-pointer"
+                  whileHover="hover"
+                  whileInView="inView"
+                  viewport={{ once: false, margin: "-50% 0px -40% 0px" }}
                 >
-                  <div 
-                    className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center shadow-lg shadow-black/10 z-10 rounded-full bg-[var(--text)] group-hover:bg-[var(--accent)] group-active:bg-[var(--accent)] transition-colors duration-300"
+                  <motion.div 
+                    className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center shadow-lg shadow-black/10 z-10 rounded-full bg-[var(--text)] transition-colors duration-300"
+                    variants={{
+                      hover: { backgroundColor: "var(--accent)" },
+                      inView: { backgroundColor: "var(--accent)" }
+                    }}
                   >
-                    {step.icon}
-                  </div>
-                  <h3 className="text-2xl font-bold font-heading mb-3 pt-1 transition-colors group-hover:text-[var(--accent)] group-active:text-[var(--accent)]">{step.title}</h3>
+                    <motion.div
+                      variants={{
+                        hover: { color: "#ffffff" },
+                        inView: { color: "#ffffff" }
+                      }}
+                      className="text-[var(--bg)]"
+                    >
+                      {step.icon}
+                    </motion.div>
+                  </motion.div>
+                  <motion.h3 
+                    className="text-2xl font-bold font-heading mb-3 pt-1 transition-colors"
+                    variants={{
+                      hover: { color: "var(--accent)" },
+                      inView: { color: "var(--accent)" }
+                    }}
+                  >
+                    {step.title}
+                  </motion.h3>
                   <p className="text-[var(--muted-fg)] text-lg">{step.desc}</p>
                 </motion.div>
               ))}

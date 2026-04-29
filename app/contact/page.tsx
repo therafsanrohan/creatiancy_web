@@ -79,10 +79,10 @@ export default function ContactPage() {
                     General Inquiries
                   </h3>
                   <a
-                    href="mailto:hello@creatiancy.com"
+                    href="mailto:contact@creatiancy.com"
                     className="text-xl font-semibold hover:text-[var(--ruby-red)] transition-colors"
                   >
-                    hello@creatiancy.com
+                    contact@creatiancy.com
                   </a>
                 </div>
               </div>

@@ -3,7 +3,7 @@ export const footerConfig = {
   contact: {
     inquiries: {
       label: "General & Inquiries",
-      email: "hello@creatiancy.com",
+      email: "contact@creatiancy.com",
     },
     chat: {
       label: "Direct Chat",
