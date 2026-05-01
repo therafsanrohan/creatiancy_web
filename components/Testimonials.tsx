@@ -1,11 +1,25 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "framer-motion";
-import { Quote } from "lucide-react";
+import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { testimonials } from "../data/testimonials";
 
 export default function Testimonials() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { current } = scrollRef;
+      const scrollAmount = current.offsetWidth * 0.8;
+      current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth'
+      });
+    }
+  };
+
   return (
     <section className="py-24 overflow-hidden relative">
       <div className="container mx-auto px-4">
@@ -27,8 +41,14 @@ export default function Testimonials() {
           </p>
         </motion.div>
 
-        {/* Mobile Carousel / Desktop Grid */}
-        <div className="flex overflow-x-auto pb-8 -mx-4 px-4 snap-x snap-mandatory md:grid md:grid-cols-2 lg:grid-cols-3 md:overflow-visible md:pb-0 md:mx-0 md:px-0 gap-6 md:gap-8 scrollbar-hide">
+
+
+        {/* Carousel */}
+        <div 
+          ref={scrollRef}
+          className="flex overflow-x-auto pb-12 -mx-4 px-4 snap-x snap-mandatory gap-6 md:gap-8 scrollbar-hide cursor-grab active:cursor-grabbing"
+          style={{ scrollBehavior: 'smooth' }}
+        >
           {testimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.id}
@@ -36,7 +56,7 @@ export default function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
-              className="w-[85vw] max-w-[340px] sm:w-[400px] md:w-auto md:min-w-0 snap-center shrink-0 flex flex-col bg-[var(--muted)]/5 border border-[var(--muted)]/30 rounded-3xl p-6 sm:p-8 hover:bg-[var(--muted)]/10 active:bg-[var(--muted)]/15 transition-all duration-300 hover:shadow-2xl hover:shadow-[var(--accent)]/5 hover:-translate-y-1 active:scale-[0.98] cursor-pointer group"
+              className="w-[85vw] max-w-[340px] sm:w-[450px] shrink-0 snap-center flex flex-col bg-[var(--muted)]/5 border border-[var(--muted)]/30 rounded-3xl p-8 hover:bg-[var(--muted)]/10 active:bg-[var(--muted)]/15 transition-all duration-300 hover:shadow-2xl hover:shadow-[var(--accent)]/5 hover:-translate-y-1 group"
             >
               <Quote className="w-8 h-8 sm:w-10 sm:h-10 text-[var(--ruby-red)]/20 mb-6 group-hover:text-[var(--ruby-red)]/40 transition-colors duration-300" />
               
@@ -64,6 +84,24 @@ export default function Testimonials() {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        {/* Controls (Bottom Centered) */}
+        <div className="flex justify-center items-center gap-6 mt-8 md:mt-12">
+          <button 
+            onClick={() => scroll('left')}
+            className="w-14 h-14 rounded-full border border-[var(--muted)]/30 bg-[var(--bg)] flex items-center justify-center text-[var(--muted-fg)] hover:text-white hover:bg-[var(--ruby-red)] hover:border-[var(--ruby-red)] hover:shadow-lg hover:shadow-[var(--ruby-red)]/20 active:scale-95 transition-all duration-300 z-10"
+            aria-label="Previous testimonial"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button 
+            onClick={() => scroll('right')}
+            className="w-14 h-14 rounded-full border border-[var(--muted)]/30 bg-[var(--bg)] flex items-center justify-center text-[var(--muted-fg)] hover:text-white hover:bg-[var(--ruby-red)] hover:border-[var(--ruby-red)] hover:shadow-lg hover:shadow-[var(--ruby-red)]/20 active:scale-95 transition-all duration-300 z-10"
+            aria-label="Next testimonial"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
         </div>
       </div>
       
