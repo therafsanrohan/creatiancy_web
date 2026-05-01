@@ -5,6 +5,7 @@ import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Target, Zap, Rocket, CheckCircle2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import Testimonials from "@/components/Testimonials";
 
 export default function AboutPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -175,6 +176,9 @@ export default function AboutPage() {
 
         </motion.div>
       </div>
+
+      {/* Testimonials */}
+      <Testimonials />
 
       {/* Marketing Action Section */}
       <motion.div

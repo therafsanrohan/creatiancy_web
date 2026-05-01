@@ -11,6 +11,7 @@ const BrandsMarquee = dynamic(() => import("@/components/BrandsMarquee"), {
 import fs from "fs";
 import path from "path";
 import { recentProjects } from "@/config/projects";
+import Testimonials from "@/components/Testimonials";
 
 export default function Home() {
   let brands: string[] = [];
@@ -37,7 +38,7 @@ export default function Home() {
       <section className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12">
           <div>
-            <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--text)] opacity-50 mb-4">Our Expertise</h2>
+            <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--accent)] mb-4">Our Expertise</h2>
             <AnimatedText 
               text="A creative agency engineering strategic design & intelligent development."
               className="text-3xl md:text-5xl font-heading tracking-tight mb-6 -ml-1 text-left justify-start"
@@ -65,6 +66,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Testimonials />
 
       {/* Selected Work */}
       <section className="container mx-auto px-4">

@@ -22,6 +22,26 @@ We have eradicated deep-nested UI hardcoding. Absolute data control is maintaine
 
 - **`config/footerConfig.ts`**: The singular interface controller for the entire application's connect capabilities. Holds email records, physical studio addresses, WhatsApp APIs, and all Social vectors.
 - **`config/projects.ts`**: The decoupled data spine for rendering dynamic Case Studies and Recent Project Grids natively across the marketing pages. Scales instantly into JSON backends (e.g., Sanity/Strapi).
+- **`data/testimonials.ts`**: Manages the Client Feedback section globally.
+
+### How to Add or Edit Testimonials
+To update client testimonials (displayed on the Home, About, and Service pages), edit the `/data/testimonials.ts` file.
+
+**Structure of a Testimonial Object:**
+```typescript
+{
+  id: "unique-id",          // Ensure this is unique
+  name: "Client Name",      // e.g., "Sarah Jenkins"
+  designation: "Role",      // e.g., "CMO, TechFlow"
+  image: "image_url",       // Absolute URL or path from /public
+  review: "Review text..."  // Short to medium length text
+}
+```
+
+**Security & Editing Notes:**
+- The review content is rendered safely using standard React text nodes. Do not attempt to inject HTML tags (like `<b>`, `<a>`) directly into the `review` string, as it will be escaped and displayed as plain text. This inherently protects against Cross-Site Scripting (XSS).
+- Use optimized images for the `image` field. If linking external images, ensure they use secure `https://` URLs.
+- Keeping this data decoupled means a non-technical editor can safely change text here without risking the UI layout.
 
 ---
 

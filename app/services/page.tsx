@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import Testimonials from "@/components/Testimonials";
 
 const services = [
   {
@@ -105,6 +106,9 @@ export default function ServicesPage() {
           </motion.div>
         ))}
       </div>
+
+      {/* Testimonials */}
+      <Testimonials />
 
       {/* Marketing Action Section */}
       <motion.div 
