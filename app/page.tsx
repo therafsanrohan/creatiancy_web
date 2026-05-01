@@ -38,7 +38,9 @@ export default function Home() {
       <section className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12">
           <div>
-            <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--accent)] mb-4">Our Expertise</h2>
+            <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6">
+              Our Expertise
+            </div>
             <AnimatedText 
               text="A creative agency engineering strategic design & intelligent development."
               className="text-3xl md:text-5xl font-heading tracking-tight mb-6 -ml-1 text-left justify-start"
@@ -73,7 +75,9 @@ export default function Home() {
       <section className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-sm font-bold tracking-widest uppercase text-[var(--accent)] mb-4">Selected Work</h2>
+            <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6">
+              Selected Work
+            </div>
             <h3 className="text-3xl md:text-5xl font-heading tracking-tight">Recent Projects</h3>
           </div>
         </div>

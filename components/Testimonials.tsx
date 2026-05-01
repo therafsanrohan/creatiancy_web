@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -8,6 +8,21 @@ import { testimonials } from "../data/testimonials";
 
 export default function Testimonials() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [showButtons, setShowButtons] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollRef.current) {
+        const { scrollWidth, clientWidth } = scrollRef.current;
+        // Adding a tiny buffer (like 10px) to prevent false positives from borders/padding
+        setShowButtons(scrollWidth > clientWidth + 10);
+      }
+    };
+
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [testimonials]);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollRef.current) {
@@ -46,7 +61,7 @@ export default function Testimonials() {
         {/* Carousel */}
         <div 
           ref={scrollRef}
-          className="flex overflow-x-auto pb-12 -mx-4 px-4 snap-x snap-mandatory gap-6 md:gap-8 scrollbar-hide cursor-grab active:cursor-grabbing"
+          className={`flex overflow-x-auto pb-12 -mx-4 px-4 snap-x snap-mandatory gap-6 md:gap-8 scrollbar-hide cursor-grab active:cursor-grabbing ${testimonials.length <= 3 ? 'lg:justify-center' : ''} ${testimonials.length <= 2 ? 'md:justify-center' : ''}`}
           style={{ scrollBehavior: 'smooth' }}
         >
           {testimonials.map((testimonial, index) => (
@@ -74,7 +89,8 @@ export default function Testimonials() {
                     fill
                     sizes="(max-width: 768px) 48px, 48px"
                     className="object-cover"
-                    loading="lazy"
+                    priority={index < 2}
+                    draggable={false}
                   />
                 </div>
                 <div>
@@ -86,23 +102,25 @@ export default function Testimonials() {
           ))}
         </div>
 
-        {/* Controls (Bottom Centered) */}
-        <div className="flex justify-center items-center gap-6 mt-8 md:mt-12">
-          <button 
-            onClick={() => scroll('left')}
-            className="w-14 h-14 rounded-full border border-[var(--muted)]/30 bg-[var(--bg)] flex items-center justify-center text-[var(--muted-fg)] hover:text-white hover:bg-[var(--ruby-red)] hover:border-[var(--ruby-red)] hover:shadow-lg hover:shadow-[var(--ruby-red)]/20 active:scale-95 transition-all duration-300 z-10"
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          <button 
-            onClick={() => scroll('right')}
-            className="w-14 h-14 rounded-full border border-[var(--muted)]/30 bg-[var(--bg)] flex items-center justify-center text-[var(--muted-fg)] hover:text-white hover:bg-[var(--ruby-red)] hover:border-[var(--ruby-red)] hover:shadow-lg hover:shadow-[var(--ruby-red)]/20 active:scale-95 transition-all duration-300 z-10"
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
+        {/* Controls (Bottom Centered) - Only shows when scrollable */}
+        {showButtons && (
+          <div className="flex justify-center items-center gap-6 mt-8 md:mt-12">
+            <button 
+              onClick={() => scroll('left')}
+              className="w-14 h-14 rounded-full border border-[var(--muted)]/30 bg-[var(--bg)] flex items-center justify-center text-[var(--muted-fg)] hover:text-white hover:bg-[var(--ruby-red)] hover:border-[var(--ruby-red)] hover:shadow-lg hover:shadow-[var(--ruby-red)]/20 active:scale-95 transition-all duration-300 z-10"
+              aria-label="Previous testimonial"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button 
+              onClick={() => scroll('right')}
+              className="w-14 h-14 rounded-full border border-[var(--muted)]/30 bg-[var(--bg)] flex items-center justify-center text-[var(--muted-fg)] hover:text-white hover:bg-[var(--ruby-red)] hover:border-[var(--ruby-red)] hover:shadow-lg hover:shadow-[var(--ruby-red)]/20 active:scale-95 transition-all duration-300 z-10"
+              aria-label="Next testimonial"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          </div>
+        )}
       </div>
       
       {/* Optional: custom scrollbar hide style for the slider */}
