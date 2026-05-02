@@ -11,6 +11,8 @@ This codebase has been strictly engineered to prioritize **Enterprise Security**
 ## 2. Technical Stack
 - **Core Engine:** Next.js 15 (App Router natively forced Server-Side execution logic)
 - **Styling:** Vanilla Tailwind CSS + Modular `theme.css` tokens
+- **CMS:** Sanity Studio (embedded at `/studio`)
+- **Analytics:** Google Analytics (gtag.js)
 - **Animations:** Framer Motion (Spring Physics arrays)
 - **Security:** Root `middleware.ts` bot deflection & heavy native CSP Next hooks
 - **Environment:** Node Edge Ecosystem (Vercel)
@@ -61,6 +63,7 @@ This application is armed natively against external friction. No third-party plu
 - **`/config`**: The centralized dynamic data mappings (Footer Data, Project Matrices).
 - **`/lib`**: Utility integrations, deep `seo.ts` logic mapping, and isolated `animations/` packages.
 - **`/public`**: Critical static brand SVGs and core imagery.
+- **`/sanity`**: CMS Configuration, Schema Definitions, and Environment connections.
 - **`middleware.ts`**: Active security perimeter hook for Next Edge layers.
 
 ---
@@ -80,3 +83,16 @@ npm run dev
 
 ## 7. Zero-Config Deployment
 This architecture maps fluidly into Vercel's zero-build Edge networks. Simply connect your Git provider branch and trigger a deploy stream. The `robots.ts`, `sitemap.ts`, and core SEO `metadataBase` will automatically index securely into Google.
+
+---
+
+## 8. Content Management System (Sanity)
+The project includes a fully integrated headless CMS using **Sanity**.
+1. The embedded admin dashboard is available at `http://localhost:3000/studio`.
+2. Schema configurations are located in `sanity/schemaTypes/`.
+3. To sync the studio with your data, ensure you have added your Sanity `projectId` to the `sanity/env.ts` file.
+
+---
+
+## 9. Analytics & Tracking
+**Google Analytics 4** is configured natively via `<Script>` injection in `app/layout.tsx`. Ensure your Measurement ID (`G-XXXXXXXXXX`) is securely set in the layout to ensure accurate traffic mapping.
