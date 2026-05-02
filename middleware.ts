@@ -2,17 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const url = request.nextUrl.clone();
-  const host = request.headers.get("host") || "";
-
-  // Redirect creatiancy.com to www.creatiancy.com
-  if (host === "creatiancy.com") {
-    url.hostname = "www.creatiancy.com";
-    url.port = "";
-    url.protocol = "https:";
-    return NextResponse.redirect(url, 301);
-  }
-
   const response = NextResponse.next();
 
   // Enforce HTTP Security Headers
