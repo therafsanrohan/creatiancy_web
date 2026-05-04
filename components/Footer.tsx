@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { footerConfig } from "@/config/footerConfig";
-import { MapPin } from "lucide-react";
+import { MapPin, Globe, ArrowRight } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
+import { activePresence } from "@/config/globalPresence";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -54,14 +55,7 @@ export default function Footer() {
                 <MapPin className="w-3.5 h-3.5" /> Global Footprint
               </span>
               <div className="flex flex-wrap gap-2 sm:gap-3 mt-1">
-                {[
-                  { city: "Dhaka", country: "Bangladesh", flag: "bd", tz: "Asia/Dhaka" },
-                  { city: "Wyoming", country: "United States", flag: "us", tz: "America/Denver" },
-                  { city: "Cape Town", country: "South Africa", flag: "za", tz: "Africa/Johannesburg" },
-                  { city: "Nicosia", country: "Cyprus", flag: "cy", tz: "Asia/Nicosia" },
-                  { city: "Johannesburg", country: "South Africa", flag: "za", tz: "Africa/Johannesburg" },
-                  { city: "Nairobi", country: "Kenya", flag: "ke", tz: "Africa/Nairobi" }
-                ].map((loc, i) => (
+                {activePresence.map((loc, i) => (
                   <div key={i} className="group flex items-center p-2.5 pr-4 rounded-2xl bg-gradient-to-br from-[var(--muted)]/5 to-[var(--bg)] border border-[var(--muted)]/20 hover:border-[var(--ruby-red)]/30 hover:shadow-[0_0_15px_rgba(155,28,34,0.08)] hover:-translate-y-0.5 transition-all duration-300 gap-3 w-fit shrink-0 cursor-default">
                     <div className="relative overflow-hidden rounded-[3px] shadow-sm shrink-0">
                       <img src={`https://flagcdn.com/${loc.flag}.svg`} alt={`${loc.country} Flag`} className="w-6 h-4 object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
@@ -82,6 +76,9 @@ export default function Footer() {
                   </div>
                 ))}
               </div>
+              <Link href="/world-live" className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted-fg)] hover:text-[var(--ruby-red)] transition-colors mt-2 inline-flex items-center gap-1.5 w-fit group">
+                Explore World Live <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
             
             <div className="flex flex-col gap-4">

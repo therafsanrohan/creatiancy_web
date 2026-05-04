@@ -3,6 +3,7 @@
 import { motion, Variants, Transition } from "framer-motion";
 import { ArrowRight, Mail, Briefcase, MapPin } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
+import { activePresence } from "@/config/globalPresence";
 
 const spring: Transition = {
   type: "spring",
@@ -90,14 +91,7 @@ export default function ContactPage() {
               </h3>
               
               <div className="flex flex-wrap gap-3 md:gap-4 mt-1">
-                {[
-                  { city: "Dhaka", country: "Bangladesh", flag: "bd", tz: "Asia/Dhaka" },
-                  { city: "Wyoming", country: "United States", flag: "us", tz: "America/Denver" },
-                  { city: "Cape Town", country: "South Africa", flag: "za", tz: "Africa/Johannesburg" },
-                  { city: "Nicosia", country: "Cyprus", flag: "cy", tz: "Asia/Nicosia" },
-                  { city: "Johannesburg", country: "South Africa", flag: "za", tz: "Africa/Johannesburg" },
-                  { city: "Nairobi", country: "Kenya", flag: "ke", tz: "Africa/Nairobi" }
-                ].map((loc, i) => (
+                {activePresence.map((loc, i) => (
                   <div key={i} className="group flex items-center p-3 pr-5 md:p-3.5 md:pr-6 rounded-2xl bg-gradient-to-br from-[var(--muted)]/5 to-[var(--bg)] border border-[var(--muted)]/20 hover:border-[var(--ruby-red)]/30 hover:shadow-[0_0_15px_rgba(155,28,34,0.08)] hover:-translate-y-0.5 transition-all duration-300 gap-4 w-fit shrink-0 cursor-default">
                     <div className="relative overflow-hidden rounded-[4px] shadow-sm shrink-0">
                       <img src={`https://flagcdn.com/${loc.flag}.svg`} alt={`${loc.country} Flag`} className="w-7 h-4.5 md:w-8 md:h-5.5 object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
