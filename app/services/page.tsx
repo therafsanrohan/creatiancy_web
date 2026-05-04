@@ -75,14 +75,14 @@ export default function ServicesPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.7, delay: i * 0.1 }}
-            className="group cursor-pointer grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--muted)]/50 bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--accent)]/5 active:bg-[var(--muted)]/20 active:shadow-[var(--accent)]/5"
+            className="group cursor-pointer grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--muted)]/50 bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--ruby-red)]/5 active:bg-[var(--muted)]/20 active:shadow-[var(--ruby-red)]/5"
           >
             <div className="space-y-6">
               <h2 className="text-3xl md:text-4xl font-heading font-bold">{svc.title}</h2>
               <ul className="space-y-3 pt-6 border-t border-[var(--muted)]/50">
                 {svc.features.map((feature, idx) => (
                   <li key={idx} className="flex items-center gap-3 text-[var(--muted-fg)] font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-[var(--accent)]" />
+                    <CheckCircle2 className="w-5 h-5 text-[var(--ruby-red)]" />
                     {feature}
                   </li>
                 ))}

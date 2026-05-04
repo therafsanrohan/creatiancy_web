@@ -41,7 +41,7 @@ export default function AboutPage() {
             borderRadius: ["40% 60% 70% 30%", "30% 80% 40% 70%", "40% 60% 70% 30%"]
           }}
           transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[var(--accent)] blur-[100px] -z-10"
+          className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-[var(--ruby-red)] blur-[100px] -z-10"
           style={{ willChange: "transform, border-radius, opacity" }}
         />
         <motion.div
@@ -64,7 +64,7 @@ export default function AboutPage() {
           transition={{ duration: 0.8 }}
           className="max-w-4xl mb-24"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-sm font-bold tracking-widest uppercase mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6">
             <Sparkles className="w-4 h-4" />
             <span>Intentional By Design</span>
           </div>
@@ -84,7 +84,7 @@ export default function AboutPage() {
           className="grid md:grid-cols-2 gap-16 lg:gap-24 items-start"
         >
           {/* Philosophy Section */}
-          <motion.div variants={itemVariants} className="space-y-12 bg-[var(--bg)]/50 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-[var(--muted)] shadow-xl shadow-black/5 hover:border-[var(--accent)]/50 transition-colors duration-500">
+          <motion.div variants={itemVariants} className="space-y-12 bg-[var(--bg)]/50 backdrop-blur-xl p-8 md:p-12 rounded-[2.5rem] border border-[var(--muted)] shadow-xl shadow-black/5 hover:border-[var(--ruby-red)]/50 transition-colors duration-500">
             <div className="space-y-6">
               <div className="w-16 h-16 rounded-2xl bg-[var(--text)] text-[var(--bg)] flex items-center justify-center shadow-lg mb-8">
                 <Target className="w-8 h-8" />
@@ -118,7 +118,7 @@ export default function AboutPage() {
               <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-gradient-to-b from-[var(--text)]/20 to-transparent" />
               {/* Animated scroll line */}
               <motion.div 
-                className="absolute left-6 top-4 bottom-4 w-0.5 bg-[var(--accent)] origin-top z-0"
+                className="absolute left-6 top-4 bottom-4 w-0.5 bg-[var(--ruby-red)] origin-top z-0"
                 style={{ scaleY: lineHeight }}
               />
               {[{
@@ -145,8 +145,8 @@ export default function AboutPage() {
                   <motion.div 
                     className="absolute left-0 top-0 w-12 h-12 flex items-center justify-center shadow-lg shadow-black/10 z-10 rounded-full bg-[var(--text)] transition-colors duration-300"
                     variants={{
-                      hover: { backgroundColor: "var(--accent)" },
-                      inView: { backgroundColor: "var(--accent)" }
+                      hover: { backgroundColor: "var(--ruby-red)" },
+                      inView: { backgroundColor: "var(--ruby-red)" }
                     }}
                   >
                     <motion.div
@@ -162,8 +162,8 @@ export default function AboutPage() {
                   <motion.h3 
                     className="text-2xl font-bold font-heading mb-3 pt-1 transition-colors"
                     variants={{
-                      hover: { color: "var(--accent)" },
-                      inView: { color: "var(--accent)" }
+                      hover: { color: "var(--ruby-red)" },
+                      inView: { color: "var(--ruby-red)" }
                     }}
                   >
                     {step.title}

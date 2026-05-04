@@ -96,3 +96,5 @@ The project includes a fully integrated headless CMS using **Sanity**.
 
 ## 9. Analytics & Tracking
 **Google Analytics 4** is configured natively via `<Script>` injection in `app/layout.tsx`. Ensure your Measurement ID (`G-XXXXXXXXXX`) is securely set in the layout to ensure accurate traffic mapping.
+
+

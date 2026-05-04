@@ -47,21 +47,42 @@ export default function Footer() {
           {/* Main Navigation Alignment */}
           <div className="grid grid-cols-2 gap-8 md:justify-end text-left w-full">
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 w-full">
               <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2">Global Presence</span>
-              <div className="text-sm font-medium text-[var(--muted-fg)]">
-                <span className="flex items-center gap-2 text-[var(--text)] mb-0.5">
-                  Bangladesh
-                  <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-5 h-3.5 object-cover rounded-[2px] shadow-sm" loading="lazy" />
-                </span>
-                Dhaka
-              </div>
-              <div className="text-sm font-medium text-[var(--muted-fg)]">
-                <span className="flex items-center gap-2 text-[var(--text)] mb-0.5">
-                  United States
-                  <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-5 h-3.5 object-cover rounded-[2px] shadow-sm" loading="lazy" />
-                </span>
-                Wyoming
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+                {/* Bangladesh */}
+                <div className="group relative flex items-center justify-between p-3.5 rounded-xl bg-[var(--muted)]/20 border border-[var(--muted)]/50 hover:bg-[var(--muted)]/40 hover:border-[var(--ruby-red)]/30 transition-all duration-500 ease-out overflow-hidden">
+                  <div className="flex flex-col z-10 relative">
+                    <span className="text-[13px] font-bold text-[var(--text)] flex items-center gap-1.5 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                      Dhaka
+                      <span className="relative flex h-1.5 w-1.5 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--ruby-red)]"></span>
+                      </span>
+                    </span>
+                    <span className="text-[10px] font-bold text-[var(--muted-fg)] uppercase tracking-widest">Bangladesh</span>
+                  </div>
+                  <div className="relative z-10 overflow-hidden rounded-[3px] shadow-md shadow-black/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                    <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-8 h-5.5 object-cover" loading="lazy" />
+                  </div>
+                </div>
+
+                {/* United States */}
+                <div className="group relative flex items-center justify-between p-3.5 rounded-xl bg-[var(--muted)]/20 border border-[var(--muted)]/50 hover:bg-[var(--muted)]/40 hover:border-[var(--ruby-red)]/30 transition-all duration-500 ease-out overflow-hidden">
+                  <div className="flex flex-col z-10 relative">
+                    <span className="text-[13px] font-bold text-[var(--text)] flex items-center gap-1.5 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                      Wyoming
+                      <span className="relative flex h-1.5 w-1.5 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--ruby-red)]"></span>
+                      </span>
+                    </span>
+                    <span className="text-[10px] font-bold text-[var(--muted-fg)] uppercase tracking-widest">United States</span>
+                  </div>
+                  <div className="relative z-10 overflow-hidden rounded-[3px] shadow-md shadow-black/10 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                    <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-8 h-5.5 object-cover" loading="lazy" />
+                  </div>
+                </div>
               </div>
             </div>
             
