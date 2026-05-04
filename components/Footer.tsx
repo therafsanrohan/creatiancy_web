@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { footerConfig } from "@/config/footerConfig";
+import { MapPin } from "lucide-react";
 
 export default function Footer() {
   const year = new Date().getFullYear();
@@ -8,9 +9,9 @@ export default function Footer() {
     <footer className="border-t border-[var(--muted)] bg-[var(--bg)] py-16 mt-20 relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10 w-full max-w-[1000px]">
         {/* Top Section Layout */}
-        <div className="grid md:grid-cols-2 gap-12 md:gap-8 items-start mb-16">
+        <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-start mb-16">
           {/* Logo & About */}
-          <div className="flex flex-col gap-6 items-start">
+          <div className="flex flex-col gap-6 items-start lg:col-span-4">
             <Link href="/" className="relative w-40 h-10 transition-transform hover:scale-105 duration-300 outline-none" aria-label="Creatiancy Homepage">
               <div 
                 className="w-full h-full bg-[#9B1C22] dark:bg-white transition-colors duration-300"
@@ -45,42 +46,44 @@ export default function Footer() {
           </div>
           
           {/* Main Navigation Alignment */}
-          <div className="grid grid-cols-2 gap-8 md:justify-end text-left w-full">
+          <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-[2fr_1fr] gap-12 md:gap-8 text-left w-full">
 
             <div className="flex flex-col gap-4 w-full">
-              <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2">Global Presence</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+              <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2 flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5" /> Global Footprint
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
                 {/* Bangladesh */}
-                <div className="group relative flex items-center justify-between p-3.5 rounded-xl bg-[var(--muted)]/20 border border-[var(--muted)]/50 hover:bg-[var(--muted)]/40 hover:border-[var(--ruby-red)]/30 transition-all duration-500 ease-out overflow-hidden">
+                <div className="group relative flex items-center justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden">
                   <div className="flex flex-col z-10 relative">
-                    <span className="text-[13px] font-bold text-[var(--text)] flex items-center gap-1.5 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                    <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
                       Dhaka
-                      <span className="relative flex h-1.5 w-1.5 ml-1">
+                      <span className="relative flex h-2 w-2 ml-1">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--ruby-red)]"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
                       </span>
                     </span>
-                    <span className="text-[10px] font-bold text-[var(--muted-fg)] uppercase tracking-widest">Bangladesh</span>
+                    <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">Bangladesh</span>
                   </div>
-                  <div className="relative z-10 overflow-hidden rounded-[3px] shadow-md shadow-black/10 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                    <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-8 h-5.5 object-cover" loading="lazy" />
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                    <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-12 h-8 object-cover" loading="lazy" />
                   </div>
                 </div>
 
                 {/* United States */}
-                <div className="group relative flex items-center justify-between p-3.5 rounded-xl bg-[var(--muted)]/20 border border-[var(--muted)]/50 hover:bg-[var(--muted)]/40 hover:border-[var(--ruby-red)]/30 transition-all duration-500 ease-out overflow-hidden">
+                <div className="group relative flex items-center justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden">
                   <div className="flex flex-col z-10 relative">
-                    <span className="text-[13px] font-bold text-[var(--text)] flex items-center gap-1.5 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                    <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
                       Wyoming
-                      <span className="relative flex h-1.5 w-1.5 ml-1">
+                      <span className="relative flex h-2 w-2 ml-1">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--ruby-red)]"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
                       </span>
                     </span>
-                    <span className="text-[10px] font-bold text-[var(--muted-fg)] uppercase tracking-widest">United States</span>
+                    <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">United States</span>
                   </div>
-                  <div className="relative z-10 overflow-hidden rounded-[3px] shadow-md shadow-black/10 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
-                    <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-8 h-5.5 object-cover" loading="lazy" />
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
+                    <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-12 h-8 object-cover" loading="lazy" />
                   </div>
                 </div>
               </div>
