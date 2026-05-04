@@ -52,10 +52,10 @@ export default function Footer() {
               <span className="font-bold text-[var(--text)] text-xs uppercase tracking-widest opacity-50 border-b border-[var(--muted)] pb-2 flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5" /> Global Footprint
               </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-1">
                 {/* Bangladesh */}
-                <div className="group relative flex items-center justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden">
-                  <div className="flex flex-col z-10 relative">
+                <div className="group relative flex flex-row lg:flex-col items-center lg:items-start justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden gap-0 lg:gap-4">
+                  <div className="flex flex-col z-10 relative lg:order-2">
                     <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
                       Dhaka
                       <span className="relative flex h-2 w-2 ml-1">
@@ -65,14 +65,14 @@ export default function Footer() {
                     </span>
                     <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">Bangladesh</span>
                   </div>
-                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                    <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-12 h-8 object-cover" loading="lazy" />
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 lg:order-1">
+                    <img src="https://flagcdn.com/bd.svg" alt="Bangladesh Flag" className="w-12 h-8 lg:w-16 lg:h-10 object-cover" loading="lazy" />
                   </div>
                 </div>
 
                 {/* United States */}
-                <div className="group relative flex items-center justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden">
-                  <div className="flex flex-col z-10 relative">
+                <div className="group relative flex flex-row lg:flex-col items-center lg:items-start justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden gap-0 lg:gap-4">
+                  <div className="flex flex-col z-10 relative lg:order-2">
                     <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
                       Wyoming
                       <span className="relative flex h-2 w-2 ml-1">
@@ -82,8 +82,76 @@ export default function Footer() {
                     </span>
                     <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">United States</span>
                   </div>
-                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500">
-                    <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-12 h-8 object-cover" loading="lazy" />
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 lg:order-1">
+                    <img src="https://flagcdn.com/us.svg" alt="United States Flag" className="w-12 h-8 lg:w-16 lg:h-10 object-cover" loading="lazy" />
+                  </div>
+                </div>
+
+                {/* South Africa 1 */}
+                <div className="group relative flex flex-row lg:flex-col items-center lg:items-start justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden gap-0 lg:gap-4">
+                  <div className="flex flex-col z-10 relative lg:order-2">
+                    <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                      Cape Town
+                      <span className="relative flex h-2 w-2 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
+                      </span>
+                    </span>
+                    <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">South Africa</span>
+                  </div>
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 lg:order-1">
+                    <img src="https://flagcdn.com/za.svg" alt="South Africa Flag" className="w-12 h-8 lg:w-16 lg:h-10 object-cover" loading="lazy" />
+                  </div>
+                </div>
+
+                {/* Cyprus */}
+                <div className="group relative flex flex-row lg:flex-col items-center lg:items-start justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden gap-0 lg:gap-4">
+                  <div className="flex flex-col z-10 relative lg:order-2">
+                    <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                      Nicosia
+                      <span className="relative flex h-2 w-2 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
+                      </span>
+                    </span>
+                    <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">Cyprus</span>
+                  </div>
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 lg:order-1">
+                    <img src="https://flagcdn.com/cy.svg" alt="Cyprus Flag" className="w-12 h-8 lg:w-16 lg:h-10 object-cover" loading="lazy" />
+                  </div>
+                </div>
+
+                {/* South Africa 2 */}
+                <div className="group relative flex flex-row lg:flex-col items-center lg:items-start justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden gap-0 lg:gap-4">
+                  <div className="flex flex-col z-10 relative lg:order-2">
+                    <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                      Johannesburg
+                      <span className="relative flex h-2 w-2 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
+                      </span>
+                    </span>
+                    <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">South Africa</span>
+                  </div>
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500 lg:order-1">
+                    <img src="https://flagcdn.com/za.svg" alt="South Africa Flag" className="w-12 h-8 lg:w-16 lg:h-10 object-cover" loading="lazy" />
+                  </div>
+                </div>
+
+                {/* Kenya */}
+                <div className="group relative flex flex-row lg:flex-col items-center lg:items-start justify-between p-5 rounded-2xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 transition-all duration-500 ease-out overflow-hidden gap-0 lg:gap-4">
+                  <div className="flex flex-col z-10 relative lg:order-2">
+                    <span className="text-lg font-bold font-heading text-[var(--text)] flex items-center gap-2 mb-1 group-hover:text-[var(--ruby-red)] transition-colors">
+                      Nairobi
+                      <span className="relative flex h-2 w-2 ml-1">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
+                      </span>
+                    </span>
+                    <span className="text-xs font-bold text-[var(--muted-fg)] uppercase tracking-widest">Kenya</span>
+                  </div>
+                  <div className="relative z-10 overflow-hidden rounded-[4px] shadow-lg group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-500 lg:order-1">
+                    <img src="https://flagcdn.com/ke.svg" alt="Kenya Flag" className="w-12 h-8 lg:w-16 lg:h-10 object-cover" loading="lazy" />
                   </div>
                 </div>
               </div>
