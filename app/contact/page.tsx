@@ -92,22 +92,39 @@ export default function ContactPage() {
               
               <div className="flex flex-wrap gap-3 md:gap-4 mt-1">
                 {activePresence.map((loc, i) => (
-                  <div key={i} className="group flex items-center p-3 pr-5 md:p-3.5 md:pr-6 rounded-2xl bg-gradient-to-br from-[var(--muted)]/5 to-[var(--bg)] border border-[var(--muted)]/20 hover:border-[var(--ruby-red)]/30 hover:shadow-[0_0_15px_rgba(155,28,34,0.08)] hover:-translate-y-0.5 transition-all duration-300 gap-4 w-fit shrink-0 cursor-default">
-                    <div className="relative overflow-hidden rounded-[4px] shadow-sm shrink-0">
-                      <img src={`https://flagcdn.com/${loc.flag}.svg`} alt={`${loc.country} Flag`} className="w-7 h-4.5 md:w-8 md:h-5.5 object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                  <div key={i} className="group flex items-center p-3 md:p-4 rounded-2xl transition-all duration-500 gap-4 overflow-hidden border w-fit shrink-0 bg-gradient-to-br from-[var(--ruby-red)]/5 to-[var(--bg)] border-[var(--ruby-red)]/30 shadow-[0_0_20px_rgba(155,28,34,0.06)] hover:border-[var(--ruby-red)] hover:shadow-[0_0_30px_rgba(155,28,34,0.15)] hover:-translate-y-0.5 z-10 relative cursor-default">
+                    {/* Flag Container */}
+                    <div className="relative overflow-hidden rounded-[3px] shadow-sm shrink-0 bg-[var(--muted)]/20">
+                      <img
+                        src={`https://flagcdn.com/${loc.flag}.svg`}
+                        alt={`${loc.country} Flag`}
+                        className="w-8 h-5.5 md:w-10 md:h-7 object-cover transition-transform duration-700 scale-105"
+                        loading="lazy"
+                      />
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-xs md:text-sm font-bold text-[var(--text)] flex items-center gap-2 group-hover:text-[var(--ruby-red)] transition-colors whitespace-nowrap">
-                        {loc.city}
-                        <span className="relative flex h-2 w-2 shrink-0">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
+
+                    {/* Data Container */}
+                    <div className="flex flex-col min-w-0 pr-2">
+                      <div className="flex items-center justify-between gap-4 mb-0.5">
+                        <span className="text-[14px] md:text-[15px] font-bold truncate text-[var(--text)] transition-colors duration-300">
+                          {loc.city}
                         </span>
-                      </span>
-                      <span className="text-[10px] md:text-[11px] font-semibold text-[var(--muted-fg)] uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5">
-                        <span>{loc.country}</span>
-                        <LiveTime timeZone={loc.tz} />
-                      </span>
+                        
+                        {/* Pulse Indicator */}
+                        <span className="relative flex h-2.5 w-2.5 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-80 bg-[var(--ruby-red)]"></span>
+                          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--ruby-red)]"></span>
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="text-[10px] md:text-[11px] font-semibold text-[var(--muted-fg)] uppercase tracking-wider truncate">
+                          {loc.country}
+                        </span>
+                        <div className="text-[10px] md:text-[11px] shrink-0 font-medium text-[var(--ruby-red)]">
+                          <LiveTime timeZone={loc.tz} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

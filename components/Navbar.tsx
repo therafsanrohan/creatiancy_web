@@ -5,15 +5,19 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { Menu, X, ArrowRight, ArrowUpRight } from "lucide-react";
+import { Menu, X, ArrowRight, ArrowUpRight, ChevronDown } from "lucide-react";
 
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Work", href: "/work" },
   { name: "Services", href: "/services" },
-  { name: "About", href: "/about" },
-  { name: "World Live", href: "/world-live" },
+  { 
+    name: "Company", 
+    dropdown: [
+      { name: "About Us", href: "/about" },
+      { name: "World Live", href: "/world-live" }
+    ]
+  },
 ];
 
 export default function Navbar() {
@@ -22,6 +26,7 @@ export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   // Lock scroll when mobile menu is open
   useEffect(() => {
@@ -36,6 +41,7 @@ export default function Navbar() {
     const previous = scrollY.getPrevious() || 0;
     if (latest > previous && latest > 150 && !mobileMenuOpen) {
       setHidden(true);
+      setActiveDropdown(null);
     } else {
       setHidden(false);
     }
@@ -61,7 +67,7 @@ export default function Navbar() {
               : "w-full container mx-auto px-4 py-4 bg-transparent border-transparent shadow-none"
           )}
         >
-          <Link href="/" className="flex items-center group outline-none z-50" onClick={() => setMobileMenuOpen(false)} aria-label="Creatiancy Homepage">
+          <Link href="/" className="flex items-center group outline-none z-50 shrink-0" onClick={() => setMobileMenuOpen(false)} aria-label="Creatiancy Homepage">
             <div className={cn("relative transition-all duration-500 ease-out group-hover:scale-105 flex items-center justify-start", isScrolled ? "w-20 h-5 lg:w-24 lg:h-6" : "w-28 h-7 lg:w-32 lg:h-8")}>
               <div 
                 className="w-full h-full bg-[#9B1C22] dark:bg-white transition-colors duration-300"
@@ -81,36 +87,113 @@ export default function Navbar() {
           
           <nav className="hidden lg:flex items-center gap-1 lg:gap-2 bg-[var(--bg)]/50 p-1.5 rounded-full border border-[var(--muted)]/50 shadow-sm backdrop-blur-md">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const hasDropdown = !!link.dropdown;
+              // For dropdowns, check if any child is active
+              const isActive = hasDropdown 
+                ? link.dropdown!.some(d => pathname === d.href)
+                : pathname === link.href;
+
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn("relative rounded-full font-medium transition-all duration-500 ease-out outline-none group", isScrolled ? "px-3 py-1.5 lg:px-4 text-[11px] lg:text-xs" : "px-4 py-2 lg:px-6 text-xs lg:text-sm")}
+                <div 
+                  key={link.name} 
+                  className="relative"
+                  onMouseEnter={() => hasDropdown && setActiveDropdown(link.name)}
+                  onMouseLeave={() => hasDropdown && setActiveDropdown(null)}
                 >
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute inset-0 bg-[var(--text)] rounded-full -z-10"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
+                  {hasDropdown ? (
+                    <button
+                      className={cn(
+                        "relative rounded-full font-medium transition-all duration-500 ease-out outline-none group flex items-center gap-1 cursor-default",
+                        isScrolled ? "px-3 py-1.5 lg:px-4 text-[11px] lg:text-xs" : "px-4 py-2 lg:px-6 text-xs lg:text-sm"
+                      )}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeNav"
+                          className="absolute inset-0 bg-[var(--text)] rounded-full -z-10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <span className={cn(
+                        "relative z-10 transition-colors duration-200",
+                        isActive ? "text-[var(--bg)]" : "text-[var(--text)]/80 group-hover:text-[var(--text)]"
+                      )}>
+                        {link.name}
+                      </span>
+                      <ChevronDown className={cn(
+                        "w-3 h-3 relative z-10 transition-all duration-300",
+                        isActive ? "text-[var(--bg)]" : "text-[var(--text)]/80 group-hover:text-[var(--text)]",
+                        activeDropdown === link.name ? "rotate-180" : ""
+                      )} />
+                    </button>
+                  ) : (
+                    <Link
+                      href={link.href!}
+                      className={cn(
+                        "relative rounded-full font-medium transition-all duration-500 ease-out outline-none group flex items-center",
+                        isScrolled ? "px-3 py-1.5 lg:px-4 text-[11px] lg:text-xs" : "px-4 py-2 lg:px-6 text-xs lg:text-sm"
+                      )}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="activeNav"
+                          className="absolute inset-0 bg-[var(--text)] rounded-full -z-10"
+                          transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                        />
+                      )}
+                      <span className={cn(
+                        "relative z-10 transition-colors duration-200",
+                        isActive ? "text-[var(--bg)]" : "text-[var(--text)]/80 group-hover:text-[var(--text)]"
+                      )}>
+                        {link.name}
+                      </span>
+                    </Link>
                   )}
-                  <span className={cn(
-                    "relative z-10 transition-colors duration-200",
-                    isActive ? "text-[var(--bg)]" : "text-[var(--text)]/80 group-hover:text-[var(--text)]"
-                  )}>
-                    {link.name}
-                  </span>
-                </Link>
+
+                  {/* Desktop Dropdown Menu */}
+                  {hasDropdown && (
+                    <AnimatePresence>
+                      {activeDropdown === link.name && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                          transition={{ duration: 0.2 }}
+                          className="absolute top-full left-1/2 -translate-x-1/2 pt-4 w-48"
+                        >
+                          <div className="bg-[var(--bg)]/90 backdrop-blur-xl border border-[var(--muted)]/40 rounded-2xl shadow-xl overflow-hidden p-2 flex flex-col gap-1">
+                            {link.dropdown!.map((sublink) => (
+                              <Link
+                                key={sublink.href}
+                                href={sublink.href}
+                                className={cn(
+                                  "px-4 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-between group",
+                                  pathname === sublink.href 
+                                    ? "bg-[var(--text)] text-[var(--bg)]" 
+                                    : "text-[var(--text)]/80 hover:bg-[var(--muted)]/10 hover:text-[var(--text)]"
+                                )}
+                              >
+                                {sublink.name}
+                                {pathname !== sublink.href && (
+                                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                                )}
+                              </Link>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  )}
+                </div>
               );
             })}
           </nav>
 
-          <div className="flex items-center gap-2 lg:gap-3 z-50">
+          <div className="flex items-center gap-2 lg:gap-3 z-50 shrink-0">
             <Link 
               href="/contact" 
               className={cn(
-                "hidden lg:flex items-center gap-2 font-medium bg-[var(--text)] text-[var(--bg)] rounded-full hover:bg-[var(--ruby-red)] hover:text-white transition-all duration-500 ease-out shadow-sm active:scale-95",
+                "hidden lg:flex items-center justify-center gap-2 font-medium bg-[var(--text)] text-[var(--bg)] rounded-full hover:bg-[var(--ruby-red)] hover:text-white transition-all duration-500 ease-out shadow-sm active:scale-95 whitespace-nowrap",
                 isScrolled ? "text-[11px] lg:text-xs px-4 py-1.5 lg:px-5 lg:py-2" : "text-xs lg:text-sm px-5 py-2 lg:px-6 lg:py-2.5"
               )}
             >
@@ -120,7 +203,7 @@ export default function Navbar() {
             {/* Mobile menu toggle */}
             <button 
               className={cn(
-                "lg:hidden flex items-center justify-center rounded-full bg-[var(--bg)]/50 border border-[var(--muted)]/50 text-[var(--text)] active:bg-[var(--muted)]/50 transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md",
+                "lg:hidden flex items-center justify-center rounded-full bg-[var(--bg)]/50 border border-[var(--muted)]/50 text-[var(--text)] active:bg-[var(--muted)]/50 transition-all duration-500 ease-out pointer-events-auto backdrop-blur-md shrink-0",
                 isScrolled ? "w-9 h-9" : "w-11 h-11",
                 mobileMenuOpen && "bg-[var(--text)] text-[var(--bg)] border-transparent"
               )}
@@ -146,28 +229,61 @@ export default function Navbar() {
             {/* Ambient Background Glow inside menu */}
             <div className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-[var(--ruby-red)]/10 blur-[120px] rounded-full pointer-events-none" />
 
-            <nav className="flex flex-col gap-2 mt-4 relative z-10">
+            <nav className="flex flex-col gap-6 mt-4 relative z-10">
               {navLinks.map((link, i) => {
+                if (link.dropdown) {
+                  return (
+                    <motion.div
+                      key={link.name}
+                      initial={{ opacity: 0, x: -30 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ delay: i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                      className="flex flex-col gap-3"
+                    >
+                      <span className="text-sm font-bold uppercase tracking-widest text-[var(--muted-fg)]/50 border-b border-[var(--muted)]/20 pb-2">{link.name}</span>
+                      {link.dropdown.map((sublink) => (
+                        <Link
+                          key={sublink.href}
+                          href={sublink.href}
+                          onClick={() => setMobileMenuOpen(false)}
+                          className={cn(
+                            "group flex items-center justify-between text-4xl sm:text-5xl font-heading font-extrabold py-2 transition-all duration-300",
+                            pathname === sublink.href ? "text-[var(--ruby-red)]" : "text-[var(--text)] hover:text-[var(--ruby-red)]"
+                          )}
+                        >
+                          <span>{sublink.name}</span>
+                          <ArrowUpRight className={cn(
+                            "w-6 h-6 sm:w-8 sm:h-8 transition-transform duration-500 ease-out",
+                            pathname === sublink.href ? "opacity-100 translate-x-0 translate-y-0" : "opacity-0 -translate-y-4 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0"
+                          )} />
+                        </Link>
+                      ))}
+                    </motion.div>
+                  );
+                }
+
                 const isActive = pathname === link.href;
                 return (
                   <motion.div
-                    key={link.href}
+                    key={link.name}
                     initial={{ opacity: 0, x: -30 }}
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ delay: i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="border-b border-[var(--muted)]/20 pb-4"
                   >
                     <Link
-                      href={link.href}
+                      href={link.href!}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "group flex items-center justify-between text-4xl sm:text-6xl font-heading font-extrabold py-4 border-b border-[var(--muted)]/30 transition-all duration-300",
+                        "group flex items-center justify-between text-4xl sm:text-5xl font-heading font-extrabold transition-all duration-300",
                         isActive ? "text-[var(--ruby-red)]" : "text-[var(--text)] hover:text-[var(--ruby-red)]"
                       )}
                     >
                       <span>{link.name}</span>
                       <ArrowUpRight className={cn(
-                        "w-8 h-8 sm:w-10 sm:h-10 transition-transform duration-500 ease-out",
+                        "w-6 h-6 sm:w-8 sm:h-8 transition-transform duration-500 ease-out",
                         isActive ? "opacity-100 translate-x-0 translate-y-0" : "opacity-0 -translate-y-4 translate-x-4 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0"
                       )} />
                     </Link>

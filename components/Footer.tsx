@@ -56,22 +56,39 @@ export default function Footer() {
               </span>
               <div className="flex flex-wrap gap-2 sm:gap-3 mt-1">
                 {activePresence.map((loc, i) => (
-                  <div key={i} className="group flex items-center p-2.5 pr-4 rounded-2xl bg-gradient-to-br from-[var(--muted)]/5 to-[var(--bg)] border border-[var(--muted)]/20 hover:border-[var(--ruby-red)]/30 hover:shadow-[0_0_15px_rgba(155,28,34,0.08)] hover:-translate-y-0.5 transition-all duration-300 gap-3 w-fit shrink-0 cursor-default">
-                    <div className="relative overflow-hidden rounded-[3px] shadow-sm shrink-0">
-                      <img src={`https://flagcdn.com/${loc.flag}.svg`} alt={`${loc.country} Flag`} className="w-6 h-4 object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+                  <div key={i} className="group flex items-center p-2.5 md:p-3 rounded-2xl transition-all duration-500 gap-3 overflow-hidden border w-fit shrink-0 bg-gradient-to-br from-[var(--ruby-red)]/5 to-[var(--bg)] border-[var(--ruby-red)]/30 shadow-[0_0_20px_rgba(155,28,34,0.06)] hover:border-[var(--ruby-red)] hover:shadow-[0_0_30px_rgba(155,28,34,0.15)] hover:-translate-y-0.5 z-10 relative cursor-default">
+                    {/* Flag Container */}
+                    <div className="relative overflow-hidden rounded-[3px] shadow-sm shrink-0 bg-[var(--muted)]/20">
+                      <img
+                        src={`https://flagcdn.com/${loc.flag}.svg`}
+                        alt={`${loc.country} Flag`}
+                        className="w-7 h-5 md:w-8 md:h-5.5 object-cover transition-transform duration-700 scale-105"
+                        loading="lazy"
+                      />
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-[11px] sm:text-xs font-bold text-[var(--text)] flex items-center gap-1.5 group-hover:text-[var(--ruby-red)] transition-colors whitespace-nowrap">
-                        {loc.city}
-                        <span className="relative flex h-1.5 w-1.5 shrink-0">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--ruby-red)] opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[var(--ruby-red)]"></span>
+
+                    {/* Data Container */}
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center justify-between gap-3 mb-0.5">
+                        <span className="text-[12px] md:text-[13px] font-bold truncate text-[var(--text)] transition-colors duration-300">
+                          {loc.city}
                         </span>
-                      </span>
-                      <span className="text-[8px] sm:text-[9px] font-semibold text-[var(--muted-fg)] uppercase tracking-wider whitespace-nowrap flex items-center gap-1.5">
-                        <span>{loc.country}</span>
-                        <LiveTime timeZone={loc.tz} />
-                      </span>
+                        
+                        {/* Pulse Indicator */}
+                        <span className="relative flex h-2 w-2 shrink-0">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-80 bg-[var(--ruby-red)]"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--ruby-red)]"></span>
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-[9px] font-semibold text-[var(--muted-fg)] uppercase tracking-wider truncate">
+                          {loc.country}
+                        </span>
+                        <div className="text-[9px] shrink-0 font-medium text-[var(--ruby-red)]">
+                          <LiveTime timeZone={loc.tz} />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
