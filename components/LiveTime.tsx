@@ -33,7 +33,7 @@ export default function LiveTime({ timeZone }: { timeZone: string }) {
   }
 
   return (
-    <span className="font-mono text-[var(--muted-fg)]/80 tracking-normal normal-case">
+    <span className="font-mono tracking-normal normal-case">
       {time}
     </span>
   );

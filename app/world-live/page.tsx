@@ -1,31 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { motion, Variants } from "framer-motion";
+import { useState, useDeferredValue, useMemo } from "react";
+import { motion } from "framer-motion";
 import { Globe, Search } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
 import { groupedCountries } from "@/data/worldLive";
 import { activePresence } from "@/config/globalPresence";
 
-const containerVariants: Variants = {
+const containerVariants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
-const itemVariants: Variants = {
+const itemVariants = {
   hidden: { opacity: 0, y: 15 },
   show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 70, damping: 20 } },
 };
 
 export default function WorldLivePage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
+
+  // Pre-calculate O(1) active presence map for instantaneous renders
+  const activeSet = useMemo(() => {
+    return new Set(activePresence.map((a) => `${a.country}-${a.city}`));
+  }, []);
 
   const totalLocations = Object.values(groupedCountries).flat().length;
-  const filteredTotal = Object.values(groupedCountries).flat().filter(
-    (c) =>
-      c.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.city.toLowerCase().includes(searchQuery.toLowerCase())
-  ).length;
+  
+  const filteredTotal = useMemo(() => {
+    return Object.values(groupedCountries).flat().filter(
+      (c) =>
+        c.country.toLowerCase().includes(deferredSearchQuery.toLowerCase()) ||
+        c.city.toLowerCase().includes(deferredSearchQuery.toLowerCase())
+    ).length;
+  }, [deferredSearchQuery]);
 
   return (
     <div className="min-h-screen pt-32 pb-32 relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
@@ -63,7 +72,7 @@ export default function WorldLivePage() {
               variants={itemVariants}
               className="text-base md:text-lg text-[var(--muted-fg)]/80 font-light max-w-2xl leading-relaxed mb-12"
             >
-              Real-time synchronization across 193 sovereign states. Active operational hubs glow with a <span className="text-[var(--ruby-red)] font-semibold">ruby signal</span>.
+              Real-time synchronization across {totalLocations} sovereign states. Currently tracking {activePresence.length} active operational hubs glowing with a <span className="text-[var(--ruby-red)] font-semibold">ruby signal</span>.
             </motion.p>
 
             {/* Premium Glassmorphism Search Bar */}
@@ -96,8 +105,8 @@ export default function WorldLivePage() {
             {Object.entries(groupedCountries).map(([region, countries]) => {
               const filteredCountries = countries.filter(
                 (c) =>
-                  c.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  c.city.toLowerCase().includes(searchQuery.toLowerCase())
+                  c.country.toLowerCase().includes(deferredSearchQuery.toLowerCase()) ||
+                  c.city.toLowerCase().includes(deferredSearchQuery.toLowerCase())
               );
 
               if (filteredCountries.length === 0) return null;
@@ -115,9 +124,7 @@ export default function WorldLivePage() {
                   {/* Organized Uniform Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
                     {filteredCountries.map((loc, i) => {
-                      const isActive = activePresence.some(
-                        (active) => active.country === loc.country && active.city === loc.city
-                      );
+                      const isActive = activeSet.has(`${loc.country}-${loc.city}`);
 
                       return (
                         <div
