@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const defaultSEO: Metadata = {
-  metadataBase: new URL('https://creatiancy.com'),
+  metadataBase: new URL('https://www.creatiancy.com'),
   title: {
     default: 'Creatiancy | Premier Creative Digital Studio & Tech Powerhouse',
     template: '%s | Creatiancy',
