@@ -1,0 +1,14 @@
+/* TEAM */
+Chef & Founder: Rafsan Rohan
+Creative Director: Rafsan Rohan
+Development: Creatiancy Engineering Team
+
+/* THANKS */
+To our clients who trust us with their visions.
+To the open-source community.
+
+/* SITE */
+Last update: 2024/05/12
+Standards: HTML5, CSS3, Next.js, TypeScript
+Components: Framer Motion, Lucide React
+Software: VS Code, Figma

@@ -1,10 +1,10 @@
 # Creatiancy Digital Studio
 
-## 1. Architecture Overview
-Creatiancy is an elite, high-performance digital brand experience and premium studio portfolio. 
-The application operates as a globally-scaled Next.js application designed to function as a flawless sales engine, brand narrative, and contact conduit.
+## 1. Project Overview
+Creatiancy is a professional digital studio portfolio and brand platform. Built with Next.js, it serves as a high-quality showcase for creative work and client services.
 
-This codebase has been strictly engineered to prioritize **Enterprise Security**, **Centralized Architectural States**, and **Search Engine Visibility**.
+The codebase is designed for performance, security, and SEO optimization from the ground up.
+
 
 ---
 
@@ -47,13 +47,14 @@ To update client testimonials (displayed on the Home, About, and Service pages),
 
 ---
 
-## 4. Enterprise Security Blueprint
-This application is armed natively against external friction. No third-party plugins were bolted on; the security is woven into the Next.js runtime.
+## 4. Built-in Security
 
-* **Bot Deflection (`middleware.ts`)**: Actively catches and responds with strict 403s against headless scrapers routing through physical paths.
-* **X-Frame / Clickjacking Shield (`next.config.ts`)**: Bound to `DENY` to enforce absolute window isolation.
-* **Content Security Policy (CSP)**: Mapped explicitly to permit only local and strictly validated data endpoints.
-* **Permission Stripping**: Blocks cross-origin microphone, camera, and generic browsing-topic profiling.
+The application includes pre-configured security features using Next.js middleware and config:
+
+*   **Middleware Protection**: Restricts access to sensitive files and blocks common automated scrapers.
+*   **Security Headers**: Implements headers like `X-Frame-Options`, `Content-Security-Policy`, and `HSTS` to protect against XSS and clickjacking.
+*   **Privacy First**: Strips unnecessary permissions (camera, microphone) and uses strict referrer policies.
+*   **Production Hardening**: Disables source maps and the `X-Powered-By` header to reduce information leakage.
 
 ---
 

@@ -8,40 +8,41 @@ import Testimonials from "@/components/Testimonials";
 const services = [
   {
     title: "Brand Identity",
-    problem: "Brands struggling with clarity, inconsistent messaging, or failing to stand out in a mature market.",
+    problem: "Brands struggling with clarity or failing to stand out in a mature market.",
     for: "Founders & Marketing Directors looking for positioning and comprehensive visual systems.",
-    outcome: "A distinct, scalable brand architecture ready for growth.",
+    outcome: "We create a distinct, scalable brand architecture that people actually remember.",
     features: ["Market Research", "Visual Identity Systems", "Brand Guidelines", "Tone of Voice"]
   },
   {
-    title: "Online-first Strategy",
-    problem: "Companies lacking a specialized digital approach and losing market share to competitors.",
-    for: "Established businesses pivoting to prioritize digital growth.",
-    outcome: "We combine strategy, design and technology to help you connect with the modern-day audiences.",
+    title: "Digital Strategy",
+    problem: "Companies lacking a specialized approach and losing market share to agile competitors.",
+    for: "Established businesses pivoting to prioritize digital-first growth.",
+    outcome: "We combine design and technology to bridge the gap between your brand and your audience.",
     features: ["Digital Workshops", "Market Positioning", "Growth Mapping", "KPI Definition"]
   },
   {
     title: "Content Marketing",
-    problem: "Failing to engage the right audience and convert traffic into meaningful loyal action.",
+    problem: "Failing to engage the right audience and convert traffic into loyal action.",
     for: "Brands that need to elevate their storytelling and customer engagement.",
-    outcome: "A creative team of designers and copywriters execute your vision of your brand flawlessly!",
+    outcome: "Our team of designers and writers will execute your vision with absolute precision.",
     features: ["Content Strategy", "Copywriting", "SEO Authority", "Campaign Narratives"]
   },
   {
-    title: "Technical Powerhouse",
-    problem: "Legacy websites that are slow, hard to manage, or crumble under high traffic demands.",
-    for: "Ambitious product teams needing elite software and unshakeable web infrastructures.",
-    outcome: "We utilize all the latest tech stack for your marketing - from websites, apps, AI, to social media.",
-    features: ["Modern Language", "Headless CMS", "Technical SEO", "Custom E-commerce"]
+    title: "Technical Excellence",
+    problem: "Legacy websites that are slow, hard to manage, or crumble under high traffic.",
+    for: "Ambitious teams needing elite software and unshakeable web infrastructures.",
+    outcome: "We utilize modern stacks to build fast, secure, and future-proof digital products.",
+    features: ["Modern Architectures", "Headless CMS", "Technical SEO", "Custom E-commerce"]
   },
   {
-    title: "Tailor-made Campaigns",
-    problem: "Wasting advertising budget on generic, untargeted campaigns with weak ROI.",
-    for: "High-growth brands preparing for significant product launches or market penetration.",
-    outcome: "We go beyond social media by integrating your content to create meaningful campaigns.",
+    title: "Creative Campaigns",
+    problem: "Wasting budget on generic, untargeted campaigns with weak conversion rates.",
+    for: "High-growth brands preparing for significant product launches or market entry.",
+    outcome: "We go beyond standard ads to create meaningful campaigns that drive real impact.",
     features: ["Creative Direction", "Ad Management", "Conversion Optimization", "VFX & Motion"]
   }
 ];
+
 
 export default function ServicesPage() {
   return (

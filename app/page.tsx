@@ -51,12 +51,13 @@ export default function Home() {
           </div>
           <div className="grid gap-8">
             {[
-              { title: "Brand Identity", desc: "Creating distinct visual systems that communicate value and intent." },
-              { title: "Online-first Strategy", desc: "We combine strategy, design and technology to help you connect with the modern-day audiences." },
-              { title: "Content Marketing", desc: "A creative team of designers and copywriters execute your vision of your brand flawlessly!" },
-              { title: "Technical Powerhouse", desc: "We utilize all the latest tech stack for your marketing - from websites, apps, AI, to social media." },
-              { title: "Tailor-made Campaigns", desc: "We go beyond social media by integrating your content to create meaningful campaigns." }
+              { title: "Brand Identity", desc: "We craft visual stories that resonate. Our designs are built to last and communicate your brand's unique soul." },
+              { title: "Digital Experience", desc: "From concept to code, we build fluid platforms that bridge the gap between your brand and your audience." },
+              { title: "Creative Strategy", desc: "Our approach blends deep research with bold execution, ensuring your brand stays ahead of the curve." },
+              { title: "Technical Excellence", desc: "We leverage modern technology to build robust, scalable solutions that power your business forward." },
+              { title: "Impactful Campaigns", desc: "We don't just post content; we create movements through integrated marketing that drives real results." }
             ].map((service, i) => (
+
               <Link href="/services" key={i} className="group border-b border-[var(--muted)] pb-6 block cursor-pointer">
                 <h4 className="text-xl font-bold mb-2 group-hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2">
                   {service.title}
