@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Menu, X, ArrowRight, ArrowUpRight, ChevronDown } from "lucide-react";
+import { Menu, X, ArrowRight, ArrowUpRight, ChevronDown, Phone } from "lucide-react";
+import { footerConfig } from "@/config/footerConfig";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -298,11 +299,20 @@ export default function Navbar() {
               transition={{ delay: 0.5, duration: 0.5 }}
               className="mt-auto pt-12 relative z-10 flex flex-col gap-8"
             >
-              <div className="flex flex-col gap-3">
-                <span className="text-xs font-bold uppercase tracking-widest text-[var(--muted-fg)]">Say Hello</span>
-                <a href="mailto:contact@creatiancy.com" className="text-xl font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors">
-                  contact@creatiancy.com
-                </a>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
+                  <span className="text-xs font-bold uppercase tracking-widest text-[var(--muted-fg)]">Email Us</span>
+                  <a href="mailto:contact@creatiancy.com" className="text-xl font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors">
+                    contact@creatiancy.com
+                  </a>
+                </div>
+                <div className="flex flex-col gap-3 mt-2">
+                  <span className="text-xs font-bold uppercase tracking-widest text-[var(--muted-fg)]">Direct Chat</span>
+                  <a href={footerConfig.contact.chat.link} target="_blank" rel="noopener noreferrer" className="text-xl font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-[#25D366]" />
+                    {footerConfig.contact.chat.whatsapp}
+                  </a>
+                </div>
               </div>
               
               <Link 

@@ -1,7 +1,8 @@
 "use client";
 
 import { motion, Variants, Transition } from "framer-motion";
-import { ArrowRight, Mail, Briefcase, MapPin } from "lucide-react";
+import { ArrowRight, Mail, Briefcase, MapPin, Phone } from "lucide-react";
+import { footerConfig } from "@/config/footerConfig";
 import LiveTime from "@/components/LiveTime";
 import { activePresence } from "@/config/globalPresence";
 
@@ -58,7 +59,7 @@ export default function ContactPage() {
               Ready to elevate your digital presence? Reach out. We keep things direct, strategic, and hyper-actionable. No fluff, just execution.
             </motion.p>
 
-            <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+            <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
               {/* General Inquiries Card */}
               <a href="mailto:contact@creatiancy.com" className="group flex flex-col p-8 rounded-3xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 hover:border-[var(--ruby-red)]/50 transition-all duration-500 overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 -translate-y-2 transition-all duration-500">
@@ -68,7 +69,19 @@ export default function ContactPage() {
                   <Mail className="w-6 h-6" />
                 </div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--muted-fg)] mb-2">General Inquiries</h3>
-                <span className="text-2xl font-bold font-heading text-[var(--text)] group-hover:text-[var(--ruby-red)] transition-colors">contact@creatiancy.com</span>
+                <span className="text-xl lg:text-2xl font-bold font-heading text-[var(--text)] group-hover:text-[var(--ruby-red)] transition-colors truncate">contact@creatiancy.com</span>
+              </a>
+
+              {/* WhatsApp Card */}
+              <a href={footerConfig.contact.chat.link} target="_blank" rel="noopener noreferrer" className="group flex flex-col p-8 rounded-3xl bg-[var(--muted)]/10 border border-[var(--muted)]/30 hover:bg-[var(--muted)]/20 hover:border-[var(--ruby-red)]/50 transition-all duration-500 overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-8 opacity-0 group-hover:opacity-100 group-hover:translate-x-2 -translate-y-2 transition-all duration-500">
+                  <ArrowRight className="w-6 h-6 text-[var(--ruby-red)]" />
+                </div>
+                <div className="w-14 h-14 rounded-2xl bg-[#25D366] text-white flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 shadow-xl shadow-[#25D366]/20">
+                  <Phone className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--muted-fg)] mb-2">Direct Chat</h3>
+                <span className="text-xl lg:text-2xl font-bold font-heading text-[var(--text)] group-hover:text-[var(--ruby-red)] transition-colors">{footerConfig.contact.chat.whatsapp}</span>
               </a>
 
               {/* Careers Card */}
@@ -78,8 +91,8 @@ export default function ContactPage() {
                 </div>
                 <h3 className="text-sm font-bold uppercase tracking-widest text-[var(--muted-fg)] mb-2">Careers & Operations</h3>
                 <div className="flex flex-col gap-1 mt-1">
-                  <a href="mailto:hr@creatiancy.com" className="text-lg font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2">hr@creatiancy.com</a>
-                  <a href="mailto:business@creatiancy.com" className="text-lg font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2">business@creatiancy.com</a>
+                  <a href="mailto:hr@creatiancy.com" className="text-base font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2 truncate">hr@creatiancy.com</a>
+                  <a href="mailto:business@creatiancy.com" className="text-base font-medium text-[var(--text)] hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2 truncate">business@creatiancy.com</a>
                 </div>
               </div>
             </motion.div>
