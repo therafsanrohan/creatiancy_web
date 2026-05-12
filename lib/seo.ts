@@ -33,6 +33,11 @@ export const defaultSEO: Metadata = {
     description: 'Boutique digital studio crafting high-performance experiences for ambitious brands.',
     creator: '@creatiancy',
   },
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
   robots: {
     index: true,
     follow: true,
