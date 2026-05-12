@@ -7,8 +7,8 @@ export const footerConfig = {
     },
     chat: {
       label: "Direct Chat",
-      whatsapp: "(+880) 1760-178245",
-      link: "https://wa.me/8801760178245",
+      whatsapp: "+880 1325 078 941",
+      link: "https://wa.me/8801325078941",
     },
     address: {
       label: "Global Studio",
