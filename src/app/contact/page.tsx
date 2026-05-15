@@ -22,10 +22,19 @@ const item: Variants = {
   show: { opacity: 1, y: 0, transition: { ...spring, type: "spring" as const } },
 };
 
+/**
+ * Contact Page
+ * ------------
+ * This is the gateway for new project inquiries. We've designed it to feel
+ * premium, high-impact, and accessible. No complex forms—just direct connections.
+ */
 export default function ContactPage() {
   return (
     <div className="min-h-screen pt-32 pb-24 overflow-hidden relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
-      {/* Background Ambience */}
+      {/* 
+          Background Ambience 
+          Adds that high-end 'Creatiancy' glow to the page corners.
+      */}
       <div className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vw] bg-[var(--ruby-red)]/10 blur-[150px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[20%] left-[-10%] w-[40vw] h-[40vw] bg-[var(--text)]/5 blur-[120px] rounded-full pointer-events-none" />
 
