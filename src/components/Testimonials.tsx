@@ -4,7 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Quote, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
-import { testimonials } from "../data/testimonials";
+import { testimonials } from "@/constants/testimonials";
 
 export default function Testimonials() {
   const scrollRef = useRef<HTMLDivElement>(null);

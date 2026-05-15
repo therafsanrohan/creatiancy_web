@@ -1,13 +1,23 @@
 "use client";
 
+// Standard Next.js / React hooks
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+// UI & Animation helpers
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
 import { Menu, X, ArrowRight, ArrowUpRight, ChevronDown, Phone } from "lucide-react";
+
+// Our centralized data
 import { footerConfig } from "@/constants/footerConfig";
 
+/**
+ * The primary navigation links.
+ * We keep these here for easy modification, but they could be moved 
+ * to a constants file if the list grows significantly.
+ */
 const navLinks = [
   { name: "Home", href: "/" },
   { name: "Work", href: "/work" },
@@ -24,20 +34,29 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const { scrollY } = useScroll();
+  
+  // UI State management
   const [hidden, setHidden] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
-  // Lock scroll when mobile menu is open
+  /**
+   * Handle Body Scroll Lock
+   * -----------------------
+   * When the mobile menu is open, we want to prevent the background from scrolling.
+   * This provides a much more premium and stable feel on mobile devices.
+   */
   useEffect(() => {
-    if (mobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : 'unset';
   }, [mobileMenuOpen]);
 
+  /**
+   * Scroll Logic
+   * ------------
+   * We hide the navbar when the user scrolls down fast, and show it when they scroll up.
+   * This is a standard UX pattern for modern creative sites to maximize screen real estate.
+   */
   useMotionValueEvent(scrollY, "change", (latest) => {
     const previous = scrollY.getPrevious() || 0;
     if (latest > previous && latest > 150 && !mobileMenuOpen) {
