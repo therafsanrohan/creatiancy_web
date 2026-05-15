@@ -2,9 +2,9 @@
 
 import { motion, Variants, Transition } from "framer-motion";
 import { ArrowRight, Mail, Briefcase, MapPin, Phone } from "lucide-react";
-import { footerConfig } from "@/config/footerConfig";
+import { footerConfig } from "@/constants/footerConfig";
 import LiveTime from "@/components/LiveTime";
-import { activePresence } from "@/config/globalPresence";
+import { activePresence } from "@/constants/globalPresence";
 
 const spring: Transition = {
   type: "spring",

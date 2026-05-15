@@ -4,8 +4,8 @@ import { useState, useDeferredValue, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Globe, Search } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
-import { groupedCountries } from "@/data/worldLive";
-import { activePresence } from "@/config/globalPresence";
+import { groupedCountries } from "@/constants/worldLive";
+import { activePresence } from "@/constants/globalPresence";
 
 const containerVariants = {
   hidden: { opacity: 0 },

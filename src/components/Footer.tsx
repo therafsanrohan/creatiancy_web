@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { footerConfig } from "@/config/footerConfig";
+import { footerConfig } from "@/constants/footerConfig";
 import { MapPin, Globe, ArrowRight } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
-import { activePresence } from "@/config/globalPresence";
+import { activePresence } from "@/constants/globalPresence";
 
 export default function Footer() {
   const year = new Date().getFullYear();

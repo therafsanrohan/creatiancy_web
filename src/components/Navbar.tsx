@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Menu, X, ArrowRight, ArrowUpRight, ChevronDown, Phone } from "lucide-react";
-import { footerConfig } from "@/config/footerConfig";
+import { footerConfig } from "@/constants/footerConfig";
 
 const navLinks = [
   { name: "Home", href: "/" },

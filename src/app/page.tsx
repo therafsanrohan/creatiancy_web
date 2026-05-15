@@ -4,37 +4,54 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import dynamic from "next/dynamic";
+import fs from "fs";
+import path from "path";
 
+// Configuration & Data
+import { recentProjects } from "@/constants/projects";
+import { agencyServices } from "@/constants/services";
+import Testimonials from "@/components/Testimonials";
+
+// Dynamic import for the marquee to keep things snappy
 const BrandsMarquee = dynamic(() => import("@/components/BrandsMarquee"), { 
   ssr: true,
 });
-import fs from "fs";
-import path from "path";
-import { recentProjects } from "@/config/projects";
-import Testimonials from "@/components/Testimonials";
 
+/**
+ * Main Landing Page
+ * -----------------
+ * This is the primary entry point for the Creatiancy website.
+ * It features a heroic entrance, a client marquee, our core services, 
+ * social proof via testimonials, and a showcase of our best work.
+ */
 export default function Home() {
+  // Logic to dynamically pull brand logos from the public folder.
+  // This allows the owner to simply drop a file into /public/brands to update the marquee.
   let brands: string[] = [];
   try {
     const brandsDir = path.join(process.cwd(), 'public/brands');
     if (fs.existsSync(brandsDir)) {
       brands = fs.readdirSync(brandsDir).filter(f => f.match(/\.(png|jpe?g|svg|webp)$/i));
     }
-  } catch (error) {
-    console.error("Brands directory could not be read:", error);
+  } catch (err) {
+    // We don't want a missing folder to crash the whole site
+    console.warn("Hey, looks like the brands directory is missing or unreadable.", err);
   }
 
-  // Fallback so the marquee visually exists immediately before user uploads files!
+  // Fallback logos for a fresh install/dev environment
   if (brands.length === 0) {
     brands = ["placeholder_1", "placeholder_2", "placeholder_3", "placeholder_4"];
   }
 
   return (
     <div className="flex flex-col gap-24 md:gap-32 pb-24">
+      {/* 01. The Hero Section - Our Big Hello */}
       <Hero />
+      
+      {/* 02. Client Trust - Scrolling Marquee */}
       {brands.length > 0 && <BrandsMarquee brands={brands} />}
       
-      {/* Services Snapshot */}
+      {/* 03. Services Snapshot - What We Actually Do */}
       <section className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12">
           <div>
@@ -45,34 +62,33 @@ export default function Home() {
               text="A creative agency engineering strategic design & intelligent development."
               className="text-3xl md:text-5xl font-heading tracking-tight mb-6 -ml-1 text-left justify-start"
             />
-            <p className="text-[var(--muted-fg)] max-w-md text-lg">
+            <p className="text-[var(--muted-fg)] max-w-md text-lg leading-relaxed">
               We provide end-to-end branding services and full-spectrum digital marketing to accelerate business performance.
             </p>
           </div>
-          <div className="grid gap-8">
-            {[
-              { title: "Brand Identity", desc: "We craft visual stories that resonate. Our designs are built to last and communicate your brand's unique soul." },
-              { title: "Digital Experience", desc: "From concept to code, we build fluid platforms that bridge the gap between your brand and your audience." },
-              { title: "Creative Strategy", desc: "Our approach blends deep research with bold execution, ensuring your brand stays ahead of the curve." },
-              { title: "Technical Excellence", desc: "We leverage modern technology to build robust, scalable solutions that power your business forward." },
-              { title: "Impactful Campaigns", desc: "We don't just post content; we create movements through integrated marketing that drives real results." }
-            ].map((service, i) => (
 
-              <Link href="/services" key={i} className="group border-b border-[var(--muted)] pb-6 block cursor-pointer">
+          <div className="grid gap-8">
+            {agencyServices.map((service, index) => (
+              <Link 
+                href={service.href} 
+                key={index} 
+                className="group border-b border-[var(--muted)] pb-6 block cursor-pointer"
+              >
                 <h4 className="text-xl font-bold mb-2 group-hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2">
                   {service.title}
-                  <ArrowUpRight className="w-4 h-4 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all" />
+                  <ArrowUpRight className="w-4 h-4 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-300" />
                 </h4>
-                <p className="text-[var(--muted-fg)]">{service.desc}</p>
+                <p className="text-[var(--muted-fg)] leading-snug">{service.desc}</p>
               </Link>
             ))}
           </div>
         </div>
       </section>
 
+      {/* 04. Social Proof - What our clients say */}
       <Testimonials />
 
-      {/* Selected Work */}
+      {/* 05. Selected Work - The Portfolio Showcase */}
       <section className="container mx-auto px-4">
         <div className="flex justify-between items-end mb-12">
           <div>
@@ -108,7 +124,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-br from-[var(--muted)]/40 to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />
                 )}
                 
-                {/* Creative Hover Overlay */}
+                {/* Visual Feedback on Hover */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10 flex items-center justify-center pointer-events-none">
                   {project.link !== "#" && (
                     <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 ease-out shadow-2xl">

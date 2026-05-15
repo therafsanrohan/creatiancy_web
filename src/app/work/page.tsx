@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { caseStudies } from '@/config/projects';
+import { caseStudies } from '@/constants/projects';
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 
