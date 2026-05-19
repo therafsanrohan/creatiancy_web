@@ -15,7 +15,7 @@ export const spring: Transition = {
 };
 
 /* Standard elegant easing */
-export const elegantEase = [0.16, 1, 0.3, 1];
+export const elegantEase = [0.16, 1, 0.3, 1] as const;
 
 /* Generic item variant for list reveals */
 export const itemVariants: Variants = {

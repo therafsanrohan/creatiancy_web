@@ -3,8 +3,9 @@ import { defaultSEO } from "@/lib/seo";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import Script from "next/script";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import { SecurityProvider } from "@/components/SecurityProvider";
 
 const inter = Inter({
@@ -33,18 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-          {/* Google tag (gtag.js) */}
-          <script async src="https://www.googletagmanager.com/gtag/js?id=G-1JLHT26WTS"></script>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', 'G-1JLHT26WTS');
-              `,
-            }}
-          />
+        <GoogleAnalytics gaId="G-1JLHT26WTS" />
           <Script
             id="organization-json-ld"
             type="application/ld+json"

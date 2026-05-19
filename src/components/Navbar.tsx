@@ -90,7 +90,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center group outline-none z-50 shrink-0" onClick={() => setMobileMenuOpen(false)} aria-label="Creatiancy Homepage">
             <div className={cn("relative transition-all duration-500 ease-out group-hover:scale-105 flex items-center justify-start", isScrolled ? "w-20 h-5 lg:w-24 lg:h-6" : "w-28 h-7 lg:w-32 lg:h-8")}>
               <div 
-                className="w-full h-full bg-[#9B1C22] dark:bg-white transition-colors duration-300"
+                className="w-full h-full bg-white transition-colors duration-300"
                 style={{
                   WebkitMaskImage: 'url("/logos/Creatiancy logo.svg")',
                   WebkitMaskRepeat: 'no-repeat',
