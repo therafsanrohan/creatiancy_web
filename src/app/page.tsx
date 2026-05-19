@@ -11,6 +11,7 @@ import path from "path";
 import { recentProjects } from "@/constants/projects";
 import { agencyServices } from "@/constants/services";
 import Testimonials from "@/components/Testimonials";
+import FAQSection from "@/components/FAQSection";
 
 // Dynamic import for the marquee to keep things snappy
 const BrandsMarquee = dynamic(() => import("@/components/BrandsMarquee"), { 
@@ -145,6 +146,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* 06. Interactive FAQ Section */}
+      <FAQSection />
     </div>
   );
 }
