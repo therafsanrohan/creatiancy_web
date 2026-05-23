@@ -7,6 +7,8 @@ interface AnimatedTextProps {
   text: string;
   className?: string;
   staggerDelay?: number;
+  el?: "h1" | "div";
+  "aria-hidden"?: boolean;
 }
 
 /* Safe spring config */
@@ -20,6 +22,8 @@ export default function AnimatedText({
   text,
   className,
   staggerDelay = 0.05,
+  el: Tag = "h1",
+  "aria-hidden": ariaHidden,
 }: AnimatedTextProps) {
   // Split by whitespace but keep newlines as separate tokens
   const words = text.split(/(\n| )/).filter(w => w !== "" && w !== " ");
@@ -51,12 +55,15 @@ export default function AnimatedText({
     },
   };
 
+  const MotionTag = Tag === "h1" ? motion.h1 : motion.div;
+
   return (
-    <motion.h1
+    <MotionTag
       className={cn("flex flex-wrap justify-center overflow-hidden", className)}
       variants={container}
       initial="hidden"
       animate="visible"
+      aria-hidden={ariaHidden}
     >
       {words.map((word, index) => {
         if (word === "\n") {
@@ -70,9 +77,10 @@ export default function AnimatedText({
             className="inline-block"
           >
             {word}
+            <span className="sr-only"> </span>
           </motion.span>
         );
       })}
-    </motion.h1>
+    </MotionTag>
   );
 }

@@ -17,31 +17,31 @@ export const faqs: FAQItem[] = [
   {
     id: "faq-2",
     question: "How do you structure your project pricing?",
-    answer: "We believe in tailored partnership models rather than rigid, cookie-cutter pricing. Because every visionary brand has distinct market positions and unique digital needs, we provide bespoke, value-driven pricing proposals aligned directly with your scope, complexity, and growth goals. We discuss budget guidelines transparently during our initial discovery session to design a highly effective roadmap that delivers maximum return on investment.",
+    answer: "We price projects based on scope, complexity, and timeline. After an initial discovery call, we provide a detailed proposal with fixed-project or retainer-based options. We believe in full transparency — no hidden fees, no surprises.",
     category: "Pricing"
   },
   {
     id: "faq-3",
     question: "What does the typical workflow from process to delivery look like?",
-    answer: "We drive excellence through a structured four-phase approach: 1) Strategy & Discovery (mapping your brand DNA, target market, and strategic goals), 2) Visual Design & Prototyping (crafting elite, high-fidelity user experiences and interactive flows), 3) Technical Engineering (translating designs into custom, ultra-fast, and robust digital platforms), and 4) Delivery & Optimization (device testing, speed tuning, and secure deployment).",
+    answer: "Every project begins with a discovery and strategy phase, followed by concept design, iterative refinement, and final delivery. We keep you involved at every milestone through shared review sessions and clear communication channels.",
     category: "Process"
   },
   {
     id: "faq-4",
     question: "How long does a typical project take from start to finish?",
-    answer: "Project timelines correspond directly to the complexity of the scope. A custom visual identity or a bespoke digital platform usually spans 4 to 6 weeks. More comprehensive brand overhauls and complete digital transformations requiring advanced custom strategy and detailed animations typically range from 8 to 12 weeks. We prioritize high-caliber execution to guarantee that the final delivery is absolutely flawless.",
+    answer: "Most brand identity projects take 3–6 weeks. Full digital experience builds range from 6–14 weeks depending on complexity. We always agree on a delivery schedule before work begins.",
     category: "Delivery"
   },
   {
     id: "faq-5",
     question: "Do you build websites that we can edit ourselves afterwards?",
-    answer: "Absolutely. We seamlessly combine high-end frontend engineering with intuitive, modern content management systems. This ensures your brand receives a custom, lightning-fast digital platform where you can easily update copy, upload portfolio pieces, and manage imagery independently without needing day-to-day developer intervention.",
+    answer: "Yes. We build on modern CMS platforms (such as Sanity, Contentful, or a custom headless CMS) so your team can manage and update content independently after handoff. We also provide training documentation.",
     category: "Delivery"
   },
   {
     id: "faq-6",
     question: "Can you collaborate with our existing in-house team?",
-    answer: "Yes. We frequently partner with in-house designers, product owners, and developers. Whether you need us to execute completed high-fidelity designs, augment your development pipeline with elite frontend visual layouts, or spearhead the strategy from the ground up, we integrate into your existing workflow with ease.",
+    answer: "Absolutely. We regularly embed within existing teams, working alongside your designers, developers, and marketers. We adapt to your tools and workflow — Figma, Notion, Slack, or whatever you use.",
     category: "Design"
   }
 ];

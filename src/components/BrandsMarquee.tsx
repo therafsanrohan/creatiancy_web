@@ -3,8 +3,23 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+// Explicit details map for brand logos to resolve oversized requests (w=3840) and set accurate alt texts.
+const BRAND_DETAILS: Record<string, { alt: string; width: number; height: number }> = {
+  "AtoBD_logo.png": { alt: "AtoBD logo", width: 160, height: 60 },
+  "elcardo_logo.png": { alt: "Elcardo logo", width: 160, height: 60 },
+  "odl_logo.png": { alt: "ODL Ads Creative logo", width: 160, height: 60 },
+  "omni_logo.png": { alt: "OMNI CONNECTS logo", width: 160, height: 60 },
+  "oven_logo.png": { alt: "Oven logo", width: 160, height: 60 },
+  "s_logo.png": { alt: "S brand logo", width: 160, height: 60 },
+};
+
 export default function BrandsMarquee({ brands }: { brands: string[] }) {
   if (!brands || brands.length === 0) return null;
+
+  // Helper to resolve brand properties safely
+  const getBrandDetails = (logo: string) => {
+    return BRAND_DETAILS[logo] || { alt: `${logo.replace(/_logo\..*$/i, "")} logo`, width: 160, height: 60 };
+  };
 
   return (
     <section className="py-12 md:py-16 border-y border-[var(--muted)]/10 bg-[var(--bg)] overflow-hidden relative">
@@ -30,24 +45,54 @@ export default function BrandsMarquee({ brands }: { brands: string[] }) {
             className="flex w-max animate-marquee gap-14 md:gap-28 items-center px-12"
             style={{ willChange: "transform", animationDuration: "25s" }}
           >
-            {[...brands, ...brands, ...brands, ...brands].map((logo, i) => (
-              <div key={`brand-${i}`} className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0">
-                {logo.startsWith("placeholder") ? (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-[var(--muted-fg)]/40 font-bold text-[10px] uppercase">Partner</span>
-                  </div>
-                ) : (
-                  <Image 
-                    src={`/brands/${logo}`} 
-                    alt="Brand Logo" 
-                    fill 
-                    className="object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300" 
-                    sizes="112px" 
-                    priority={i < 8} 
-                  />
-                )}
-              </div>
-            ))}
+            {/* Set 1: Original (accessible to assistive tech) */}
+            {brands.map((logo, i) => {
+              const detail = getBrandDetails(logo);
+              return (
+                <div key={`brand-orig-${i}`} className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0 flex items-center justify-center">
+                  {logo.startsWith("placeholder") ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-[var(--muted-fg)]/40 font-bold text-[10px] uppercase">Partner</span>
+                    </div>
+                  ) : (
+                    <Image 
+                      src={`/brands/${logo}`} 
+                      alt={detail.alt} 
+                      width={detail.width} 
+                      height={detail.height} 
+                      sizes="160px" 
+                      quality={85}
+                      className="object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 max-w-full max-h-full" 
+                      priority={i < 4}
+                    />
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Set 2: Cloned (duplicated loop set, completely hidden from screen readers) */}
+            {brands.map((logo, i) => {
+              const detail = getBrandDetails(logo);
+              return (
+                <div key={`brand-clone-${i}`} aria-hidden="true" className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0 flex items-center justify-center">
+                  {logo.startsWith("placeholder") ? (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-[var(--muted-fg)]/40 font-bold text-[10px] uppercase">Partner</span>
+                    </div>
+                  ) : (
+                    <Image 
+                      src={`/brands/${logo}`} 
+                      alt={detail.alt} 
+                      width={detail.width} 
+                      height={detail.height} 
+                      sizes="160px" 
+                      quality={85}
+                      className="object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 max-w-full max-h-full" 
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

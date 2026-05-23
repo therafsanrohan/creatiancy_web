@@ -181,25 +181,25 @@ export default function FAQSection() {
                       </button>
 
                       {/* Expandable Panel */}
-                      <AnimatePresence initial={false}>
-                        {isOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ 
-                              height: { type: "spring", stiffness: 400, damping: 30 },
-                              opacity: { duration: 0.25 }
-                            }}
-                          >
-                            <div className="px-6 md:px-8 pb-8 pt-0 border-t border-[var(--muted)]/10">
-                              <p className="text-base md:text-lg text-[var(--muted-fg)] leading-relaxed font-light mt-6">
-                                {faq.answer}
-                              </p>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      <motion.div
+                        initial="collapsed"
+                        animate={isOpen ? "open" : "collapsed"}
+                        variants={{
+                          open: { height: "auto", opacity: 1, display: "block" },
+                          collapsed: { height: 0, opacity: 0, transitionEnd: { display: "none" } }
+                        }}
+                        transition={{ 
+                          height: { type: "spring", stiffness: 400, damping: 30 },
+                          opacity: { duration: 0.25 }
+                        }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-6 md:px-8 pb-8 pt-0 border-t border-[var(--muted)]/10">
+                          <p className="text-base md:text-lg text-[var(--muted-fg)] leading-relaxed font-light mt-6">
+                            {faq.answer}
+                          </p>
+                        </div>
+                      </motion.div>
                     </motion.div>
                   );
                 })}

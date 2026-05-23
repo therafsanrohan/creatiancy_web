@@ -9,7 +9,7 @@ export const defaultSEO: Metadata = {
   alternates: {
     canonical: '/',
   },
-  description: 'We are a boutique digital studio crafted for brands that refuse to be ignored. From bespoke design to high-performance development, we build digital experiences that move people.',
+  description: "We are a boutique digital design and development studio crafting precision brand experiences for ambitious brands. From identity systems to high-performance web development — we build what moves people.",
   keywords: ['Digital Studio', 'Creative Design', 'Web Development', 'Brand Identity', 'Custom Software'],
   openGraph: {
     type: 'website',

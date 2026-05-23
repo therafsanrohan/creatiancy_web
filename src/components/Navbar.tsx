@@ -24,6 +24,7 @@ const navLinks = [
   { name: "Services", href: "/services" },
   { 
     name: "Company", 
+    href: "/about",
     dropdown: [
       { name: "About Us", href: "/about" },
       { name: "World Live", href: "/world-live" }
@@ -121,9 +122,10 @@ export default function Navbar() {
                   onMouseLeave={() => hasDropdown && setActiveDropdown(null)}
                 >
                   {hasDropdown ? (
-                    <button
+                    <Link
+                      href={link.href!}
                       className={cn(
-                        "relative rounded-full font-medium transition-all duration-500 ease-out outline-none group flex items-center gap-1 cursor-default",
+                        "relative rounded-full font-medium transition-all duration-500 ease-out outline-none group flex items-center gap-1 cursor-pointer",
                         isScrolled ? "px-3 py-1.5 lg:px-4 text-[11px] lg:text-xs" : "px-4 py-2 lg:px-6 text-xs lg:text-sm"
                       )}
                     >
@@ -145,7 +147,7 @@ export default function Navbar() {
                         isActive ? "text-[var(--bg)]" : "text-[var(--text)]/80 group-hover:text-[var(--text)]",
                         activeDropdown === link.name ? "rotate-180" : ""
                       )} />
-                    </button>
+                    </Link>
                   ) : (
                     <Link
                       href={link.href!}

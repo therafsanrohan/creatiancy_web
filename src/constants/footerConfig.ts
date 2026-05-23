@@ -1,3 +1,6 @@
+const rawNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "8801325078941";
+const waNumber = rawNumber.replace(/[\s\-+]/g, "");
+
 export const footerConfig = {
   cta: "Let's build something remarkable.",
   contact: {
@@ -7,8 +10,10 @@ export const footerConfig = {
     },
     chat: {
       label: "Direct Chat",
-      whatsapp: "+880 1325 078 941",
-      link: "https://wa.me/8801325078941",
+      whatsapp: waNumber === "8801325078941" 
+        ? "+880 1325 078 941" 
+        : `+${waNumber}`,
+      link: `https://wa.me/${waNumber}`,
     },
     address: {
       label: "Global Studio",

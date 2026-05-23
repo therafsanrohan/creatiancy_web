@@ -56,6 +56,8 @@ export default function Hero() {
         <div className="md:hidden w-full">
           <AnimatedText
             text={`We build\nprecision brand\nexperiences.`}
+            el="div"
+            aria-hidden={true}
             className="text-[clamp(2.5rem,12vw,4.5rem)] leading-[1] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
           />
         </div>
@@ -64,6 +66,7 @@ export default function Hero() {
         <div className="hidden md:block w-full">
           <AnimatedText
             text={`We build precision\nbrand experiences.`}
+            el="h1"
             className="text-[clamp(4.5rem,8vw,8rem)] leading-[1] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
           />
         </div>
