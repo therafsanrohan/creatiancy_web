@@ -1,3 +1,11 @@
+const formatPhoneNumber = (numStr: string) => {
+  const clean = numStr.replace(/[\s\-+]/g, "");
+  if (clean.startsWith("880") && clean.length === 13) {
+    return `+880 ${clean.slice(3, 7)} ${clean.slice(7, 10)} ${clean.slice(10)}`;
+  }
+  return `+${clean}`;
+};
+
 const rawNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "8801325078941";
 const waNumber = rawNumber.replace(/[\s\-+]/g, "");
 
@@ -10,9 +18,7 @@ export const footerConfig = {
     },
     chat: {
       label: "Direct Chat",
-      whatsapp: waNumber === "8801325078941" 
-        ? "+880 1325 078 941" 
-        : `+${waNumber}`,
+      whatsapp: formatPhoneNumber(rawNumber),
       link: `https://wa.me/${waNumber}`,
     },
     address: {

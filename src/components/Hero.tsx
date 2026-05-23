@@ -52,24 +52,12 @@ export default function Hero() {
         style={{ y, opacity, scale, willChange: "transform, opacity" }}
         className="container mx-auto px-4 z-10 flex flex-col items-center text-center mt-[-8vh] sm:mt-[-6vh] md:mt-[-4vh]"
       >
-        {/* Mobile & Small Tablet (3 lines) */}
-        <div className="md:hidden w-full">
-          <AnimatedText
-            text={`We build\nprecision brand\nexperiences.`}
-            el="div"
-            aria-hidden={true}
-            className="text-[clamp(2.5rem,12vw,4.5rem)] leading-[1] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
-          />
-        </div>
-
-        {/* Desktop, Laptop & Large iPads (2 lines) */}
-        <div className="hidden md:block w-full">
-          <AnimatedText
-            text={`We build precision\nbrand experiences.`}
-            el="h1"
-            className="text-[clamp(4.5rem,8vw,8rem)] leading-[1] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
-          />
-        </div>
+        {/* Responsive, single H1 element for perfect SEO & accessibility */}
+        <AnimatedText
+          text="We build precision brand experiences."
+          el="h1"
+          className="text-[clamp(2.5rem,6.5vw,7.5rem)] leading-[1.05] font-heading font-extrabold w-full tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-[var(--text)] to-[var(--muted-fg)] drop-shadow-sm justify-center"
+        />
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}

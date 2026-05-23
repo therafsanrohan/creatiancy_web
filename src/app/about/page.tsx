@@ -128,38 +128,65 @@ export default function AboutPage() {
 
         {/* 2. Founder Section */}
         <section className="mb-32">
+          {/* Mobile-only Title Section */}
+          <div className="block md:hidden mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-xs font-bold tracking-widest uppercase mb-3 border border-[var(--ruby-red)]/20">
+              Leadership
+            </div>
+            <h3 className="text-4xl font-heading font-extrabold text-[var(--text)] mb-2">
+              <a 
+                href="https://www.rafsanrohan.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="hover:text-[var(--ruby-red)] transition-colors duration-300"
+              >
+                Rafsan Rohan
+              </a>
+            </h3>
+            <p className="text-base text-[var(--ruby-red)] font-semibold">Founder & Visual Strategist</p>
+          </div>
+
           <div className="grid md:grid-cols-12 gap-12 items-center">
+            {/* Image Column */}
             <div className="md:col-span-5">
-              <div className="relative w-full aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-[var(--muted)]/20 border border-[var(--muted)]/40 shadow-2xl group">
+              <div className="relative w-full max-w-md ml-0 mr-auto md:max-w-none aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-[var(--muted)]/20 border border-[var(--muted)]/40 shadow-2xl group">
                 <Image 
-                  src="/team/founder.jpg" 
-                  alt="Hector Oviedo"
+                  src="/images/founder_v2.png" 
+                  alt="Rafsan Rohan"
                   fill
                   sizes="(max-width: 768px) 100vw, 40vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  fallback-src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800"
+                  priority
                 />
-                {/* Fallback styling overlay in case founder.jpg is a placeholder */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent flex flex-col justify-end p-8 text-white">
-                  <span className="text-[var(--ruby-red)] font-bold text-xs uppercase tracking-widest mb-1">Founder & Creative Director</span>
-                  <h3 className="text-3xl font-heading font-extrabold">Hector Oviedo</h3>
-                </div>
               </div>
             </div>
             
+            {/* Text Column */}
             <div className="md:col-span-7 space-y-6">
-              <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-xs font-bold tracking-widest uppercase mb-2">
-                Leadership
+              {/* Desktop-only Title Section */}
+              <div className="hidden md:block">
+                <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-xs font-bold tracking-widest uppercase mb-2">
+                  Leadership
+                </div>
+                <h3 className="text-4xl font-heading font-extrabold text-[var(--text)]">
+                  <a 
+                    href="https://www.rafsanrohan.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="hover:text-[var(--ruby-red)] transition-colors duration-300"
+                  >
+                    Rafsan Rohan
+                  </a>
+                </h3>
+                <p className="text-lg text-[var(--ruby-red)] font-semibold mt-2">Founder & Visual Strategist</p>
               </div>
-              <h3 className="text-4xl font-heading font-extrabold text-[var(--text)]">Hector Oviedo</h3>
-              <p className="text-lg text-[var(--ruby-red)] font-semibold -mt-4">Founder & Creative Director</p>
               
               <div className="text-[var(--muted-fg)] text-lg leading-relaxed font-light space-y-4">
                 <p>
-                  Hector Oviedo founded Creatiancy with a vision to create a digital studio where bold design meets unshakeable technology. With over a decade of experience spearheading digital transformations for enterprise companies and high-growth startups, Hector coordinates the studio's global design directions and brand positioning models.
+                  Rafsan Rohan founded Creatiancy with a vision to merge structured design, deep storytelling, and systems thinking into a unified creative methodology. As a visual strategist and creative visualizer, Rafsan helps brands and agencies transform complex, abstract concepts into high-impact visual communication systems, brand identities, and motion graphics.
                 </p>
                 <p>
-                  He believes that design is not merely decorative, but a primary communication system that governs how customers experience and recall a brand. Under his leadership, the studio has grown into a multi-city powerhouse, embedding high-end engineering directly within brand architectures. Hector is committed to fostering partnerships built on respect, extreme transparency, and relentless execution.
+                  He believes that truly remarkable creative work is born when visual storytelling is engineered with technical rigour and strategic purpose.
                 </p>
               </div>
             </div>

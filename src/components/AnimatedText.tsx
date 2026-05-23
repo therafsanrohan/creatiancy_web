@@ -7,7 +7,7 @@ interface AnimatedTextProps {
   text: string;
   className?: string;
   staggerDelay?: number;
-  el?: "h1" | "div";
+  el?: "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "div" | "p" | "span";
   "aria-hidden"?: boolean;
 }
 
@@ -55,7 +55,7 @@ export default function AnimatedText({
     },
   };
 
-  const MotionTag = Tag === "h1" ? motion.h1 : motion.div;
+  const MotionTag = (motion as any)[Tag] || motion.div;
 
   return (
     <MotionTag
@@ -70,15 +70,16 @@ export default function AnimatedText({
           return <div key={index} className="basis-full h-0" />;
         }
         return (
-          <motion.span
-            key={index}
-            variants={child}
-            style={{ marginRight: "0.25em" }}
-            className="inline-block"
-          >
-            {word}
-            <span className="sr-only"> </span>
-          </motion.span>
+          <span key={index} className="inline-flex whitespace-nowrap">
+            <motion.span
+              variants={child}
+              className="inline-block"
+            >
+              {word}
+            </motion.span>
+            {/* Real space in the DOM flow so crawlers extract separate words */}
+            {index < words.length - 1 && <span className="inline-block w-[0.22em]" aria-hidden="true">&nbsp;</span>}
+          </span>
         );
       })}
     </MotionTag>

@@ -263,7 +263,13 @@ export default function Navbar() {
                       transition={{ delay: i * 0.1, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                       className="flex flex-col gap-3"
                     >
-                      <span className="text-sm font-bold uppercase tracking-widest text-[var(--muted-fg)]/50 border-b border-[var(--muted)]/20 pb-2">{link.name}</span>
+                      <Link 
+                        href="/about"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="text-sm font-bold uppercase tracking-widest text-[var(--muted-fg)]/50 border-b border-[var(--muted)]/20 pb-2 hover:text-[var(--ruby-red)] transition-colors w-fit"
+                      >
+                        {link.name}
+                      </Link>
                       {link.dropdown.map((sublink) => (
                         <Link
                           key={sublink.href}

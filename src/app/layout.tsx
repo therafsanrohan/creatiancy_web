@@ -35,24 +35,29 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <GoogleAnalytics gaId="G-1JLHT26WTS" />
-          <Script
+          <script
             id="organization-json-ld"
             type="application/ld+json"
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
                 "@context": "https://schema.org",
                 "@type": "ProfessionalService",
+                "@id": "https://www.creatiancy.com/#organization",
                 "name": "Creatiancy",
-                "url": "https://creatiancy.com",
-                "logo": "https://creatiancy.com/og-image.jpg",
+                "url": "https://www.creatiancy.com",
+                "logo": "https://www.creatiancy.com/og-image.jpg",
                 "description": "Creatiancy is an elite digital studio engineering bespoke brand experiences. We are your technical powerhouse.",
                 "sameAs": [
                   "https://x.com/creatiancy",
-                  "https://linkedin.com/company/creatiancy"
-                ]
+                  "https://www.linkedin.com/company/creatiancy"
+                ],
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Dhaka",
+                  "addressCountry": "BD"
+                }
               })
             }}
-            strategy="worker"
           />
           <script dangerouslySetInnerHTML={{ __html: "document.addEventListener('touchstart', function() {}, {passive: true});" }} />
         </head>

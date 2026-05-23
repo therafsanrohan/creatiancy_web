@@ -61,6 +61,7 @@ export default function Home() {
             </div>
             <AnimatedText 
               text="A creative agency engineering strategic design & intelligent development."
+              el="h2"
               className="text-3xl md:text-5xl font-heading tracking-tight mb-6 -ml-1 text-left justify-start"
             />
             <p className="text-[var(--muted-fg)] max-w-md text-lg leading-relaxed">

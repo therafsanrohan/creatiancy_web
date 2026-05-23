@@ -180,26 +180,23 @@ export default function FAQSection() {
                         </div>
                       </button>
 
-                      {/* Expandable Panel */}
-                      <motion.div
-                        initial="collapsed"
-                        animate={isOpen ? "open" : "collapsed"}
-                        variants={{
-                          open: { height: "auto", opacity: 1, display: "block" },
-                          collapsed: { height: 0, opacity: 0, transitionEnd: { display: "none" } }
-                        }}
-                        transition={{ 
-                          height: { type: "spring", stiffness: 400, damping: 30 },
-                          opacity: { duration: 0.25 }
-                        }}
-                        className="overflow-hidden"
+                      {/* Server-rendered, 100% indexable CSS Grid accordion panel */}
+                      <div
+                        className={cn(
+                          "grid transition-[grid-template-rows,opacity] duration-500 ease-out overflow-hidden",
+                          isOpen 
+                            ? "grid-rows-[1fr] opacity-100" 
+                            : "grid-rows-[0fr] opacity-0"
+                        )}
                       >
-                        <div className="px-6 md:px-8 pb-8 pt-0 border-t border-[var(--muted)]/10">
-                          <p className="text-base md:text-lg text-[var(--muted-fg)] leading-relaxed font-light mt-6">
-                            {faq.answer}
-                          </p>
+                        <div className="min-h-0">
+                          <div className="px-6 md:px-8 pb-8 pt-0 border-t border-[var(--muted)]/10">
+                            <p className="text-base md:text-lg text-[var(--muted-fg)] leading-relaxed font-light mt-6">
+                              {faq.answer}
+                            </p>
+                          </div>
                         </div>
-                      </motion.div>
+                      </div>
                     </motion.div>
                   );
                 })}

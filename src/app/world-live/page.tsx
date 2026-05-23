@@ -20,6 +20,7 @@ const itemVariants = {
 export default function WorldLivePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
+  const [expandedRegions, setExpandedRegions] = useState<Record<string, boolean>>({});
 
   // Pre-calculate O(1) active presence map for instantaneous renders
   const activeSet = useMemo(() => {
@@ -111,10 +112,25 @@ export default function WorldLivePage() {
 
               if (filteredCountries.length === 0) return null;
 
+              const isExpanded = !!deferredSearchQuery || !!expandedRegions[region];
+              
+              // Sort to ensure active ones are always shown first
+              const sortedCountries = [...filteredCountries].sort((a, b) => {
+                const aActive = activeSet.has(`${a.country}-${a.city}`);
+                const bActive = activeSet.has(`${b.country}-${b.city}`);
+                if (aActive && !bActive) return -1;
+                if (!aActive && bActive) return 1;
+                return 0;
+              });
+
+              // If collapsed, only show the active hubs + top 4 items to keep the page light
+              const visibleCountries = isExpanded ? sortedCountries : sortedCountries.slice(0, 4);
+              const hasMore = sortedCountries.length > visibleCountries.length;
+
               return (
-                <motion.div key={region} variants={itemVariants} className="flex flex-col gap-8">
+                <motion.div key={region} variants={itemVariants} className="flex flex-col gap-6 items-center">
                   {/* Elegant Region Header */}
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-6 w-full">
                     <h2 className="text-sm md:text-base font-bold uppercase tracking-[0.2em] text-[var(--text)]/80">
                       {region} <span className="text-[var(--muted-fg)]/50 text-xs ml-2">({filteredCountries.length})</span>
                     </h2>
@@ -122,8 +138,8 @@ export default function WorldLivePage() {
                   </div>
 
                   {/* Organized Uniform Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-                    {filteredCountries.map((loc, i) => {
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 w-full">
+                    {visibleCountries.map((loc, i) => {
                       const isActive = activeSet.has(`${loc.country}-${loc.city}`);
 
                       return (
@@ -179,6 +195,15 @@ export default function WorldLivePage() {
                       );
                     })}
                   </div>
+
+                  {hasMore && (
+                    <button
+                      onClick={() => setExpandedRegions(prev => ({ ...prev, [region]: true }))}
+                      className="px-6 py-2.5 rounded-full bg-[var(--muted)]/20 hover:bg-[var(--ruby-red)]/10 text-[var(--muted-fg)] hover:text-[var(--ruby-red)] border border-[var(--muted)]/30 hover:border-[var(--ruby-red)]/40 text-[10px] font-bold uppercase tracking-widest transition-all duration-300 active:scale-95 cursor-pointer mt-2"
+                    >
+                      Monitor all {sortedCountries.length} sectors in {region}
+                    </button>
+                  )}
                 </motion.div>
               );
             })}
