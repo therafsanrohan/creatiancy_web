@@ -120,7 +120,7 @@ export default function Home() {
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                    priority={project.id === '4'}
+                    priority={index === 0}
                   />
                 ) : (
                   <div className="absolute inset-0 bg-gradient-to-br from-[var(--muted)]/40 to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />

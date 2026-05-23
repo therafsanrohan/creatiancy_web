@@ -22,6 +22,7 @@ export interface Project {
   technologies?: string[]; // Dynamic: Technologies used
   clientName?: string;    // Dynamic: Client Name
   date?: string;          // Dynamic: Project Date
+  externalLink?: string;  // NEW: Link to external live website or Behance showcase
 }
 
 export const recentProjects: Project[] = [
@@ -36,8 +37,9 @@ export const recentProjects: Project[] = [
     solution: "We engineered a clean, grids-based typographic structure with bold color contrasts and high-impact visual anchors designed to arrest reader attention in under 1.5 seconds.",
     result: "Campaign visual metrics improved by 40% CTR, establishing immediate design authority for their regional promotional campaigns.",
     technologies: ["Visual Strategy", "Grid Design", "Typography Systems", "Creative Direction"],
-    clientName: "ODL Holdings",
-    date: "Dec 2025"
+    clientName: "ODL Developers Ltd.",
+    date: "Dec 2025",
+    externalLink: "https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design"
   },
   { 
     id: 'omni-connects', 
@@ -50,36 +52,8 @@ export const recentProjects: Project[] = [
     solution: "We re-architected their entire brand system, building a sleek, geometric logo system, unified corporate colors, and responsive interface mockups.",
     result: "Successfully elevated their enterprise trust metrics, resulting in a smooth multi-million dollar series funding round.",
     technologies: ["Brand Strategy", "Corporate Identity", "Logo Design", "SaaS Interface System"],
-    clientName: "OMNI CONNECTS Ltd",
+    clientName: "OMNI CONNECTS Corporation",
     date: "Oct 2025"
-  },
-  { 
-    id: 'vespera-ai', 
-    title: 'Vespera AI Platform', 
-    shortDescription: 'Bleeding-edge brand positioning and futuristic interface design for a deep tech startup.',
-    industry: 'Artificial Intelligence', 
-    image: '/images/project real.png', 
-    link: '/work/vespera-ai',
-    problem: "Vespera, a cutting-edge deep learning model platform, needed a brand position that reflected complex machine logic while remaining accessible to developers.",
-    solution: "We designed a dark, neo-brutalist digital presence with fluid kinetic typography, generative code aesthetics, and modular UI patterns.",
-    result: "A highly acclaimed product launch that captured 50,000+ developer signups within the first 10 days of release.",
-    technologies: ["Neo-Brutalist Layouts", "Kinetic Typography", "Generative Branding", "Developer Experience"],
-    clientName: "Vespera Research",
-    date: "Feb 2026"
-  },
-  {
-    id: 'next-project',
-    title: 'Your Next Project',
-    shortDescription: 'Start a project to engineer your next high-performance visual legacy with us.',
-    industry: 'Studio Partnership',
-    image: '',
-    link: '/contact',
-    problem: "Looking for an elite digital studio that values precision engineering and controlled creative boldness over noise?",
-    solution: "Embed our highly specialized design and development team directly within your company's product cycle.",
-    result: "Accelerate your path to market authority with custom, unshakeable creative assets.",
-    technologies: ["Design Strategy", "Web Engineering", "Controlled Boldness"],
-    clientName: "Ambitious Brands",
-    date: "Ongoing"
   }
 ];
 

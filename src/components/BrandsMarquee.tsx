@@ -60,7 +60,7 @@ export default function BrandsMarquee({ brands }: { brands: string[] }) {
                       alt={detail.alt} 
                       width={detail.width} 
                       height={detail.height} 
-                      unoptimized
+                      sizes="160px"
                       className="object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300 max-w-full max-h-full" 
                       priority={i < 4}
                     />

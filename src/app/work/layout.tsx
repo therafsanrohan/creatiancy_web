@@ -33,13 +33,6 @@ export default function WorkLayout({ children }: { children: React.ReactNode }) 
         "name": "OMNI CONNECTS Branding",
         "description": "Complete visual identity and system overhaul.",
         "url": "https://www.creatiancy.com/work/omni-connects"
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "Vespera AI Platform",
-        "description": "Intelligent brand identity and futuristic interface engineering.",
-        "url": "https://www.creatiancy.com/work/vespera-ai"
       }
     ]
   };

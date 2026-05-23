@@ -34,7 +34,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <GoogleAnalytics gaId="G-1JLHT26WTS" />
           <script
             id="organization-json-ld"
             type="application/ld+json"
@@ -64,6 +63,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
+        <GoogleAnalytics gaId="G-1JLHT26WTS" />
         <SecurityProvider>
           <ThemeProvider
             attribute="class"
