@@ -10,13 +10,11 @@ import path from "path";
 // Configuration & Data
 import { recentProjects } from "@/constants/projects";
 import { agencyServices } from "@/constants/services";
-import Testimonials from "@/components/Testimonials";
-import FAQSection from "@/components/FAQSection";
-
-// Dynamic import for the marquee to keep things snappy
 const BrandsMarquee = dynamic(() => import("@/components/BrandsMarquee"), { 
   ssr: true,
 });
+const Testimonials = dynamic(() => import("@/components/Testimonials"));
+const FAQSection = dynamic(() => import("@/components/FAQSection"));
 
 /**
  * Main Landing Page
@@ -105,19 +103,22 @@ export default function Home() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           {recentProjects.map((project, index) => (
-            <a 
+            <div 
               key={project.id} 
-              href={project.link} 
-              target={project.link !== "#" ? "_blank" : undefined}
-              rel="noopener noreferrer"
-              className={`group cursor-pointer flex flex-col ${index % 2 !== 0 ? 'md:mt-16' : ''}`}
+              className={`flex flex-col ${index % 2 !== 0 ? 'md:mt-16' : ''}`}
             >
-              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-[var(--muted)]/10 border border-[var(--muted)]/30">
+              <Link 
+                href={project.link}
+                target={project.link !== "#" ? "_blank" : undefined}
+                rel="noopener noreferrer"
+                className="group cursor-pointer relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-[var(--muted)]/10 border border-[var(--muted)]/30 block"
+              >
                 {project.image ? (
                   <Image 
                     src={project.image} 
                     alt={project.title}
                     fill
+                    quality={85}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                     priority={index === 0}
@@ -134,16 +135,18 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
 
-              <div className="flex flex-col gap-2 px-2">
-                <h4 className="text-2xl md:text-3xl font-bold font-heading group-hover:text-[var(--ruby-red)] transition-colors duration-300 flex justify-between items-center">
-                  {project.title}
-                </h4>
-                <p className="text-[var(--muted-fg)] text-lg font-light">{project.industry}</p>
-                <div className="h-0.5 w-0 bg-[var(--ruby-red)] group-hover:w-12 transition-all duration-500 ease-out mt-2" />
+              <div className="flex flex-col gap-4 px-2">
+                <Link href={project.link} className="group cursor-pointer block">
+                  <h4 className="text-2xl md:text-3xl font-bold font-heading group-hover:text-[var(--ruby-red)] transition-colors duration-300 flex justify-between items-center">
+                    {project.title}
+                  </h4>
+                  <p className="text-[var(--muted-fg)] text-lg font-light mt-1">{project.industry}</p>
+                  <div className="h-0.5 w-0 bg-[var(--ruby-red)] group-hover:w-12 transition-all duration-500 ease-out mt-2" />
+                </Link>
               </div>
-            </a>
+            </div>
           ))}
         </div>
       </section>

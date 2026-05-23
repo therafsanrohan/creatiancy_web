@@ -34,12 +34,12 @@ export const recentProjects: Project[] = [
     image: '/images/project real.png', 
     link: '/work/odl-ads',
     problem: "ODL required a visual system that could communicate high-end property values instantly, standing out in overcrowded social media feeds.",
-    solution: "We engineered a clean, grids-based typographic structure with bold color contrasts and high-impact visual anchors designed to arrest reader attention in under 1.5 seconds.",
+    solution: "We engineered a clean, grids-based typographic structure with bold color contrasts and high-impact visual anchors. We designed comprehensive OOH branding billboards and fencing designs.",
     result: "Campaign visual metrics improved by 40% CTR, establishing immediate design authority for their regional promotional campaigns.",
-    technologies: ["Visual Strategy", "Grid Design", "Typography Systems", "Creative Direction"],
+    technologies: ["Visual Strategy", "OOH Branding", "Billboard Design", "Fencing Design"],
     clientName: "ODL Developers Ltd.",
     date: "Dec 2025",
-    externalLink: "https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design"
+    externalLink: "https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design?platform=direct"
   },
   { 
     id: 'omni-connects', 
@@ -53,7 +53,8 @@ export const recentProjects: Project[] = [
     result: "Successfully elevated their enterprise trust metrics, resulting in a smooth multi-million dollar series funding round.",
     technologies: ["Brand Strategy", "Corporate Identity", "Logo Design", "SaaS Interface System"],
     clientName: "OMNI CONNECTS Corporation",
-    date: "Oct 2025"
+    date: "Oct 2025",
+    externalLink: "https://www.omniconnects.com"
   }
 ];
 

@@ -5,9 +5,11 @@ import { motion, Variants, useScroll, useTransform } from "framer-motion";
 import { Sparkles, Target, Zap, Rocket, CheckCircle2, ArrowRight, ShieldCheck, Heart, Cpu, Palette } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import Testimonials from "@/components/Testimonials";
+import dynamic from "next/dynamic";
 import { activePresence } from "@/constants/globalPresence";
 import LiveTime from "@/components/LiveTime";
+
+const Testimonials = dynamic(() => import("@/components/Testimonials"));
 
 export default function AboutPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -154,6 +156,7 @@ export default function AboutPage() {
                   src="/images/founder_v2.png" 
                   alt="Rafsan Rohan"
                   fill
+                  quality={85}
                   sizes="(max-width: 768px) 100vw, 40vw"
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
                   priority

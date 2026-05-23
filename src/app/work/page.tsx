@@ -50,9 +50,19 @@ export default function WorkPage() {
               }}
               className={`group cursor-pointer flex flex-col ${index % 2 !== 0 ? 'md:mt-24' : ''}`} // Offset alternating columns
             >
-              <Link href={`/work/${project.id}`} className="block relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-[var(--muted)]/10 border border-[var(--muted)]/30">
-                {/* Image Placeholder / Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-[var(--muted)]/40 to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <Link 
+                href={`/work/${project.id}`} 
+                className="block relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-[var(--muted)]/10 border border-[var(--muted)]/30"
+              >
+                {project.image ? (
+                  <img 
+                    src={project.image} 
+                    alt={project.title}
+                    className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  />
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-br from-[var(--muted)]/40 to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />
+                )}
                 
                 {/* Hover Overlay */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10 flex items-center justify-center">
@@ -62,19 +72,21 @@ export default function WorkPage() {
                 </div>
 
                 {/* Optional Category Tag */}
-                <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-xs font-medium tracking-wider uppercase opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100">
+                <div className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-black/20 backdrop-blur-md border border-white/20 text-white text-xs font-medium tracking-wider uppercase opacity-0 -translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-500 delay-100 shadow-sm">
                   Case Study
                 </div>
               </Link>
 
-              <div className="flex flex-col gap-2">
-                <h2 className="text-2xl md:text-3xl font-bold font-heading group-hover:text-[var(--ruby-red)] transition-colors duration-300 flex justify-between items-center">
-                  {project.title}
-                </h2>
-                <p className="text-[var(--muted-fg)] text-lg font-light leading-relaxed">
-                  {project.shortDescription}
-                </p>
-                <div className="h-0.5 w-0 bg-[var(--ruby-red)] group-hover:w-12 transition-all duration-500 ease-out mt-2" />
+              <div className="flex flex-col gap-3">
+                <Link href={`/work/${project.id}`} className="group cursor-pointer block">
+                  <h2 className="text-2xl md:text-3xl font-bold font-heading group-hover:text-[var(--ruby-red)] transition-colors duration-300 flex justify-between items-center">
+                    {project.title}
+                  </h2>
+                  <p className="text-[var(--muted-fg)] text-lg font-light leading-relaxed mt-2">
+                    {project.shortDescription}
+                  </p>
+                  <div className="h-0.5 w-0 bg-[var(--ruby-red)] group-hover:w-12 transition-all duration-500 ease-out mt-3" />
+                </Link>
               </div>
             </motion.div>
           ))}

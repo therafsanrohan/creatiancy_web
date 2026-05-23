@@ -45,7 +45,7 @@ export default function RootLayout({
                 "name": "Creatiancy",
                 "url": "https://www.creatiancy.com",
                 "logo": "https://www.creatiancy.com/og-image.jpg",
-                "description": "Creatiancy is an elite digital studio engineering bespoke brand experiences. We are your technical powerhouse.",
+                "description": "Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.",
                 "sameAs": [
                   "https://x.com/creatiancy",
                   "https://www.linkedin.com/company/creatiancy"

@@ -9,7 +9,7 @@ export const defaultSEO: Metadata = {
   alternates: {
     canonical: '/',
   },
-  description: "We are a boutique digital design and development studio crafting precision brand experiences for ambitious brands. From identity systems to high-performance web development — we build what moves people.",
+  description: "Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.",
   keywords: ['Digital Studio', 'Creative Design', 'Web Development', 'Brand Identity', 'Custom Software'],
   openGraph: {
     type: 'website',
@@ -17,7 +17,7 @@ export const defaultSEO: Metadata = {
     url: '/',
     siteName: 'Creatiancy',
     title: 'Creatiancy | Digital Design & Development Studio',
-    description: 'Boutique digital studio crafting high-performance experiences for ambitious brands.',
+    description: 'Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.',
     images: [
       {
         url: '/og-image.jpg',
@@ -30,13 +30,22 @@ export const defaultSEO: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Creatiancy | Digital Design & Development Studio',
-    description: 'Boutique digital studio crafting high-performance experiences for ambitious brands.',
+    description: 'Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.',
     creator: '@creatiancy',
   },
   icons: {
-    icon: '/icon.svg',
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    icon: [
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: ['/icon.svg'],
+    apple: [
+      { url: '/icon.svg' }
+    ],
+  },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
   },
   robots: {
     index: true,

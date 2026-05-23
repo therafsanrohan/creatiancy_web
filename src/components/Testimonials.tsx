@@ -89,6 +89,7 @@ export default function Testimonials() {
                     fill
                     sizes="(max-width: 768px) 48px, 48px"
                     className="object-cover"
+                    quality={80}
                     priority={index < 2}
                     draggable={false}
                   />

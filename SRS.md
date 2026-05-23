@@ -45,6 +45,11 @@ The codebase is refactored to prioritize readability and maintainability. It use
 - **Security Perimeter:** Disables common DevTools shortcuts and right-click to protect creative assets.
 - **CMS Sync:** Embedded Sanity Studio for complex content management.
 
+### 4.1 Performance & SEO Architecture
+- **Global Image Optimization:** Rigorous use of `next/image` with enforced quality scaling (80-85%) and AVIF/WebP formats to reduce payload size.
+- **Lazy Loading (FCP/TTI):** Non-critical client components (e.g., Testimonials, FAQ) are asynchronously deferred using `next/dynamic` to ensure rapid First Contentful Paint.
+- **Platform-Agnostic SEO:** Enhanced JSON-LD structured data and optimized meta tags built specifically to support indexing by standard search engines (Google), edge browsers, and AI web scrapers (ChatGPT, etc.).
+
 ---
 
 ## 5. Management Guides

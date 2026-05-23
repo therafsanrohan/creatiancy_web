@@ -5,7 +5,7 @@ import { recentProjects } from "@/constants/projects";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, Calendar, User, Tag, Sparkles, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, ArrowUpRight, Calendar, User, Tag, Sparkles, CheckCircle } from "lucide-react";
 
 export default function CaseStudyPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -47,6 +47,18 @@ export default function CaseStudyPage({ params }: { params: Promise<{ id: string
             <p className="text-xl sm:text-2xl text-[var(--muted-fg)] font-light leading-relaxed text-balance">
               {project.shortDescription}
             </p>
+
+            {project.externalLink && (
+              <a 
+                href={project.externalLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 mt-6 bg-[var(--ruby-red)] text-white rounded-full font-bold transition-all duration-300 hover:scale-105 shadow-xl shadow-[var(--ruby-red)]/20 active:scale-95"
+              >
+                <span>{project.externalLink.includes('behance') ? 'View on Behance' : 'Visit Live Site'}</span>
+                <ArrowUpRight className="w-5 h-5" />
+              </a>
+            )}
           </div>
 
           {/* Project Metadata Panel */}
