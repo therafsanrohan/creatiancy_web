@@ -2,26 +2,26 @@ export const agencyServices = [
   {
     title: "Brand Identity",
     desc: "We craft visual stories that resonate. Our designs are built to last and communicate your brand's unique soul.",
-    href: "/services"
+    href: "/services#brand-identity"
   },
   {
     title: "Digital Experience",
     desc: "From concept to code, we build fluid platforms that bridge the gap between your brand and your audience.",
-    href: "/services"
+    href: "/services#digital-experience"
   },
   {
     title: "Creative Strategy",
     desc: "Our approach blends deep research with bold execution, ensuring your brand stays ahead of the curve.",
-    href: "/services"
+    href: "/services#creative-strategy"
   },
   {
     title: "Technical Excellence",
     desc: "We leverage modern technology to build robust, scalable solutions that power your business forward.",
-    href: "/services"
+    href: "/services#technical-excellence"
   },
   {
     title: "Impactful Campaigns",
     desc: "We don't just post content; we create movements through integrated marketing that drives real results.",
-    href: "/services"
+    href: "/services#creative-campaigns"
   }
 ];

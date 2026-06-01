@@ -19,15 +19,16 @@ import { footerConfig } from "@/constants/footerConfig";
  * to a constants file if the list grows significantly.
  */
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Work", href: "/work" },
-  { name: "Services", href: "/services" },
+  { name: "Home", href: "/", title: "Creatiancy — Digital Design & Development Studio" },
+  { name: "Work", href: "/work", title: "View Creatiancy's selected brand and digital work" },
+  { name: "Services", href: "/services", title: "Explore Creatiancy's services: brand identity, web development, strategy" },
   { 
     name: "Company", 
     href: "/about",
+    title: "Learn about the Creatiancy studio, team, and values",
     dropdown: [
-      { name: "About Us", href: "/about" },
-      { name: "World Live", href: "/world-live" }
+      { name: "About Us", href: "/about", title: "Learn about the Creatiancy studio, team, and values" },
+      { name: "World Live", href: "/world-live", title: "Track Creatiancy's global operational hubs in real time" }
     ]
   },
 ];
@@ -124,6 +125,7 @@ export default function Navbar() {
                   {hasDropdown ? (
                     <Link
                       href={link.href!}
+                      title={link.title}
                       className={cn(
                         "relative rounded-full font-medium transition-all duration-500 ease-out outline-none group flex items-center gap-1 cursor-pointer",
                         isScrolled ? "px-3 py-1.5 lg:px-4 text-[11px] lg:text-xs" : "px-4 py-2 lg:px-6 text-xs lg:text-sm"
@@ -151,6 +153,7 @@ export default function Navbar() {
                   ) : (
                     <Link
                       href={link.href!}
+                      title={link.title}
                       className={cn(
                         "relative rounded-full font-medium transition-all duration-500 ease-out outline-none group flex items-center",
                         isScrolled ? "px-3 py-1.5 lg:px-4 text-[11px] lg:text-xs" : "px-4 py-2 lg:px-6 text-xs lg:text-sm"
@@ -214,6 +217,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 lg:gap-3 z-50 shrink-0">
             <Link 
               href="/contact" 
+              title="Start a project with Creatiancy"
               className={cn(
                 "hidden lg:flex items-center justify-center gap-2 font-medium bg-[var(--text)] text-[var(--bg)] rounded-full hover:bg-[var(--ruby-red)] hover:text-white transition-all duration-500 ease-out shadow-sm active:scale-95 whitespace-nowrap",
                 isScrolled ? "text-[11px] lg:text-xs px-4 py-1.5 lg:px-5 lg:py-2" : "text-xs lg:text-sm px-5 py-2 lg:px-6 lg:py-2.5"

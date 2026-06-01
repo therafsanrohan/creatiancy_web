@@ -8,6 +8,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { activePresence } from "@/constants/globalPresence";
 import LiveTime from "@/components/LiveTime";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const Testimonials = dynamic(() => import("@/components/Testimonials"));
 
@@ -57,7 +58,9 @@ export default function AboutPage() {
   ];
 
   return (
-    <div className="min-h-screen pt-32 pb-24 overflow-hidden relative selection:bg-[var(--ruby-red)] selection:text-white">
+    <>
+    <Breadcrumb currentPageName="About" currentPagePath="/about" />
+    <div className="min-h-screen pt-8 pb-24 overflow-hidden relative selection:bg-[var(--ruby-red)] selection:text-white">
       {/* Liquid Creative Backgrounds */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div
@@ -116,13 +119,13 @@ export default function AboutPage() {
             </div>
             <div className="md:col-span-8 space-y-6 text-[var(--muted-fg)] text-lg leading-relaxed font-light">
               <p>
-                Founded on the intersection of deep visual strategy and rigorous software engineering, Creatiancy was born out of a simple frustration: the digital world was getting crowded, but it wasn't getting any better. Generic templates and buzzword-fueled campaigns were failing ambitious companies. We set out to build a boutique powerhouse designed exclusively for brands that refuse to be ignored.
+                Founded on the intersection of deep visual strategy and <Link href="/services#technical-excellence" className="hover:text-[var(--ruby-red)] underline decoration-[var(--ruby-red)]/30 transition-colors">rigorous software engineering</Link>, Creatiancy was born out of a simple frustration: the digital world was getting crowded, but it wasn't getting any better. Generic templates and buzzword-fueled campaigns were failing ambitious companies. We set out to build a boutique powerhouse designed exclusively for brands that refuse to be ignored.
               </p>
               <p>
-                What makes us different is our uncompromising focus on precision. We don't believe in guess-work or aesthetic decoration. Every line of code we write and every brand system we craft is engineered with clear mathematical intent, pixel perfection, and high-performance metrics. We act as your specialized technical and creative partner, helping your business capture permanent market authority.
+                What makes us different is our uncompromising focus on precision. We don't believe in guess-work or aesthetic decoration. Every line of code we write and every <Link href="/services#brand-identity" className="hover:text-[var(--ruby-red)] underline decoration-[var(--ruby-red)]/30 transition-colors">brand system</Link> we craft is engineered with clear mathematical intent, pixel perfection, and high-performance metrics. We act as your specialized technical and creative partner, helping your business capture permanent market authority.
               </p>
               <p>
-                Today, we work with a highly selective roster of global clients, building digital legacies that scale infinitely. We keep our team focused, our lines of communication direct, and our standards absolute. From state-of-the-art corporate identities to bleeding-edge web infrastructures, we build what moves people.
+                Today, we work with a highly selective roster of global clients, building <Link href="/work" className="hover:text-[var(--ruby-red)] underline decoration-[var(--ruby-red)]/30 transition-colors">digital legacies</Link> that scale infinitely. We keep our team focused, our lines of communication direct, and our standards absolute. From state-of-the-art corporate identities to bleeding-edge web infrastructures, we build what moves people.
               </p>
             </div>
           </div>
@@ -154,7 +157,7 @@ export default function AboutPage() {
               <div className="relative w-full max-w-md ml-0 mr-auto md:max-w-none aspect-[4/5] rounded-[2.5rem] overflow-hidden bg-[var(--muted)]/20 border border-[var(--muted)]/40 shadow-2xl group">
                 <Image 
                   src="/images/founder_v2.png" 
-                  alt="Rafsan Rohan"
+                  alt="Rafsan Rohan — Founder & Creative Director of Creatiancy digital studio"
                   fill
                   quality={85}
                   sizes="(max-width: 768px) 100vw, 40vw"
@@ -385,6 +388,76 @@ export default function AboutPage() {
       {/* Testimonials */}
       <Testimonials />
 
+      {/* AEO: Common Questions block — Group 4B */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is Creatiancy?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Creatiancy is a boutique digital design and development studio specializing in precision brand identity systems, high-performance web applications, and integrated creative strategy. The studio operates globally across six cities: Dhaka, Wyoming, Cape Town, Johannesburg, Nicosia, and Nairobi."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where is Creatiancy based?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Creatiancy is headquartered in Dhaka, Bangladesh, with active operational offices in Wyoming (United States), Cape Town and Johannesburg (South Africa), Nicosia (Cyprus), and Nairobi (Kenya) — enabling round-the-clock availability for clients worldwide."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Who does Creatiancy work with?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Creatiancy works with a selective roster of founders, CMOs, and marketing leaders at growth-stage companies and established businesses seeking premium brand identity, web development, and digital strategy services globally."
+                }
+              }
+            ]
+          })
+        }}
+      />
+      <section
+        id="common-questions"
+        aria-labelledby="common-questions-heading"
+        className="container mx-auto px-4 mt-16 mb-8"
+      >
+        <h2
+          id="common-questions-heading"
+          className="text-lg font-bold tracking-widest uppercase text-[var(--muted-fg)]/60 mb-8 border-b border-[var(--muted)]/20 pb-4"
+        >
+          Common Questions
+        </h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              q: "What is Creatiancy?",
+              a: "Creatiancy is a boutique digital design and development studio specializing in precision brand identity systems, high-performance web applications, and integrated creative strategy. The studio operates globally across six cities: Dhaka, Wyoming, Cape Town, Johannesburg, Nicosia, and Nairobi."
+            },
+            {
+              q: "Where is Creatiancy based?",
+              a: "Creatiancy is headquartered in Dhaka, Bangladesh, with active operational offices in Wyoming (United States), Cape Town and Johannesburg (South Africa), Nicosia (Cyprus), and Nairobi (Kenya) — enabling round-the-clock availability for clients worldwide."
+            },
+            {
+              q: "Who does Creatiancy work with?",
+              a: "Creatiancy works with a selective roster of founders, CMOs, and marketing leaders at growth-stage companies and established businesses seeking premium brand identity, web development, and digital strategy services globally."
+            }
+          ].map(({ q, a }, i) => (
+            <div key={i} className="space-y-3">
+              <h3 className="text-sm font-bold text-[var(--text)]/80">{q}</h3>
+              <p className="text-sm text-[var(--muted-fg)] leading-relaxed font-light">{a}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* 5. CTA Section: Work with us */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -415,5 +488,6 @@ export default function AboutPage() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }

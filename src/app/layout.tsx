@@ -40,21 +40,100 @@ export default function RootLayout({
             dangerouslySetInnerHTML={{
               __html: JSON.stringify({
                 "@context": "https://schema.org",
-                "@type": "ProfessionalService",
+                "@type": "Organization",
                 "@id": "https://www.creatiancy.com/#organization",
                 "name": "Creatiancy",
+                "legalName": "Creatiancy Digital Studio",
                 "url": "https://www.creatiancy.com",
-                "logo": "https://www.creatiancy.com/og-image.jpg",
-                "description": "Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "https://www.creatiancy.com/og-image.jpg",
+                  "width": 1200,
+                  "height": 630
+                },
+                "image": "https://www.creatiancy.com/og-image.jpg",
+                "description": "Creatiancy is a boutique digital design and development studio specializing in precision brand identity systems, high-performance web applications, and creative strategy.",
+                "foundingLocation": {
+                  "@type": "Place",
+                  "name": "Dhaka, Bangladesh"
+                },
+                "numberOfEmployees": {
+                  "@type": "QuantitativeValue",
+                  "minValue": 5,
+                  "maxValue": 20
+                },
+                "areaServed": [
+                  { "@type": "Country", "name": "Bangladesh" },
+                  { "@type": "Country", "name": "United States" },
+                  { "@type": "Country", "name": "South Africa" },
+                  { "@type": "Country", "name": "Kenya" },
+                  { "@type": "Country", "name": "Cyprus" },
+                  { "@type": "AdministrativeArea", "name": "Global" }
+                ],
                 "sameAs": [
+                  "https://twitter.com/creatiancy",
                   "https://x.com/creatiancy",
                   "https://www.linkedin.com/company/creatiancy"
                 ],
-                "address": {
-                  "@type": "PostalAddress",
-                  "addressLocality": "Dhaka",
-                  "addressCountry": "BD"
-                }
+                "contactPoint": [
+                  {
+                    "@type": "ContactPoint",
+                    "email": "contact@creatiancy.com",
+                    "contactType": "customer service",
+                    "availableLanguage": ["English"],
+                    "contactOption": "TollFree"
+                  },
+                  {
+                    "@type": "ContactPoint",
+                    "email": "business@creatiancy.com",
+                    "contactType": "sales",
+                    "availableLanguage": ["English"]
+                  }
+                ],
+                "knowsAbout": [
+                  "Brand Identity Design",
+                  "Visual Identity Systems",
+                  "Web Application Development",
+                  "Next.js Development",
+                  "Digital Experience Design",
+                  "Creative Strategy",
+                  "Technical SEO",
+                  "Headless CMS",
+                  "Creative Campaigns",
+                  "Conversion Optimization"
+                ],
+                "review": [
+                  {
+                    "@type": "Review",
+                    "author": {
+                      "@type": "Person",
+                      "name": "Hector Oviedo",
+                      "jobTitle": "Founder",
+                      "worksFor": { "@type": "Organization", "name": "OMNI CONNECTS" }
+                    },
+                    "reviewBody": "Amazing company to work with. They treat you like family with respect and kindness and customer service is A+. A company driven to meet your standards.",
+                    "reviewRating": {
+                      "@type": "Rating",
+                      "ratingValue": "5",
+                      "bestRating": "5"
+                    }
+                  },
+                  {
+                    "@type": "Review",
+                    "author": {
+                      "@type": "Person",
+                      "name": "Awais Sadiq",
+                      "jobTitle": "Founder",
+                      "worksFor": { "@type": "Organization", "name": "Sadiq Digital" }
+                    },
+                    "reviewBody": "The communication was awesome, and they are really good at what they do. They made sure to deliver the best and worked really hard with me to achieve the desired results. I totally recommend them to others.",
+                    "reviewRating": {
+                      "@type": "Rating",
+                      "ratingValue": "5",
+                      "bestRating": "5"
+                    }
+                  }
+                ]
               })
             }}
           />

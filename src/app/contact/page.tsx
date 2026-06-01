@@ -6,6 +6,7 @@ import { ArrowRight, Mail, Briefcase, MapPin, Phone, Send, Loader2, CheckCircle2
 import { footerConfig } from "@/constants/footerConfig";
 import LiveTime from "@/components/LiveTime";
 import { activePresence } from "@/constants/globalPresence";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const spring: Transition = {
   type: "spring",
@@ -66,7 +67,9 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen pt-32 pb-24 overflow-hidden relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
+    <>
+      <Breadcrumb currentPageName="Contact" currentPagePath="/contact" />
+      <div className="min-h-screen pt-8 pb-24 overflow-hidden relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
       {/* 
           Background Ambience 
           Adds that high-end 'Creatiancy' glow to the page corners.
@@ -325,5 +328,6 @@ export default function ContactPage() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }

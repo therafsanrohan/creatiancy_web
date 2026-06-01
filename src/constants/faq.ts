@@ -11,37 +11,37 @@ export const faqs: FAQItem[] = [
   {
     id: "faq-1",
     question: "What core services does Creatiancy offer?",
-    answer: "We are a global-standard digital design and development studio. Our premium expertise spans comprehensive Brand Identity systems (logos, visual languages, robust guidelines), bespoke Digital Experiences (immersive digital products, custom platforms, high-fidelity design layouts), Creative Strategy (deep audience insights, strategic positioning), Technical Excellence (uncompromising performance, clean modular architectures, high scalability), and high-impact digital campaigns.",
+    answer: "Creatiancy offers five core service pillars: Brand Identity (logos, visual language systems, brand guidelines), Digital Experience (custom web platforms, UI/UX design, headless CMS), Creative Strategy (market positioning, audience research, growth mapping), Technical Excellence (Next.js development, performance engineering, technical SEO), and Creative Campaigns (ad management, creative direction, VFX, conversion optimization). Each service is delivered end-to-end by specialist teams.",
     category: "General"
   },
   {
     id: "faq-2",
-    question: "How do you structure your project pricing?",
-    answer: "We price projects based on scope, complexity, and timeline. After an initial discovery call, we provide a detailed proposal with fixed-project or retainer-based options. We believe in full transparency — no hidden fees, no surprises.",
+    question: "How does Creatiancy structure project pricing?",
+    answer: "Creatiancy prices projects based on scope, complexity, and timeline. Every engagement begins with a discovery call, after which the studio provides a detailed fixed-price proposal or retainer-based structure — no hidden fees, no surprises. Pricing is agreed in writing before any work begins.",
     category: "Pricing"
   },
   {
     id: "faq-3",
-    question: "What does the typical workflow from process to delivery look like?",
-    answer: "Every project begins with a discovery and strategy phase, followed by concept design, iterative refinement, and final delivery. We keep you involved at every milestone through shared review sessions and clear communication channels.",
+    question: "What does the Creatiancy project workflow look like?",
+    answer: "The Creatiancy workflow follows three phases: Precision Strategy (discovery, positioning, and project roadmap), Fluid Structure (visual identity, design system, and prototyping), and Focused Execution (implementation, QA, and launch). Clients are involved at every milestone through shared review sessions and direct communication.",
     category: "Process"
   },
   {
     id: "faq-4",
-    question: "How long does a typical project take from start to finish?",
-    answer: "Most brand identity projects take 3–6 weeks. Full digital experience builds range from 6–14 weeks depending on complexity. We always agree on a delivery schedule before work begins.",
+    question: "How long does a Creatiancy project take?",
+    answer: "Brand identity projects typically take 3–6 weeks. Full digital experience builds range from 6–14 weeks depending on complexity. All project timelines are agreed upon before work begins and confirmed in the proposal.",
     category: "Delivery"
   },
   {
     id: "faq-5",
-    question: "Do you build websites that we can edit ourselves afterwards?",
-    answer: "Yes. We build on modern CMS platforms (such as Sanity, Contentful, or a custom headless CMS) so your team can manage and update content independently after handoff. We also provide training documentation.",
+    question: "Can clients edit their website themselves after Creatiancy builds it?",
+    answer: "Yes. Creatiancy builds websites on modern headless CMS platforms — typically Sanity or Contentful — so clients can edit, update, and manage content independently after handoff. Training documentation is always included in the delivery package.",
     category: "Delivery"
   },
   {
     id: "faq-6",
-    question: "Can you collaborate with our existing in-house team?",
-    answer: "Absolutely. We regularly embed within existing teams, working alongside your designers, developers, and marketers. We adapt to your tools and workflow — Figma, Notion, Slack, or whatever you use.",
+    question: "Can Creatiancy collaborate with an existing in-house team?",
+    answer: "Yes. Creatiancy regularly embeds within client teams, working alongside in-house designers, developers, and marketers. The studio adapts to existing tools and workflows — Figma, Notion, Slack, Linear, or any other stack the client uses.",
     category: "Design"
   }
 ];

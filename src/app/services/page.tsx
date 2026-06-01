@@ -5,6 +5,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import Testimonials from "@/components/Testimonials";
 import FAQSection from "@/components/FAQSection";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const services = [
   {
@@ -47,103 +48,119 @@ const services = [
 
 export default function ServicesPage() {
   return (
-    <div className="min-h-screen pt-32 pb-24">
-      {/* Header Section */}
-      <div className="container mx-auto px-4 mb-24">
+    <>
+      <Breadcrumb currentPageName="Services" currentPagePath="/services" />
+      <div className="min-h-screen pt-8 pb-24">
+        {/* Header Section */}
+        <div className="container mx-auto px-4 mb-24">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-4xl"
+          >
+            <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6">
+              What We Do
+            </div>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-tighter mb-8 leading-tight">
+              Strategic design meets <br className="hidden md:block"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--text)] to-[var(--ruby-red)]">intelligent growth.</span>
+            </h1>
+            <p className="text-xl md:text-2xl text-[var(--muted-fg)] text-balance font-light max-w-2xl">
+              We don't offer generic templates or buzzwords. We solve fundamental business problems through precision-engineered digital services.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Services List */}
+        <div className="container mx-auto px-4 space-y-12 md:space-y-24">
+          {services.map((svc, i) => {
+            const anchorIds = [
+              "brand-identity",
+              "digital-strategy",
+              "content-marketing",
+              "technical-excellence",
+              "creative-campaigns",
+            ];
+            return (
+            <motion.article 
+              key={i}
+              id={anchorIds[i]}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7, delay: i * 0.1 }}
+              className="group cursor-pointer grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--muted)]/50 bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--ruby-red)]/5 active:bg-[var(--muted)]/20 active:shadow-[var(--ruby-red)]/5"
+            >
+              <div className="space-y-6">
+                <h2 className="text-3xl md:text-4xl font-heading font-bold">{svc.title}</h2>
+                <ul className="space-y-3 pt-6 border-t border-[var(--muted)]/50">
+                  {svc.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-3 text-[var(--muted-fg)] font-medium">
+                      <CheckCircle2 className="w-5 h-5 text-[var(--ruby-red)]" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 bg-[var(--bg)] p-8 rounded-2xl border border-[var(--muted)]/30">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] border-b border-[var(--muted)]/50 pb-2">The Problem</h3>
+                  <p className="text-[var(--muted-fg)] leading-relaxed">{svc.problem}</p>
+                </div>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] border-b border-[var(--muted)]/50 pb-2">Who It&apos;s For</h3>
+                  <p className="text-[var(--muted-fg)] leading-relaxed">{svc.for}</p>
+                </div>
+                <div className="space-y-4 sm:col-span-2 lg:col-span-1">
+                  <h3 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] border-b border-[var(--muted)]/50 pb-2">The Outcome</h3>
+                  <p className="text-[var(--text)] font-semibold leading-relaxed">{svc.outcome}</p>
+                  <Link href="/contact" className="inline-block text-xs font-bold text-[var(--ruby-red)] hover:underline mt-1" title="Start a project with Creatiancy">
+                    Start a project →
+                  </Link>
+                </div>
+              </div>
+            </motion.article>
+            );
+          })}
+        </div>
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* FAQs */}
+        <FAQSection />
+
+        {/* Marketing Action Section */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="max-w-4xl"
+          className="container mx-auto px-4 mt-24 md:mt-32"
         >
-          <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6">
-            What We Do
+          <div className="relative rounded-3xl overflow-hidden bg-[var(--text)] text-[var(--bg)] px-6 sm:px-10 py-16 sm:py-20 md:py-32 flex items-center justify-center text-center shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[var(--ruby-red)]/20 to-transparent mix-blend-overlay" />
+            <div className="relative z-10 max-w-3xl mx-auto space-y-6 md:space-y-8">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tighter text-balance">
+                Ready to dominate your market?
+              </h2>
+              <p className="text-lg sm:text-xl opacity-80 font-light max-w-xl mx-auto text-balance">
+                Stop settling for average digital experiences. Let's engineer a solution that positions your brand as the undisputed leader.
+              </p>
+              <div className="pt-6 md:pt-8 flex flex-col items-center">
+                <Link 
+                  href="/contact" 
+                  className="inline-flex w-full sm:w-auto justify-center items-center gap-3 bg-[var(--ruby-red)] text-white px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 shadow-xl shadow-[var(--ruby-red)]/30"
+                >
+                  Start a Conversation
+                  <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
+                </Link>
+              </div>
+            </div>
           </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-extrabold tracking-tighter mb-8 leading-tight">
-            Strategic design meets <br className="hidden md:block"/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-[var(--text)] to-[var(--ruby-red)]">intelligent growth.</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-[var(--muted-fg)] text-balance font-light max-w-2xl">
-            We don't offer generic templates or buzzwords. We solve fundamental business problems through precision-engineered digital services.
-          </p>
         </motion.div>
       </div>
-
-      {/* Services List */}
-      <div className="container mx-auto px-4 space-y-12 md:space-y-24">
-        {services.map((svc, i) => (
-          <motion.div 
-            key={i}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.7, delay: i * 0.1 }}
-            className="group cursor-pointer grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--muted)]/50 bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--ruby-red)]/5 active:bg-[var(--muted)]/20 active:shadow-[var(--ruby-red)]/5"
-          >
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl font-heading font-bold">{svc.title}</h2>
-              <ul className="space-y-3 pt-6 border-t border-[var(--muted)]/50">
-                {svc.features.map((feature, idx) => (
-                  <li key={idx} className="flex items-center gap-3 text-[var(--muted-fg)] font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-[var(--ruby-red)]" />
-                    {feature}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 bg-[var(--bg)] p-8 rounded-2xl border border-[var(--muted)]/30">
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] border-b border-[var(--muted)]/50 pb-2">The Problem</h3>
-                <p className="text-[var(--muted-fg)] leading-relaxed">{svc.problem}</p>
-              </div>
-              <div className="space-y-4">
-                <h3 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] border-b border-[var(--muted)]/50 pb-2">Who It's For</h3>
-                <p className="text-[var(--muted-fg)] leading-relaxed">{svc.for}</p>
-              </div>
-              <div className="space-y-4 sm:col-span-2 lg:col-span-1">
-                <h3 className="text-sm font-bold tracking-widest uppercase text-[var(--ruby-red)] border-b border-[var(--muted)]/50 pb-2">The Outcome</h3>
-                <p className="text-[var(--text)] font-semibold leading-relaxed">{svc.outcome}</p>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Testimonials */}
-      <Testimonials />
-
-      {/* FAQs */}
-      <FAQSection />
-
-      {/* Marketing Action Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="container mx-auto px-4 mt-24 md:mt-32"
-      >
-        <div className="relative rounded-3xl overflow-hidden bg-[var(--text)] text-[var(--bg)] px-6 sm:px-10 py-16 sm:py-20 md:py-32 flex items-center justify-center text-center shadow-2xl">
-          <div className="absolute inset-0 bg-gradient-to-tr from-[var(--ruby-red)]/20 to-transparent mix-blend-overlay" />
-          <div className="relative z-10 max-w-3xl mx-auto space-y-6 md:space-y-8">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tighter text-balance">
-              Ready to dominate your market?
-            </h2>
-            <p className="text-lg sm:text-xl opacity-80 font-light max-w-xl mx-auto text-balance">
-              Stop settling for average digital experiences. Let's engineer a solution that positions your brand as the undisputed leader.
-            </p>
-            <div className="pt-6 md:pt-8 flex flex-col items-center">
-              <Link 
-                href="/contact" 
-                className="inline-flex w-full sm:w-auto justify-center items-center gap-3 bg-[var(--ruby-red)] text-white px-8 py-4 sm:px-10 sm:py-5 rounded-full font-bold text-base sm:text-lg hover:bg-white hover:text-black transition-all duration-300 transform hover:scale-105 shadow-xl shadow-[var(--ruby-red)]/30"
-              >
-                Start a Conversation
-                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </motion.div>
-    </div>
+    </>
   );
 }

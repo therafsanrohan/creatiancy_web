@@ -9,15 +9,29 @@ export const defaultSEO: Metadata = {
   alternates: {
     canonical: '/',
   },
-  description: "Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.",
-  keywords: ['Digital Studio', 'Creative Design', 'Web Development', 'Brand Identity', 'Custom Software'],
+  description: 'Creatiancy is an elite boutique digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications for ambitious brands worldwide.',
+  keywords: [
+    'brand identity design',
+    'digital experience studio',
+    'web development agency',
+    'boutique digital studio',
+    'creative strategy',
+    'Dhaka Bangladesh',
+    'South Africa',
+    'Kenya',
+    'Cyprus',
+    'Digital Studio',
+    'Creative Design',
+    'Brand Identity',
+    'Custom Software',
+  ],
   openGraph: {
     type: 'website',
     locale: 'en_US',
     url: '/',
     siteName: 'Creatiancy',
     title: 'Creatiancy | Digital Design & Development Studio',
-    description: 'Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.',
+    description: 'Elite boutique digital studio crafting precision brand experiences — identity systems and high-performance web applications.',
     images: [
       {
         url: '/og-image.jpg',
@@ -30,7 +44,7 @@ export const defaultSEO: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'Creatiancy | Digital Design & Development Studio',
-    description: 'Creatiancy is an elite digital studio crafting precision brand experiences. We engineer bespoke identity systems and high-performance web applications.',
+    description: 'Elite boutique digital studio. Precision brand experiences, identity systems, high-performance web.',
     creator: '@creatiancy',
   },
   icons: {
@@ -59,4 +73,3 @@ export const defaultSEO: Metadata = {
     },
   },
 };
-

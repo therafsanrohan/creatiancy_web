@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Scale } from "lucide-react";
 import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const sections = [
   { id: "services", title: "1. Services" },
@@ -27,9 +28,11 @@ export default function TermsOfServicePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
-      {/* Hero Section */}
-      <section className="pt-40 pb-20 px-6 md:px-12 max-w-7xl mx-auto relative">
+    <>
+      <Breadcrumb currentPageName="Terms" currentPagePath="/terms" />
+      <div className="min-h-screen bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
+        {/* Hero Section */}
+        <section className="pt-8 pb-20 px-6 md:px-12 max-w-7xl mx-auto relative">
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -174,5 +177,6 @@ export default function TermsOfServicePage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

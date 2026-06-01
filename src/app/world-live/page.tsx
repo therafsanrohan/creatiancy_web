@@ -6,6 +6,7 @@ import { Globe, Search } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
 import { groupedCountries } from "@/constants/worldLive";
 import { activePresence } from "@/constants/globalPresence";
+import Breadcrumb from "@/components/Breadcrumb";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,7 +39,9 @@ export default function WorldLivePage() {
   }, [deferredSearchQuery]);
 
   return (
-    <div className="min-h-screen pt-32 pb-32 relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
+    <>
+      <Breadcrumb currentPageName="World Live" currentPagePath="/world-live" />
+      <div className="min-h-screen pt-8 pb-32 relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
       {/* Eye-soothing Ambient Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_100%_50%_at_50%_0%,#000_60%,transparent_100%)]"></div>
@@ -211,5 +214,6 @@ export default function WorldLivePage() {
         </div>
       </motion.div>
     </div>
+    </>
   );
 }

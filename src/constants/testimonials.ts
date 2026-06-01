@@ -3,15 +3,17 @@ export type Testimonial = {
   name: string;
   designation: string;
   image: string;
+  imageAlt: string;
   review: string;
 };
 
 export const testimonials: Testimonial[] = [
   {
     id: "1",
-    name: "Marcus Vance",
+    name: "Hector Oviedo",
     designation: "Founder of OMNI CONNECTS",
     image: "/clients/hector_img.jpg",
+    imageAlt: "Hector Oviedo, Founder of OMNI CONNECTS — Creatiancy client testimonial",
     review: "Amazing company to work with. They treat you like family with respect and kindness and customer service is A+. A company driven to meet your standards."
   },
   {
@@ -19,6 +21,7 @@ export const testimonials: Testimonial[] = [
     name: "Awais Sadiq",
     designation: "Founder of Sadiq Digital",
     image: "/clients/Awais_img.webp",
+    imageAlt: "Awais Sadiq, Founder of Sadiq Digital — Creatiancy client testimonial",
     review: "The communication was awesome, and they are really good at what they do. They made sure to deliver the best and worked really hard with me to achieve the desired results. I totally recommend them to others and will definitely bring them more work. Thank you!"
   }
 ];

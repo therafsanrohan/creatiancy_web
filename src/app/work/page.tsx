@@ -4,10 +4,13 @@ import { motion } from "framer-motion";
 import { caseStudies } from '@/constants/projects';
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export default function WorkPage() {
   return (
-    <div className="min-h-screen pt-32 pb-24 bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white relative overflow-hidden">
+    <>
+      <Breadcrumb currentPageName="Work" currentPagePath="/work" />
+      <div className="min-h-screen pt-8 pb-24 bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white relative overflow-hidden">
       
       {/* Background Ambience */}
       <div className="absolute top-[-10%] right-[-5%] w-[40vw] h-[40vw] bg-[var(--ruby-red)]/5 blur-[120px] rounded-full pointer-events-none" />
@@ -93,5 +96,6 @@ export default function WorkPage() {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }
