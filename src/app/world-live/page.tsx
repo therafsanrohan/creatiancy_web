@@ -6,7 +6,6 @@ import { Globe, Search } from "lucide-react";
 import LiveTime from "@/components/LiveTime";
 import { groupedCountries } from "@/constants/worldLive";
 import { activePresence } from "@/constants/globalPresence";
-import Breadcrumb from "@/components/Breadcrumb";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -40,7 +39,6 @@ export default function WorldLivePage() {
 
   return (
     <>
-      <Breadcrumb currentPageName="World Live" currentPagePath="/world-live" />
       <div className="min-h-screen pt-8 pb-32 relative bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
       {/* Eye-soothing Ambient Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">

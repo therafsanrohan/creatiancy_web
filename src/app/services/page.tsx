@@ -5,7 +5,6 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import Testimonials from "@/components/Testimonials";
 import FAQSection from "@/components/FAQSection";
-import Breadcrumb from "@/components/Breadcrumb";
 
 const services = [
   {
@@ -49,7 +48,6 @@ const services = [
 export default function ServicesPage() {
   return (
     <>
-      <Breadcrumb currentPageName="Services" currentPagePath="/services" />
       <div className="min-h-screen pt-8 pb-24">
         {/* Header Section */}
         <div className="container mx-auto px-4 mb-24">

@@ -8,7 +8,6 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { activePresence } from "@/constants/globalPresence";
 import LiveTime from "@/components/LiveTime";
-import Breadcrumb from "@/components/Breadcrumb";
 
 const Testimonials = dynamic(() => import("@/components/Testimonials"));
 
@@ -59,7 +58,6 @@ export default function AboutPage() {
 
   return (
     <>
-    <Breadcrumb currentPageName="About" currentPagePath="/about" />
     <div className="min-h-screen pt-8 pb-24 overflow-hidden relative selection:bg-[var(--ruby-red)] selection:text-white">
       {/* Liquid Creative Backgrounds */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">

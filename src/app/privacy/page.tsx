@@ -2,8 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Shield } from "lucide-react";
-import Link from "next/link";
-import Breadcrumb from "@/components/Breadcrumb";
 
 const sections = [
   { id: "info", title: "1. Information We Collect" },
@@ -27,7 +25,6 @@ export default function PrivacyPolicyPage() {
 
   return (
     <>
-      <Breadcrumb currentPageName="Privacy" currentPagePath="/privacy" />
       <div className="min-h-screen bg-[var(--bg)] selection:bg-[var(--ruby-red)] selection:text-white">
         {/* Hero Section */}
         <section className="pt-8 pb-20 px-6 md:px-12 max-w-7xl mx-auto relative">
