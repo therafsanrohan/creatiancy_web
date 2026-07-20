@@ -1,0 +1,32 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+  const response = NextResponse.next();
+
+  // Add Security Headers
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https:; frame-ancestors 'none';"
+  );
+
+  // Validate public invoice token routes to prevent path traversal / injection
+  const pathname = request.nextUrl.pathname;
+  if (pathname.startsWith('/invoice/')) {
+    const token = pathname.replace('/invoice/', '');
+    // Sanitize token parameter
+    if (!token || !/^[a-zA-Z0-9_-]+$/.test(token)) {
+      return new NextResponse('Invalid or Malformed Secure Token', { status: 400 });
+    }
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|logos/).*)'],
+};
