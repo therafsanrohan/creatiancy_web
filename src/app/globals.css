@@ -56,3 +56,16 @@
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); } 
 }
+
+/* ── Campaign Pages ──────────────────────────────────────────────
+   Hide main site Navbar and Footer on campaign routes (/gratitude etc.)
+   .campaign-page is injected by the campaign's layout.tsx wrapper.
+   .campaign-footer exempts the campaign's own footer from hiding.
+   Uses :has() — supported in all modern browsers (2023+).
+────────────────────────────────────────────────────────────────── */
+body:has(.campaign-page) header {
+  display: none !important;
+}
+body:has(.campaign-page) footer:not(.campaign-footer) {
+  display: none !important;
+}
