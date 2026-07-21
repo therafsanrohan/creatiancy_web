@@ -29,6 +29,11 @@ export default function PublicInvoicePage() {
         const inv = await db.getInvoiceByToken(secureToken);
         if (!inv) return;
         setInvoice(inv);
+        
+        // Set document title for PDF print filename
+        if (typeof document !== 'undefined') {
+          document.title = `Invoice_${inv.invoice_number || 'Draft'}`;
+        }
 
         const cl = await db.getClientById(inv.client_id);
         if (cl) setClient(cl);
@@ -86,7 +91,24 @@ export default function PublicInvoicePage() {
   const isBdt = invoice.currency === 'BDT';
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    if (invoice?.invoice_number) {
+      document.title = `Invoice_${invoice.invoice_number.replace(/[\/\\?%*:|"<>]/g, '-')}`;
+    } else {
+      document.title = 'Creatiancy_Invoice';
+    }
     window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!invoice) return;
+    const text = encodeURIComponent(
+      `Hello! Here is your invoice from ${isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}:\nInvoice No: ${invoice.invoice_number}\nTotal: ${formatCurrency(totals.totalPayable, invoice.currency)}\nView Secure Invoice: ${verifyUrl}`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   };
 
   const statusColor: Record<string, string> = {
@@ -103,30 +125,40 @@ export default function PublicInvoicePage() {
     <div className="min-h-screen bg-[#F5F5F0] py-8 px-4">
       
       {/* Top Banner controls - hidden on print */}
-      <div className="max-w-[210mm] mx-auto mb-6 flex justify-between items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm no-print">
+      <div className="max-w-[210mm] mx-auto mb-6 flex justify-between items-center bg-white border border-gray-100 p-4 rounded-2xl shadow-sm no-print flex-wrap gap-3">
         <div className="flex items-center space-x-2.5">
           <ShieldCheck className="h-5 w-5 text-[#9B1C22]" />
           <div>
             <p className="text-xs font-bold text-gray-800">Verified Creatiancy Invoice</p>
-            <p className="text-[10px] text-gray-400">This document is cryptographically secured.</p>
+            <p className="text-[10px] text-gray-400">Cryptographically secured & tamper-evident document</p>
           </div>
         </div>
-        <button
-          id="btn-print-public-invoice"
-          onClick={handlePrint}
-          className="flex items-center space-x-1.5 rounded-lg bg-[#9B1C22] py-2 px-4 text-xs font-bold text-white hover:bg-[#7d1219] shadow-sm transition cursor-pointer"
-        >
-          <Printer className="h-4 w-4" />
-          <span>Print / Save PDF</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            type="button"
+            onClick={handleWhatsAppShare}
+            className="flex items-center space-x-1.5 rounded-lg bg-emerald-600 py-2 px-3 text-xs font-bold text-white hover:bg-emerald-700 shadow-sm transition cursor-pointer"
+          >
+            <span>Share via WhatsApp</span>
+          </button>
+          <button
+            id="btn-print-public-invoice"
+            onClick={handlePrint}
+            className="flex items-center space-x-1.5 rounded-lg bg-[#9B1C22] py-2 px-4 text-xs font-bold text-white hover:bg-[#7d1219] shadow-sm transition cursor-pointer"
+          >
+            <Printer className="h-4 w-4" />
+            <span>Print / Save PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* A4 Canvas */}
       <div
         id="print-area"
-        className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-12 text-[#1E1E1E] flex flex-col justify-between font-sans"
+        className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-12 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none"
         style={{ width: '210mm', minHeight: '297mm' }}
       >
+        <div className="print-watermark">Creatiancy Original</div>
         <div>
           {/* Header */}
           <div className="flex justify-between items-start pb-8 border-b border-gray-100">
@@ -135,29 +167,30 @@ export default function PublicInvoicePage() {
               <div className="flex items-center space-x-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logos/Creatiancy logo.svg"
+                  src="/logos/Creatiancy%20logo.svg"
                   alt="Creatiancy"
-                  className="h-11 w-auto"
+                  className="h-7 sm:h-8 md:h-9 w-auto max-w-[200px] object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy logo.svg'; }}
                 />
               </div>
 
               {/* Entity address */}
               <div className="mt-5 text-[10px] text-gray-500 space-y-0.5 leading-normal">
                 <span className="font-bold text-gray-800 block">
-                  {isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+                  {entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                 </span>
                 <span>
-                  {isBdt
+                  {entity ? entity.registered_address : (isBdt
                     ? 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh'
-                    : '1619 Broadway, Suite 500, New York, NY 10019, USA'}
+                    : '1619 Broadway, Suite 500, New York, NY 10019, USA')}
                 </span>
                 <span className="block">
-                  {isBdt ? 'Registration: C-CLTD-DHAKA-2026' : 'Registration: NY-CLLC-2026-98765'}
+                  Registration: {entity ? entity.registration_number : (isBdt ? 'C-CLTD-DHAKA-2026' : 'NY-CLLC-2026-98765')}
                 </span>
                 <span className="block">
-                  {isBdt ? 'TIN / BIN: TIN-BIN-CLTD-123456' : 'EIN: EIN-12-3456789'}
+                  {isBdt ? 'TIN / BIN: ' : 'EIN: '}{entity ? entity.tax_id : (isBdt ? 'TIN-BIN-CLTD-123456' : 'EIN-12-3456789')}
                 </span>
-                <span>Email: billing@creatiancy.com • Web: www.creatiancy.com</span>
+                <span>Email: {entity ? entity.email : 'billing@creatiancy.com'} • Phone: {entity ? entity.phone : '+880 1325 078 941'}</span>
               </div>
             </div>
 
@@ -256,7 +289,7 @@ export default function PublicInvoicePage() {
             <div className="col-span-7 space-y-3.5 text-[9px] leading-relaxed">
               <span className="font-bold text-gray-400 uppercase tracking-wider text-[10px] block">PAYMENT INSTRUCTIONS:</span>
               {bankAccount ? (
-                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-4 border border-gray-100">
+                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-3 border border-gray-100">
                   <p className="font-bold text-gray-800 text-xs">{bankAccount.bank_name}</p>
                   <p><span className="font-semibold text-gray-400">Account Name:</span> {bankAccount.account_holder}</p>
                   <p><span className="font-semibold text-gray-400">Account Number:</span> {bankAccount.account_number}</p>
@@ -269,29 +302,31 @@ export default function PublicInvoicePage() {
 
               {/* Mobile Wallets for BDT entity */}
               {isBdt && (entity?.bkash_merchant || entity?.nagad_merchant) && (
-                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-3 border border-gray-100">
-                  <p className="font-bold text-gray-800 text-[10px] uppercase tracking-wider">Mobile Merchant Payments</p>
-                  {entity.bkash_merchant && (
-                    <p className="flex items-center space-x-1">
-                      <span className="font-bold text-pink-600">bKash Merchant:</span>
-                      <span className="font-mono font-bold text-gray-800">{entity.bkash_merchant}</span>
-                    </p>
-                  )}
-                  {entity.nagad_merchant && (
-                    <p className="flex items-center space-x-1">
-                      <span className="font-bold text-orange-600">Nagad Merchant:</span>
-                      <span className="font-mono font-bold text-gray-800">{entity.nagad_merchant}</span>
-                    </p>
-                  )}
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 space-y-2">
+                  <p className="font-semibold text-[10px] text-gray-400 uppercase tracking-wider">Mobile Wallet (Merchant)</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {entity.bkash_merchant && (
+                      <div className="flex flex-col rounded-lg bg-white p-2 border border-gray-100/80">
+                        <span className="text-[10px] font-semibold text-gray-500">bKash Merchant</span>
+                        <span className="font-mono font-bold text-gray-900 mt-0.5">{entity.bkash_merchant}</span>
+                      </div>
+                    )}
+                    {entity.nagad_merchant && (
+                      <div className="flex flex-col rounded-lg bg-white p-2 border border-gray-100/80">
+                        <span className="text-[10px] font-semibold text-gray-500">Nagad Merchant</span>
+                        <span className="font-mono font-bold text-gray-900 mt-0.5">{entity.nagad_merchant}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
               {/* QR Code Verification */}
               {verifyUrl && (
-                <div className="mt-3 flex items-start space-x-3 rounded-xl border border-[#9B1C22]/15 bg-[#9B1C22]/4 p-3">
+                <div className="mt-3 flex items-start space-x-2.5 rounded-xl border border-[#9B1C22]/15 bg-[#9B1C22]/4 p-2.5">
                   <QRCodeSVG
                     value={verifyUrl}
-                    size={64}
+                    size={48}
                     bgColor="#ffffff"
                     fgColor="#9B1C22"
                     level="H"
@@ -346,16 +381,18 @@ export default function PublicInvoicePage() {
           </div>
 
           {/* Footer */}
-          <div className="mt-10 pt-4 border-t border-gray-100 text-[8px] text-gray-400 text-center leading-normal">
-            <p className="font-extrabold text-[#9B1C22] uppercase tracking-wider">
+          <div className="mt-8 pt-4 border-t border-gray-100 text-[8px] text-gray-400 text-center leading-normal space-y-1">
+            <p className="font-bold text-[#9B1C22] tracking-wide">
               {isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}
             </p>
-            <p className="mt-1 text-gray-400">
+            <p className="text-gray-400">
               {isBdt
                 ? 'All rates are inclusive of applicable VAT in accordance with the prevailing laws and regulations of Bangladesh.'
                 : 'All rates are inclusive of applicable taxes in accordance with the prevailing laws and regulations.'}
             </p>
-            <p className="mt-1 font-semibold text-gray-400">www.creatiancy.com • billing@creatiancy.com</p>
+            <div className="pt-2 border-t border-dashed border-gray-200 text-[8px] text-gray-400">
+              This invoice is computer-generated and requires no physical signature.
+            </div>
           </div>
         </div>
 

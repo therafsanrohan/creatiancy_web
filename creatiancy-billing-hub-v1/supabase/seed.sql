@@ -58,7 +58,7 @@ INSERT INTO entity_bank_accounts (
     'BDT-ACC-1002003004005',
     'Banani Branch',
     '123456789',
-    '',
+    'TRSTBDDH',
     'Banani, Dhaka, Bangladesh',
     true
 ),

@@ -4,7 +4,29 @@ export interface Profile {
   id: string;
   full_name: string;
   email: string;
-  role_name: 'Super Admin' | 'Finance Admin' | 'Client Service' | 'Project Manager';
+  username?: string;
+  role_name: 'Super Admin' | 'Admin' | 'Finance Admin' | 'Client Service' | 'Project Manager';
+  password_hash?: string;
+  created_at?: string;
+}
+
+export interface CustomGateway {
+  id: string;
+  name: string;
+  rate: number;
+  currency: 'BDT' | 'USD' | 'Both';
+  color: string;
+}
+
+export interface GatewayRates {
+  bkash: number;
+  nagad: number;
+  card: number;
+  amex: number;
+  stripe: number;
+  payoneer: number;
+  wise: number;
+  customGateways?: CustomGateway[];
 }
 
 export interface BusinessEntity {
@@ -24,6 +46,47 @@ export interface BusinessEntity {
   vat_footer: string;
   bkash_merchant?: string;
   nagad_merchant?: string;
+  corporate_tax_rate: number;
+  default_vat_rate?: number;
+}
+
+export interface TaxPayment {
+  id: string;
+  entity_id: string;
+  tax_type: 'VAT' | 'Corporate Tax';
+  amount: number;
+  payment_date: string;
+  challan_number: string;
+  period_start: string;
+  period_end: string;
+  recorded_by: string;
+  created_at: string;
+}
+
+export type ExpenseCategory =
+  | 'Payroll'
+  | 'Office Rent'
+  | 'Utilities'
+  | 'Software & Subscriptions'
+  | 'Marketing'
+  | 'Equipment'
+  | 'Maintenance'
+  | 'Professional Fees'
+  | 'Travel'
+  | 'Other';
+
+export interface Expense {
+  id: string;
+  entity_id: string;
+  category: ExpenseCategory;
+  description: string;
+  amount: number;
+  currency: 'BDT' | 'USD';
+  expense_date: string;
+  vendor: string;
+  invoice_ref: string;
+  recorded_by: string;
+  created_at: string;
 }
 
 export interface BankAccount {
@@ -170,10 +233,11 @@ export const isDemoMode = !hasSupabaseEnv;
 
 // SEED MOCK DATA FOR LOCAL DEMO MODE
 const MOCK_PROFILES: Profile[] = [
-  { id: 'usr-1', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', role_name: 'Super Admin' },
-  { id: 'usr-2', full_name: 'Finance Executive', email: 'finance@creatiancy.com', role_name: 'Finance Admin' },
-  { id: 'usr-3', full_name: 'Client Manager', email: 'cs@creatiancy.com', role_name: 'Client Service' },
-  { id: 'usr-4', full_name: 'Project Coordinator', email: 'pm@creatiancy.com', role_name: 'Project Manager' }
+  { id: 'usr-1', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', username: 'rafsan', role_name: 'Super Admin' },
+  { id: 'usr-5', full_name: 'Executive Director (Admin)', email: 'manager@creatiancy.com', username: 'manager', role_name: 'Admin' },
+  { id: 'usr-2', full_name: 'Finance Executive', email: 'finance@creatiancy.com', username: 'finance', role_name: 'Finance Admin' },
+  { id: 'usr-3', full_name: 'Client Manager', email: 'cs@creatiancy.com', username: 'cs', role_name: 'Client Service' },
+  { id: 'usr-4', full_name: 'Project Coordinator', email: 'pm@creatiancy.com', username: 'pm', role_name: 'Project Manager' }
 ];
 
 const MOCK_ENTITIES: BusinessEntity[] = [
@@ -193,7 +257,9 @@ const MOCK_ENTITIES: BusinessEntity[] = [
     receipt_prefix: 'CLTD-REC',
     vat_footer: 'All rates are inclusive of applicable VAT in accordance with the prevailing laws and regulations.',
     bkash_merchant: '01711223344',
-    nagad_merchant: '01888776655'
+    nagad_merchant: '01888776655',
+    corporate_tax_rate: 27.5,
+    default_vat_rate: 15.0
   },
   {
     id: 'ent-2',
@@ -211,7 +277,9 @@ const MOCK_ENTITIES: BusinessEntity[] = [
     receipt_prefix: 'CLLC-REC',
     vat_footer: 'All rates are inclusive of applicable taxes in accordance with the prevailing laws.',
     bkash_merchant: '',
-    nagad_merchant: ''
+    nagad_merchant: '',
+    corporate_tax_rate: 21.0,
+    default_vat_rate: 0.0
   }
 ];
 
@@ -224,7 +292,7 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
     account_number: 'BDT-ACC-1002003004005',
     branch: 'Banani Branch',
     routing_number: '123456789',
-    swift_bic: '',
+    swift_bic: 'TRSTBDDH',
     bank_address: 'Banani, Dhaka, Bangladesh',
     is_active: true
   },
@@ -408,6 +476,8 @@ const MOCK_SNAPSHOTS: InvoiceSnapshot[] = [
 const MOCK_PAYMENTS: Payment[] = [];
 const MOCK_EMAIL_LOGS: EmailLog[] = [];
 const MOCK_AUDIT_LOGS: AuditLog[] = [];
+const MOCK_TAX_PAYMENTS: TaxPayment[] = [];
+const MOCK_EXPENSES: Expense[] = [];
 
 // HELPER STATE MANAGEMENT USING LOCALSTORAGE (DEMO MODE ENGINE)
 class LocalStore {
@@ -479,6 +549,22 @@ class LocalStore {
     this.setVal('payments', [...val]);
   }
 
+  get taxPayments(): TaxPayment[] {
+    return this.getVal('tax_payments', MOCK_TAX_PAYMENTS);
+  }
+
+  set taxPayments(val: TaxPayment[]) {
+    this.setVal('tax_payments', [...val]);
+  }
+
+  get expenses(): Expense[] {
+    return this.getVal('expenses', MOCK_EXPENSES);
+  }
+
+  set expenses(val: Expense[]) {
+    this.setVal('expenses', [...val]);
+  }
+
   get emailLogs(): EmailLog[] {
     return this.getVal('email_logs', MOCK_EMAIL_LOGS);
   }
@@ -510,6 +596,35 @@ class LocalStore {
   set bankAccounts(val: BankAccount[]) {
     this.setVal('bank_accounts', [...val]);
   }
+
+  get gatewayRates(): GatewayRates {
+    const defaults: GatewayRates = {
+      bkash: 1.85,
+      nagad: 1.50,
+      card: 2.50,
+      amex: 3.50,
+      stripe: 2.90,
+      payoneer: 2.00,
+      wise: 0.50,
+      customGateways: []
+    };
+    const stored = this.getVal('gateway_rates', defaults) as GatewayRates;
+    // Ensure customGateways always exists (backward compat)
+    if (!stored.customGateways) stored.customGateways = [];
+    return stored;
+  }
+
+  set gatewayRates(val: GatewayRates) {
+    this.setVal('gateway_rates', val);
+  }
+
+  get fromEmail(): string {
+    return this.getVal('from_email', 'billing@creatiancy.com');
+  }
+
+  set fromEmail(val: string) {
+    this.setVal('from_email', val);
+  }
 }
 
 export const localStore = new LocalStore();
@@ -530,6 +645,104 @@ export const db = {
     return localStore.profiles;
   },
 
+  createProfile: async (profile: Omit<Profile, 'id' | 'created_at'>): Promise<Profile> => {
+    const list = localStore.profiles;
+    // Check email uniqueness
+    if (list.some(p => p.email.toLowerCase() === profile.email.toLowerCase())) {
+      throw new Error('A team member with this email address already exists.');
+    }
+    // Check username uniqueness if provided
+    if (profile.username && list.some(p => p.username && p.username.toLowerCase() === profile.username?.toLowerCase())) {
+      throw new Error('This username is already taken. Please choose a unique username.');
+    }
+    const newProfile: Profile = {
+      ...profile,
+      id: `usr-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.push(newProfile);
+    localStore.profiles = list;
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'create_team_account', 'users', newProfile.id, null, { full_name: newProfile.full_name, email: newProfile.email, username: newProfile.username, role: newProfile.role_name });
+    return newProfile;
+  },
+
+  updateProfileRole: async (userId: string, newRole: Profile['role_name']): Promise<Profile> => {
+    const list = localStore.profiles;
+    const idx = list.findIndex(p => p.id === userId);
+    if (idx === -1) throw new Error('User not found');
+    const oldRole = list[idx].role_name;
+    list[idx].role_name = newRole;
+    localStore.profiles = list;
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'change_user_role', 'users', userId, { role: oldRole }, { role: newRole });
+    return list[idx];
+  },
+
+  deleteProfile: async (userId: string): Promise<void> => {
+    const list = localStore.profiles.filter(p => p.id !== userId);
+    localStore.profiles = list;
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'delete_team_account', 'users', userId, null, { deleted: true });
+  },
+
+  updateProfileCredentials: async (
+    userId: string, 
+    data: { full_name?: string; email?: string; username?: string; password_hash?: string }
+  ): Promise<Profile> => {
+    const list = localStore.profiles;
+    const idx = list.findIndex(p => p.id === userId);
+    if (idx === -1) throw new Error('User not found');
+    
+    if (data.email && data.email.toLowerCase() !== list[idx].email.toLowerCase()) {
+      if (list.some((p, i) => i !== idx && p.email.toLowerCase() === data.email!.toLowerCase())) {
+        throw new Error('Email is already associated with another account');
+      }
+    }
+    if (data.username && data.username.toLowerCase() !== (list[idx].username || '').toLowerCase()) {
+      if (list.some((p, i) => i !== idx && p.username && p.username.toLowerCase() === data.username!.toLowerCase())) {
+        throw new Error('Username is already taken');
+      }
+    }
+
+    const previous = { ...list[idx] };
+    if (data.full_name !== undefined) list[idx].full_name = data.full_name;
+    if (data.email !== undefined) list[idx].email = data.email;
+    if (data.username !== undefined) list[idx].username = data.username;
+    if (data.password_hash !== undefined) list[idx].password_hash = data.password_hash;
+    
+    localStore.profiles = list;
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'update_user_credentials', 'users', userId, 
+      { email: previous.email, username: previous.username }, 
+      { email: list[idx].email, username: list[idx].username, passChanged: !!data.password_hash }
+    );
+    return list[idx];
+  },
+
+  // Gateway Rates
+  getGatewayRates: async (): Promise<GatewayRates> => {
+    return localStore.gatewayRates;
+  },
+
+  setGatewayRates: async (rates: GatewayRates): Promise<void> => {
+    localStore.gatewayRates = rates;
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'update_gateway_rates', 'settings', 'gateway_rates', null, rates);
+  },
+
+  // From Email
+  getFromEmail: async (): Promise<string> => {
+    return localStore.fromEmail;
+  },
+
+  setFromEmail: async (email: string): Promise<void> => {
+    const old = localStore.fromEmail;
+    localStore.fromEmail = email;
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'update_from_email', 'settings', 'from_email', { email: old }, { email });
+  },
+
   // Business Entities
   getEntities: async (): Promise<BusinessEntity[]> => {
     return localStore.entities;
@@ -542,6 +755,20 @@ export const db = {
     const updated = { ...list[idx], ...updates };
     list[idx] = updated;
     localStore.entities = list;
+
+    // Update snapshots dynamically so live invoice previews reflect updated entity info
+    const snapshotsList = localStore.snapshots;
+    let snapshotUpdated = false;
+    for (let i = 0; i < snapshotsList.length; i++) {
+      if (snapshotsList[i].entity_snapshot && snapshotsList[i].entity_snapshot.id === id) {
+        snapshotsList[i].entity_snapshot = { ...snapshotsList[i].entity_snapshot, ...updated };
+        snapshotUpdated = true;
+      }
+    }
+    if (snapshotUpdated) {
+      localStore.snapshots = snapshotsList;
+    }
+
     const user = await db.getCurrentUser();
     db.logAudit(user.id, 'update_entity', 'entities', id, null, updates);
     return updated;
@@ -559,6 +786,20 @@ export const db = {
     const updated = { ...list[idx], ...updates };
     list[idx] = updated;
     localStore.bankAccounts = list;
+
+    // Update bank snapshots dynamically
+    const snapshotsList = localStore.snapshots;
+    let snapshotUpdated = false;
+    for (let i = 0; i < snapshotsList.length; i++) {
+      if (snapshotsList[i].bank_snapshot && snapshotsList[i].bank_snapshot.id === id) {
+        snapshotsList[i].bank_snapshot = { ...snapshotsList[i].bank_snapshot, ...updated };
+        snapshotUpdated = true;
+      }
+    }
+    if (snapshotUpdated) {
+      localStore.snapshots = snapshotsList;
+    }
+
     const user = await db.getCurrentUser();
     db.logAudit(user.id, 'update_bank', 'bank_accounts', id, null, updates);
     return updated;
@@ -800,6 +1041,45 @@ export const db = {
 
   getPaymentsForInvoice: async (invoiceId: string): Promise<Payment[]> => {
     return localStore.payments.filter(p => p.invoice_id === invoiceId);
+  },
+
+  getTaxPayments: async (): Promise<TaxPayment[]> => {
+    return localStore.taxPayments;
+  },
+
+  recordTaxPayment: async (payment: Omit<TaxPayment, 'id' | 'created_at'>): Promise<TaxPayment> => {
+    const list = localStore.taxPayments;
+    const newPayment: TaxPayment = {
+      ...payment,
+      id: `taxpay-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.push(newPayment);
+    localStore.taxPayments = list;
+    db.logAudit(payment.recorded_by, 'record_tax_payment', 'tax', newPayment.id, null, newPayment);
+    return newPayment;
+  },
+
+  getExpenses: async (): Promise<Expense[]> => {
+    return localStore.expenses;
+  },
+
+  addExpense: async (expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> => {
+    const list = localStore.expenses;
+    const newExpense: Expense = {
+      ...expense,
+      id: `exp-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.push(newExpense);
+    localStore.expenses = list;
+    db.logAudit(expense.recorded_by, 'add_expense', 'expenses', newExpense.id, null, newExpense);
+    return newExpense;
+  },
+
+  deleteExpense: async (id: string): Promise<void> => {
+    const list = localStore.expenses.filter(e => e.id !== id);
+    localStore.expenses = list;
   },
 
   recordPayment: async (payment: Omit<Payment, 'id' | 'receipt_number' | 'created_at'>): Promise<Payment> => {

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { db, Invoice, BillingClient, Profile, InvoiceItem, Payment, EmailLog, localStore } from '@/lib/db';
+import { db, Invoice, BillingClient, Profile, InvoiceItem, Payment, EmailLog, GatewayRates, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
+import NotificationModal from '@/components/NotificationModal';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -19,7 +20,10 @@ import {
   ExternalLink,
   ChevronRight,
   Send,
-  Loader2
+  Loader2,
+  Percent,
+  ArrowDownRight,
+  MessageCircle
 } from 'lucide-react';
 
 export default function InvoiceDetailsPage() {
@@ -52,6 +56,33 @@ export default function InvoiceDetailsPage() {
   const [emailCC, setEmailCC] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
   const [emailMessage, setEmailMessage] = useState('');
+  const [fromEmail, setFromEmail] = useState('billing@creatiancy.com');
+
+  // Platform Gateway Cutoff Fee states
+  const [feePreset, setFeePreset] = useState<'none' | 'bkash' | 'nagad' | 'card' | 'amex' | 'stripe' | 'payoneer' | 'wise' | 'custom'>('none');
+  const [feeRate, setFeeRate] = useState<number>(0);
+  const [customFeeAmount, setCustomFeeAmount] = useState<number>(0);
+  const [gatewayRates, setGatewayRates] = useState<GatewayRates>({
+    bkash: 1.85, nagad: 1.50, card: 2.50, amex: 3.50,
+    stripe: 2.90, payoneer: 2.00, wise: 0.50
+  });
+
+  // Modal notification state
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
+
+  const showNotif = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setModalState({ isOpen: true, title, message, type });
+  };
 
   useEffect(() => {
     async function loadInvoiceDetails() {
@@ -92,6 +123,14 @@ export default function InvoiceDetailsPage() {
 
         const logs = await db.getEmailLogs();
         setEmailLogs(logs.filter(l => l.invoice_id === id));
+
+        // Load from email setting
+        const fEmail = await db.getFromEmail();
+        setFromEmail(fEmail);
+
+        // Load gateway rates
+        const rates = await db.getGatewayRates();
+        setGatewayRates(rates);
 
       } catch (err) {
         console.error(err);
@@ -143,7 +182,7 @@ export default function InvoiceDetailsPage() {
       // Reload page to refresh snapshots
       window.location.reload();
     } catch (err: any) {
-      alert(err.message || 'Approval failed.');
+      showNotif('Approval Failed', err.message || 'Approval failed.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -157,7 +196,7 @@ export default function InvoiceDetailsPage() {
       setInvoice({ ...updated });
       window.location.reload();
     } catch (err: any) {
-      alert('Void failed.');
+      showNotif('Void Failed', 'Void failed.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -170,25 +209,52 @@ export default function InvoiceDetailsPage() {
       setInvoice({ ...updated });
       window.location.reload();
     } catch (err: any) {
-      alert('Submission failed.');
+      showNotif('Submission Failed', 'Submission failed.', 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
+  // Calculate platform cutoff fee amount based on selection
+  const calculatedProcessingFee = (): number => {
+    if (feePreset === 'custom') {
+      return customFeeAmount;
+    }
+    if (feeRate > 0 && payAmount > 0) {
+      return parseFloat(((payAmount * feeRate) / 100).toFixed(2));
+    }
+    return 0;
+  };
+
+  const handlePresetSelect = (preset: 'none' | 'bkash' | 'nagad' | 'card' | 'amex' | 'stripe' | 'payoneer' | 'wise' | 'custom', rate: number = 0) => {
+    setFeePreset(preset);
+    setFeeRate(rate);
+    if (preset !== 'custom') {
+      setCustomFeeAmount(0);
+    }
+    if (preset === 'bkash') setPayMethod('Mobile Financial Service (bKash)');
+    if (preset === 'nagad') setPayMethod('Mobile Financial Service (Nagad)');
+    if (preset === 'card' || preset === 'amex') setPayMethod('Card Payment');
+    if (preset === 'stripe') setPayMethod('Stripe');
+    if (preset === 'payoneer') setPayMethod('Payoneer');
+    if (preset === 'wise') setPayMethod('Wise (TransferWise)');
+    if (preset === 'none') setPayMethod('Bank Transfer');
+  };
+
   const handleRecordPaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (payAmount <= 0) {
-      alert('Payment amount must be greater than zero.');
+      showNotif('Invalid Amount', 'Payment amount must be greater than zero.', 'error');
       return;
     }
     if (payAmount > totals.amountDue) {
-      alert('Warning: Payment amount exceeds outstanding balance.');
-      return;
+      showNotif('Warning', 'Warning: Payment amount exceeds outstanding balance.', 'info');
+      // Continue anyway or return? Usually warning is just informational but let's prevent or let it log.
     }
 
     setActionLoading(true);
     try {
+      const pFee = calculatedProcessingFee();
       const p = await db.recordPayment({
         invoice_id: id,
         payment_date: payDate,
@@ -196,8 +262,8 @@ export default function InvoiceDetailsPage() {
         currency: invoice.currency,
         payment_method: payMethod,
         transaction_reference: payRef.trim(),
-        bank_gateway: '',
-        processing_fee: 0,
+        bank_gateway: feePreset !== 'none' ? feePreset.toUpperCase() : '',
+        processing_fee: pFee,
         internal_note: payNote.trim(),
         proof_url: null,
         recorded_by: currentUser.id
@@ -209,7 +275,7 @@ export default function InvoiceDetailsPage() {
       // Reload details
       window.location.reload();
     } catch (err: any) {
-      alert(err.message || 'Payment recording failed.');
+      showNotif('Payment Failed', err.message || 'Payment recording failed.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -234,11 +300,14 @@ export default function InvoiceDetailsPage() {
         error_message: null
       });
 
+      // Save from email if changed by super admin
+      await db.setFromEmail(fromEmail);
+
       setSendingEmail(false);
-      alert('Billing email dispatched successfully!');
+      showNotif('Email Dispatched', 'Billing email dispatched successfully with invoice attachment.', 'success');
       window.location.reload();
     } catch (err) {
-      alert('Email dispatch failed.');
+      showNotif('Dispatch Failed', 'Email dispatch failed. Please try again.', 'error');
     } finally {
       setActionLoading(false);
     }
@@ -529,6 +598,17 @@ export default function InvoiceDetailsPage() {
                 </button>
               )}
 
+              {/* Send via WhatsApp (Routes to preview with query param) */}
+              {invoice.status !== 'draft' && (
+                <Link
+                  href={`/billing/invoices/${id}/preview?whatsapp=true`}
+                  className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#25D366] py-3 text-xs font-bold text-white hover:bg-[#128C7E] shadow-sm transition"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>Send via WhatsApp</span>
+                </Link>
+              )}
+
               {/* Record manual payment trigger */}
               {canRecordPay && (
                 <button
@@ -573,48 +653,107 @@ export default function InvoiceDetailsPage() {
       {/* Manual Payment Recording Dialog Modal */}
       {recordingPayment && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4 z-50 no-print">
-          <div className="bg-white border border-gray-100 rounded-2xl max-w-md w-full p-6 space-y-4">
+          <div className="bg-white border border-gray-100 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <h3 className="font-bold text-md flex items-center space-x-2">
               <CreditCard className="h-4.5 w-4.5 text-[#9B1C22]" />
-              <span>Record Wire or Cash Payment</span>
+              <span>Record Wire or Cash Payment & Gateway Cutoff</span>
             </h3>
             
             <form onSubmit={handleRecordPaymentSubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-gray-550 mb-1">Payment Date</label>
-                <input
-                  type="date"
-                  required
-                  value={payDate}
-                  onChange={(e) => setPayDate(e.target.value)}
-                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-550 mb-1">Payment Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={payDate}
+                    onChange={(e) => setPayDate(e.target.value)}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-555 mb-1">Payment Amount ({invoice.currency}) *</label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(parseFloat(e.target.value) || 0)}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* Platform Gateway Cutoff Fee Section */}
+              <div className="rounded-xl border border-gray-100 bg-gray-50/70 p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="font-extrabold text-[#1E1E1E] flex items-center space-x-1.5 text-xs">
+                    <Percent className="h-3.5 w-3.5 text-[#9B1C22]" />
+                    <span>Platform / Gateway Cutoff Fee</span>
+                  </label>
+                  <span className="text-[10px] text-gray-400 font-medium">Auto-deducted fee</span>
+                </div>
+
+                {/* Preset Chips */}
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { id: 'none', label: 'No Fee (0%)', rate: 0 },
+                    { id: 'bkash', label: `bKash (${gatewayRates.bkash}%)`, rate: gatewayRates.bkash },
+                    { id: 'nagad', label: `Nagad (${gatewayRates.nagad}%)`, rate: gatewayRates.nagad },
+                    { id: 'card', label: `Card (${gatewayRates.card}%)`, rate: gatewayRates.card },
+                    { id: 'amex', label: `AMEX (${gatewayRates.amex}%)`, rate: gatewayRates.amex },
+                    { id: 'stripe', label: `Stripe (${gatewayRates.stripe}%)`, rate: gatewayRates.stripe },
+                    { id: 'payoneer', label: `Payoneer (${gatewayRates.payoneer}%)`, rate: gatewayRates.payoneer },
+                    { id: 'wise', label: `Wise (${gatewayRates.wise}%)`, rate: gatewayRates.wise },
+                    { id: 'custom', label: 'Custom Cutoff', rate: 0 }
+                  ].map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handlePresetSelect(p.id as any, p.rate)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition cursor-pointer ${
+                        feePreset === p.id
+                          ? 'border-[#9B1C22] bg-[#9B1C22]/10 text-[#9B1C22]'
+                          : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom Amount input if custom selected */}
+                {feePreset === 'custom' && (
+                  <div className="pt-2">
+                    <label className="block text-[10px] font-semibold text-gray-555 mb-1">Enter Cutoff Fee Amount</label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={customFeeAmount}
+                      onChange={(e) => setCustomFeeAmount(parseFloat(e.target.value) || 0)}
+                      className="block w-full rounded-lg border border-gray-200 bg-white py-1.5 px-3 text-xs focus:outline-none"
+                      placeholder="Cutoff fee in currency"
+                    />
+                  </div>
+                )}
+
+                {/* Cutoff summary calculation */}
+                <div className="pt-2 border-t border-gray-200/60 flex items-center justify-between text-xs">
+                  <span className="text-gray-500">Cutoff Money: <strong className="text-amber-700">{calculatedProcessingFee().toFixed(2)}</strong></span>
+                  <span className="text-gray-700 font-bold">Net Received: <strong className="text-emerald-600 font-extrabold font-sans">{(payAmount - calculatedProcessingFee()).toFixed(2)}</strong></span>
+                </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-550 mb-1">Payment Amount ({invoice.currency})</label>
+                <label className="block font-semibold text-gray-555 mb-1">Payment Method</label>
                 <input
-                  type="number"
-                  step="any"
-                  required
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(parseFloat(e.target.value) || 0)}
-                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
-                />
-                <span className="text-[10px] text-gray-400 mt-1 block">Remaining outstanding balance: {formatCurrency(totals.amountDue, invoice.currency)}</span>
-              </div>
-
-              <div>
-                <label className="block font-semibold text-gray-555 mb-1 font-sans">Payment Method / Gateway</label>
-                <select
+                  type="text"
                   value={payMethod}
                   onChange={(e) => setPayMethod(e.target.value)}
-                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none cursor-pointer"
-                >
-                  {['Bank Transfer', 'Card', 'Stripe', 'Payoneer', 'Wise', 'Cheque', 'Cash', 'Mobile Financial Service', 'Other'].map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
+                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
+                  placeholder="e.g. Bank Transfer, bKash Merchant, Visa Card"
+                />
               </div>
 
               <div>
@@ -643,7 +782,7 @@ export default function InvoiceDetailsPage() {
                 <button
                   type="button"
                   onClick={() => setRecordingPayment(false)}
-                  className="rounded-lg border border-gray-200 bg-white py-2 px-4 font-semibold text-gray-700 hover:bg-gray-50"
+                  className="rounded-lg border border-gray-200 bg-white py-2 px-4 font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -671,6 +810,22 @@ export default function InvoiceDetailsPage() {
             </h3>
             
             <form onSubmit={handleSendEmail} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-gray-555 mb-1 flex justify-between items-center">
+                  <span>From Email (Sender)</span>
+                  {!isSuperAdmin && <span className="text-[9px] text-gray-400 font-normal">(Only Super Admin can modify)</span>}
+                </label>
+                <input
+                  type="email"
+                  required
+                  readOnly={!isSuperAdmin}
+                  value={fromEmail}
+                  onChange={(e) => setFromEmail(e.target.value)}
+                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none read-only:bg-gray-50 read-only:text-gray-500"
+                />
+                <span className="text-[10px] text-gray-400 mt-0.5 block">This is the sender address shown in the billing email. Only Super Admin can change it.</span>
+              </div>
+
               <div>
                 <label className="block font-semibold text-gray-555 mb-1 flex justify-between items-center">
                   <span>Billing Recipient</span>
@@ -746,6 +901,15 @@ export default function InvoiceDetailsPage() {
           </div>
         </div>
       )}
+
+      {/* Notification Modal */}
+      <NotificationModal
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+      />
 
     </div>
   );

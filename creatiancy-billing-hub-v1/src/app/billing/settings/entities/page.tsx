@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { db, BusinessEntity, BankAccount, Profile } from '@/lib/db';
 import Link from 'next/link';
 import { Shield, Building2, Landmark, Smartphone } from 'lucide-react';
+import NotificationModal from '@/components/NotificationModal';
 
 export default function EntitySettingsPage() {
   const [entities, setEntities] = useState<BusinessEntity[]>([]);
@@ -25,6 +26,7 @@ export default function EntitySettingsPage() {
   const [paymentInstructions, setPaymentInstructions] = useState('');
   const [bkashMerchant, setBkashMerchant] = useState('');
   const [nagadMerchant, setNagadMerchant] = useState('');
+  const [corporateTaxRate, setCorporateTaxRate] = useState(27.5);
   
   // Bank states matching active entity
   const [bankId, setBankId] = useState('');
@@ -35,6 +37,23 @@ export default function EntitySettingsPage() {
   const [bankRouting, setBankRouting] = useState('');
   const [bankSwift, setBankSwift] = useState('');
   const [bankAddress, setBankAddress] = useState('');
+
+  // Notification Modal state
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
+
+  const showModal = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setModalState({ isOpen: true, title, message, type });
+  };
 
   useEffect(() => {
     async function loadSettings() {
@@ -62,24 +81,25 @@ export default function EntitySettingsPage() {
   const populateForm = (code: 'CLTD' | 'CLLC', entsList: BusinessEntity[], banksList: BankAccount[]) => {
     const ent = entsList.find(e => e.entity_code === code);
     if (ent) {
-      setLegalName(ent.legal_name);
-      setAddress(ent.registered_address);
-      setRegNum(ent.registration_number);
-      setTaxId(ent.tax_id);
-      setEmail(ent.email);
+      setLegalName(ent.legal_name || '');
+      setAddress(ent.registered_address || '');
+      setRegNum(ent.registration_number || '');
+      setTaxId(ent.tax_id || '');
+      setEmail(ent.email || '');
       setPhone(ent.phone || '');
       setWebsite(ent.website || '');
       setPaymentInstructions(ent.payment_instructions || '');
       setBkashMerchant(ent.bkash_merchant || '');
       setNagadMerchant(ent.nagad_merchant || '');
+      setCorporateTaxRate(ent.corporate_tax_rate ?? 27.5);
 
       // Get bank
       const bank = banksList.find(b => b.entity_id === ent.id && b.is_active);
       if (bank) {
         setBankId(bank.id);
-        setBankName(bank.bank_name);
-        setBankHolder(bank.account_holder);
-        setBankNumber(bank.account_number);
+        setBankName(bank.bank_name || '');
+        setBankHolder(bank.account_holder || '');
+        setBankNumber(bank.account_number || '');
         setBankBranch(bank.branch || '');
         setBankRouting(bank.routing_number || '');
         setBankSwift(bank.swift_bic || '');
@@ -105,7 +125,7 @@ export default function EntitySettingsPage() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser || currentUser.role_name !== 'Super Admin') {
-      alert('Access Denied: Only Super Admins can save business configurations.');
+      showModal('Access Restricted', 'Only Super Admins have permission to modify legal business entity credentials.', 'error');
       return;
     }
 
@@ -115,29 +135,30 @@ export default function EntitySettingsPage() {
       if (activeEnt) {
         // 1. Update Entity details
         const updatedEnt = await db.updateEntity(activeEnt.id, {
-          legal_name: legalName,
-          registered_address: address,
-          registration_number: regNum,
-          tax_id: taxId,
-          email,
-          phone,
-          website,
-          payment_instructions: paymentInstructions,
-          bkash_merchant: bkashMerchant || undefined,
-          nagad_merchant: nagadMerchant || undefined
+          legal_name: legalName.trim(),
+          registered_address: address.trim(),
+          registration_number: regNum.trim(),
+          tax_id: taxId.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          website: website.trim(),
+          payment_instructions: paymentInstructions.trim(),
+          bkash_merchant: bkashMerchant.trim(),
+          nagad_merchant: nagadMerchant.trim(),
+          corporate_tax_rate: corporateTaxRate
         });
 
         // 2. Update Bank account details
         let updatedBank = null;
         if (bankId) {
           updatedBank = await db.updateBankAccount(bankId, {
-            bank_name: bankName,
-            account_holder: bankHolder,
-            account_number: bankNumber,
-            branch: bankBranch,
-            routing_number: bankRouting,
-            swift_bic: bankSwift,
-            bank_address: bankAddress
+            bank_name: bankName.trim(),
+            account_holder: bankHolder.trim(),
+            account_number: bankNumber.trim(),
+            branch: bankBranch.trim(),
+            routing_number: bankRouting.trim(),
+            swift_bic: bankSwift.trim(),
+            bank_address: bankAddress.trim()
           });
         }
 
@@ -150,10 +171,10 @@ export default function EntitySettingsPage() {
           setBankAccounts(nextBanks);
         }
 
-        alert('Business entity credentials updated successfully!');
+        showModal('Changes Saved Successfully', `Legal registration & bank details for ${updatedEnt.legal_name} have been updated.`, 'success');
       }
-    } catch (err) {
-      alert('Save configuration failed.');
+    } catch (err: any) {
+      showModal('Save Failed', err.message || 'Failed to save entity configuration.', 'error');
     } finally {
       setSaving(false);
     }
@@ -248,7 +269,6 @@ export default function EntitySettingsPage() {
                   <label className="block font-semibold text-gray-555 mb-1">Registration # / Code</label>
                   <input
                     type="text"
-                    required
                     readOnly={!isSuperAdmin}
                     value={regNum}
                     onChange={(e) => setRegNum(e.target.value)}
@@ -274,7 +294,6 @@ export default function EntitySettingsPage() {
                   </label>
                   <input
                     type="text"
-                    required
                     readOnly={!isSuperAdmin}
                     value={taxId}
                     onChange={(e) => setTaxId(e.target.value)}
@@ -386,18 +405,16 @@ export default function EntitySettingsPage() {
                   />
                 </div>
 
-                {activeTab === 'CLLC' ? (
-                  <div>
-                    <label className="block font-semibold text-gray-555 mb-1">SWIFT / BIC Code</label>
-                    <input
-                      type="text"
-                      readOnly={!isSuperAdmin}
-                      value={bankSwift}
-                      onChange={(e) => setBankSwift(e.target.value)}
-                      className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none font-mono"
-                    />
-                  </div>
-                ) : null}
+                <div>
+                  <label className="block font-semibold text-gray-555 mb-1">SWIFT / BIC Code</label>
+                  <input
+                    type="text"
+                    readOnly={!isSuperAdmin}
+                    value={bankSwift}
+                    onChange={(e) => setBankSwift(e.target.value)}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none font-mono"
+                  />
+                </div>
 
                 <div className="md:col-span-2">
                   <label className="block font-semibold text-gray-555 mb-1">Bank Address</label>
@@ -459,6 +476,28 @@ export default function EntitySettingsPage() {
               </div>
             )}
 
+            {/* Corporate Tax Rate */}
+            <div className="space-y-2 pt-4">
+              <label className="block font-bold text-xs uppercase tracking-wider text-gray-400 flex items-center gap-1">
+                Corporate Income Tax Rate (%)
+                <span className="ml-1 text-[9px] bg-amber-100 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full font-bold">BD Tax Law</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  max="50"
+                  step="0.5"
+                  readOnly={!isSuperAdmin}
+                  value={corporateTaxRate}
+                  onChange={(e) => setCorporateTaxRate(parseFloat(e.target.value) || 0)}
+                  className="w-32 rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none font-mono"
+                />
+                <span className="text-xs text-gray-400">%</span>
+              </div>
+              <p className="text-[10px] text-gray-400">Standard rate: 27.5% for private companies · 20% for listed companies · 0% for IT-exempt entities (BASIS registered). This rate is used in the Tax Ledger to calculate accrued corporate tax on BDT revenues.</p>
+            </div>
+
             {/* Section 4: Default invoice instructions text */}
             <div className="space-y-4 pt-6 border-t border-gray-50">
               <label className="block font-bold text-xs uppercase tracking-wider text-gray-400">
@@ -490,6 +529,14 @@ export default function EntitySettingsPage() {
         </div>
 
       </div>
+
+      <NotificationModal
+        isOpen={modalState.isOpen}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+        onClose={() => setModalState({ ...modalState, isOpen: false })}
+      />
 
     </div>
   );

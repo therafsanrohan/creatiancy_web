@@ -72,6 +72,17 @@ export default function ClientListPage() {
     return { bdtDue, usdDue };
   };
 
+  const getClientProjectStatus = (clientId: string) => {
+    const activeInvoices = invoices.filter(i => 
+      i.client_id === clientId && 
+      (i.status === 'sent' || i.status === 'partially_paid' || i.status === 'overdue' || i.status === 'approved' || i.status === 'pending_approval')
+    );
+    if (activeInvoices.length > 0) {
+      return { isOnline: true, label: `Active Project (${activeInvoices.length} Open)`, badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500 animate-pulse' };
+    }
+    return { isOnline: false, label: 'Work Completed (Offline)', badgeBg: 'bg-gray-50 text-gray-500 border-gray-200', dot: 'bg-gray-400' };
+  };
+
   const filteredClients = clients.filter(c => {
     const matchesSearch =
       c.company_name?.toLowerCase().includes(search.toLowerCase()) ||
@@ -98,30 +109,30 @@ export default function ClientListPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Clients Directory</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage corporate entities and individual billing accounts</p>
+          <h1 className="text-3xl font-extrabold tracking-tight">Billing Clients</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Directory of corporate and individual client profiles with dynamic project status
+          </p>
         </div>
         <Link
           href="/billing/clients/new"
-          className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-sm font-semibold text-[#FBFDF9] hover:bg-[#9B1C22]/90 shadow-md cursor-pointer transition"
+          className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#9B1C22]/90 shadow-md transition"
         >
-          <Plus className="h-4.5 w-4.5" />
-          <span>Add Client</span>
+          <Plus className="h-4 w-4" />
+          <span>New Client Profile</span>
         </Link>
       </div>
 
-      {/* Filters & Search */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white border border-gray-100 p-4 rounded-2xl">
-        <div className="relative sm:col-span-2">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-            <Search className="h-4 w-4" />
-          </span>
+      {/* Search and Filters */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="sm:col-span-2 relative">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search by company, contact person or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-3 text-sm text-[#1E1E1E] placeholder-gray-400 focus:border-[#9B1C22] focus:outline-none focus:ring-1 focus:ring-[#9B1C22]"
+            placeholder="Search clients by company name, contact person or email..."
+            className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none shadow-xs"
           />
         </div>
 
@@ -145,6 +156,8 @@ export default function ClientListPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredClients.map((client) => {
             const { bdtDue, usdDue } = getClientBalances(client.id);
+            const projStatus = getClientProjectStatus(client.id);
+
             return (
               <div
                 key={client.id}
@@ -158,9 +171,15 @@ export default function ClientListPage() {
                   {/* Client title */}
                   <div className="flex justify-between items-start gap-2 mb-4">
                     <div className="min-w-0">
-                      <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[9px] uppercase tracking-wider font-bold text-gray-500 mb-1">
-                        {client.client_type}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                        <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[9px] uppercase tracking-wider font-bold text-gray-500">
+                          {client.client_type}
+                        </span>
+                        <span className={`inline-flex items-center space-x-1.5 border rounded-full px-2 py-0.5 text-[9px] font-bold ${projStatus.badgeBg}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${projStatus.dot}`} />
+                          <span>{projStatus.label}</span>
+                        </span>
+                      </div>
                       <h2 className="font-bold text-md leading-tight text-[#1E1E1E] truncate">
                         {client.company_name || client.contact_person}
                       </h2>
@@ -169,7 +188,7 @@ export default function ClientListPage() {
                       )}
                     </div>
                     {client.status === 'archived' && (
-                      <span className="text-[10px] uppercase font-bold text-gray-450 border border-gray-200 rounded px-1.5 py-0.5 bg-white">
+                      <span className="text-[10px] uppercase font-bold text-gray-450 border border-gray-200 rounded px-1.5 py-0.5 bg-white shrink-0">
                         Archived
                       </span>
                     )}

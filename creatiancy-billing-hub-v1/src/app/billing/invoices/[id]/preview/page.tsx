@@ -5,8 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { db, Invoice, BillingClient, InvoiceItem, Payment, BankAccount, BusinessEntity } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
-import { ArrowLeft, Printer } from 'lucide-react';
+import { ArrowLeft, Printer, Send, Loader2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import NotificationModal from '@/components/NotificationModal';
 
 export default function InvoicePreviewPage() {
   const router = useRouter();
@@ -21,6 +22,23 @@ export default function InvoicePreviewPage() {
   const [entity, setEntity] = useState<BusinessEntity | null>(null);
   const [loading, setLoading] = useState(true);
   const [verifyUrl, setVerifyUrl] = useState('');
+  const [sharingWa, setSharingWa] = useState(false);
+
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error' | 'info';
+    title: string;
+    message: string;
+  }>({
+    isOpen: false,
+    type: 'info',
+    title: '',
+    message: ''
+  });
+
+  const showNotif = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => {
+    setModalState({ isOpen: true, title, message, type });
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -35,6 +53,11 @@ export default function InvoicePreviewPage() {
         // Build verification URL from token
         if (typeof window !== 'undefined' && inv.secure_token) {
           setVerifyUrl(`${window.location.origin}/invoice/${inv.secure_token}`);
+        }
+        
+        // Set document title for PDF print filename
+        if (typeof document !== 'undefined') {
+          document.title = `Invoice_${inv.invoice_number || 'Draft'}`;
         }
 
         const cl = await db.getClientById(inv.client_id);
@@ -63,6 +86,16 @@ export default function InvoicePreviewPage() {
     loadData();
   }, [id, router]);
 
+  useEffect(() => {
+    if (!loading && invoice && typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('whatsapp') === 'true') {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        handleWhatsAppShare();
+      }
+    }
+  }, [loading, invoice]);
+
   if (loading || !invoice) {
     return (
       <div className="flex h-screen items-center justify-center bg-gray-50">
@@ -86,6 +119,54 @@ export default function InvoicePreviewPage() {
     window.print();
   };
 
+  const handleWhatsAppShare = async () => {
+    try {
+      setSharingWa(true);
+      const element = document.getElementById('print-area') as HTMLElement;
+      // @ts-ignore
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const opt: any = {
+        margin:       [5, 5, 5, 5],
+        filename:     `Invoice_${invoice.invoice_number || 'Draft'}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // 1. Generate & download PDF
+      await html2pdf().set(opt).from(element).save();
+
+      // 2. Build WhatsApp message with direct verification/public invoice URL
+      const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
+      const message = `Hi ${client?.contact_person || 'there'},\n\nPlease find attached invoice *${invoice.invoice_number || 'Draft'}* for *${invoice.project_name}*.\n\n📄 *View & Download Digital Invoice:* ${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+
+      // 3. Open WhatsApp Web / App directly
+      const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+      const waUrl = cleanPhone
+        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+      if (typeof window !== 'undefined') {
+        window.open(waUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error sharing to WhatsApp:', error);
+      // Direct fallback: open WhatsApp even if PDF stream encountered browser restriction
+      const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
+      const message = `Hi ${client?.contact_person || 'there'},\n\nPlease find invoice *${invoice.invoice_number || 'Draft'}* for *${invoice.project_name}*.\n\n📄 *View Digital Invoice:* ${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+      const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+      const waUrl = cleanPhone
+        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      if (typeof window !== 'undefined') {
+        window.open(waUrl, '_blank');
+      }
+    } finally {
+      setSharingWa(false);
+    }
+  };
+
   const statusColor: Record<string, string> = {
     paid: 'bg-green-100 text-green-700 border-green-200',
     partially_paid: 'bg-amber-100 text-amber-700 border-amber-200',
@@ -97,16 +178,24 @@ export default function InvoicePreviewPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F0] py-8 px-4">
+    <div className="min-h-screen bg-[#F5F5F0] py-4 sm:py-8 px-2 sm:px-4">
       
       {/* Action Controls Header - hidden during print */}
-      <div className="max-w-[210mm] mx-auto mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white border border-gray-100 p-4 rounded-2xl shadow-sm no-print">
+      <div className="max-w-[210mm] mx-auto mb-4 sm:mb-6 flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4 bg-white border border-gray-100 p-3 sm:p-4 rounded-2xl shadow-sm no-print">
         <Link href={`/billing/invoices/${id}`} className="inline-flex items-center space-x-2 text-xs font-semibold text-gray-500 hover:text-gray-900 transition">
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Invoice Ledger Details</span>
         </Link>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleWhatsAppShare}
+            disabled={sharingWa}
+            className="flex items-center space-x-1.5 rounded-lg bg-[#25D366] py-2 px-4 text-xs font-bold text-white hover:bg-[#128C7E] shadow-sm transition cursor-pointer disabled:opacity-50"
+          >
+            {sharingWa ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <span>Send via WhatsApp</span>
+          </button>
           <button
             id="btn-print-invoice-preview"
             onClick={handlePrint}
@@ -118,12 +207,14 @@ export default function InvoicePreviewPage() {
         </div>
       </div>
 
-      {/* A4 Canvas */}
+      {/* A4 Canvas - scrollable horizontally on mobile */}
+      <div className="overflow-x-auto">
       <div
         id="print-area"
-        className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-12 text-[#1E1E1E] flex flex-col justify-between font-sans"
+        className="min-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-6 sm:p-12 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none"
         style={{ width: '210mm', minHeight: '297mm' }}
       >
+        <div className="print-watermark">Creatiancy Original</div>
         
         {/* Document Top */}
         <div>
@@ -134,29 +225,30 @@ export default function InvoicePreviewPage() {
               <div className="flex items-center space-x-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="/logos/Creatiancy logo.svg"
+                  src="/logos/Creatiancy%20logo.svg"
                   alt="Creatiancy"
-                  className="h-11 w-auto"
+                  className="h-7 sm:h-8 md:h-9 w-auto max-w-[200px] object-contain"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy logo.svg'; }}
                 />
               </div>
 
               {/* Entity address particulars */}
               <div className="mt-5 text-[10px] text-gray-500 space-y-0.5 leading-normal">
                 <span className="font-bold text-gray-800 block">
-                  {isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+                  {entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                 </span>
                 <span>
-                  {isBdt
+                  {entity ? entity.registered_address : (isBdt
                     ? 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh'
-                    : '1619 Broadway, Suite 500, New York, NY 10019, USA'}
+                    : '1619 Broadway, Suite 500, New York, NY 10019, USA')}
                 </span>
                 <span className="block">
-                  {isBdt ? 'Registration: C-CLTD-DHAKA-2026' : 'Registration: NY-CLLC-2026-98765'}
+                  Registration: {entity ? entity.registration_number : (isBdt ? 'C-CLTD-DHAKA-2026' : 'NY-CLLC-2026-98765')}
                 </span>
                 <span className="block">
-                  {isBdt ? 'TIN / BIN: TIN-BIN-CLTD-123456' : 'EIN: EIN-12-3456789'}
+                  {isBdt ? 'TIN / BIN: ' : 'EIN: '}{entity ? entity.tax_id : (isBdt ? 'TIN-BIN-CLTD-123456' : 'EIN-12-3456789')}
                 </span>
-                <span>Email: billing@creatiancy.com • Web: www.creatiancy.com</span>
+                <span>Email: {entity ? entity.email : 'billing@creatiancy.com'} • Phone: {entity ? entity.phone : '+880 1325 078 941'}</span>
               </div>
             </div>
 
@@ -259,7 +351,7 @@ export default function InvoicePreviewPage() {
               <span className="font-bold text-gray-400 uppercase tracking-wider text-[10px] block">PAYMENT INSTRUCTIONS:</span>
               
               {bankAccount ? (
-                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-4 border border-gray-100">
+                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-3 border border-gray-100">
                   <p className="font-bold text-gray-800 text-xs">{bankAccount.bank_name}</p>
                   <p><span className="font-semibold text-gray-400">Account Name:</span> {bankAccount.account_holder}</p>
                   <p><span className="font-semibold text-gray-400">Account Number:</span> {bankAccount.account_number}</p>
@@ -274,20 +366,22 @@ export default function InvoicePreviewPage() {
 
               {/* Mobile Wallets for BDT entity */}
               {isBdt && (entity?.bkash_merchant || entity?.nagad_merchant) && (
-                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-3 border border-gray-100">
-                  <p className="font-bold text-gray-800 text-[10px] uppercase tracking-wider">Mobile Merchant Payments</p>
-                  {entity.bkash_merchant && (
-                    <p className="flex items-center space-x-1">
-                      <span className="font-bold text-pink-600">bKash Merchant:</span>
-                      <span className="font-mono font-bold text-gray-800">{entity.bkash_merchant}</span>
-                    </p>
-                  )}
-                  {entity.nagad_merchant && (
-                    <p className="flex items-center space-x-1">
-                      <span className="font-bold text-orange-600">Nagad Merchant:</span>
-                      <span className="font-mono font-bold text-gray-800">{entity.nagad_merchant}</span>
-                    </p>
-                  )}
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 space-y-2">
+                  <p className="font-semibold text-[10px] text-gray-400 uppercase tracking-wider">Mobile Wallet (Merchant)</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {entity.bkash_merchant && (
+                      <div className="flex flex-col rounded-lg bg-white p-2 border border-gray-100/80">
+                        <span className="text-[10px] font-semibold text-gray-500">bKash Merchant</span>
+                        <span className="font-mono font-bold text-gray-900 mt-0.5">{entity.bkash_merchant}</span>
+                      </div>
+                    )}
+                    {entity.nagad_merchant && (
+                      <div className="flex flex-col rounded-lg bg-white p-2 border border-gray-100/80">
+                        <span className="text-[10px] font-semibold text-gray-500">Nagad Merchant</span>
+                        <span className="font-mono font-bold text-gray-900 mt-0.5">{entity.nagad_merchant}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -297,10 +391,10 @@ export default function InvoicePreviewPage() {
 
               {/* QR Code Verification Block */}
               {verifyUrl && (
-                <div className="mt-2 flex items-start space-x-3 rounded-xl border border-[#9B1C22]/20 bg-[#9B1C22]/4 p-3">
+                <div className="mt-2 flex items-start space-x-2.5 rounded-xl border border-[#9B1C22]/20 bg-[#9B1C22]/4 p-2.5">
                   <QRCodeSVG
                     value={verifyUrl}
-                    size={64}
+                    size={48}
                     bgColor="#ffffff"
                     fgColor="#9B1C22"
                     level="H"
@@ -360,20 +454,31 @@ export default function InvoicePreviewPage() {
           </div>
 
           {/* Legal footer */}
-          <div className="mt-10 pt-4 border-t border-gray-100 text-[8px] text-gray-400 text-center leading-normal">
-            <p className="font-extrabold text-[#9B1C22] uppercase tracking-wider">
-              {isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+          <div className="mt-8 pt-4 border-t border-gray-100 text-[8px] text-gray-400 text-center leading-normal space-y-1">
+            <p className="font-bold text-[#9B1C22] tracking-wide">
+              {entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}
             </p>
-            <p className="mt-1 text-gray-400">
+            <p className="text-gray-400">
               {isBdt
                 ? 'All rates are inclusive of applicable VAT in accordance with the prevailing laws and regulations of Bangladesh.'
                 : 'All rates are inclusive of applicable taxes in accordance with the prevailing laws and regulations.'}
             </p>
-            <p className="mt-1 font-semibold text-gray-400">www.creatiancy.com • billing@creatiancy.com</p>
+            <div className="pt-2 border-t border-dashed border-gray-200 text-[8px] text-gray-400">
+              This invoice is computer-generated and requires no physical signature.
+            </div>
           </div>
         </div>
 
       </div>
+      </div>
+      
+      <NotificationModal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        type={modalState.type}
+        title={modalState.title}
+        message={modalState.message}
+      />
     </div>
   );
 }

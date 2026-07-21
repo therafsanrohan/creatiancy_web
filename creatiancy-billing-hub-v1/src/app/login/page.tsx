@@ -19,12 +19,16 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Find matching profile by email in mock list
+      // Find matching profile by email or username in mock list
       const profiles = await db.getProfiles();
-      const user = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
+      const loginId = email.trim().toLowerCase();
+      const user = profiles.find(p => 
+        p.email.toLowerCase() === loginId || 
+        (p.username && p.username.toLowerCase() === loginId)
+      );
       
       if (!user) {
-        throw new Error('User not found with this email. Try quick demo accounts below!');
+        throw new Error('User not found with this email or username. Try quick demo accounts below!');
       }
 
       // Log user in
@@ -64,14 +68,20 @@ export default function LoginPage() {
         
         {/* Brand Header */}
         <div className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#9B1C22] text-[#FBFDF9] font-bold text-2xl">
-            ৳
+          <div className="mx-auto flex justify-center">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/Creatiancy logo.svg"
+              alt="Creatiancy Logo"
+              className="h-12 w-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
+            />
           </div>
-          <h1 className="mt-6 text-3xl font-bold tracking-tight text-[#1E1E1E]">
+          <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#1E1E1E]">
             Creatiancy
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Billing Hub V1 • Secure Authentication Portal
+            Billing • Secure Authentication Portal
           </p>
         </div>
 
@@ -86,7 +96,7 @@ export default function LoginPage() {
           <div className="space-y-4 rounded-md">
             <div>
               <label htmlFor="email-address" className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                Corporate Email Address
+                Email Address or Username
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -95,13 +105,13 @@ export default function LoginPage() {
                 <input
                   id="email-address"
                   name="email"
-                  type="email"
+                  type="text"
                   autoComplete="username"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm text-[#1E1E1E] placeholder-gray-400 focus:border-[#9B1C22] focus:outline-none focus:ring-1 focus:ring-[#9B1C22]"
-                  placeholder="name@creatiancy.com"
+                  placeholder="name@creatiancy.com or username"
                 />
               </div>
             </div>

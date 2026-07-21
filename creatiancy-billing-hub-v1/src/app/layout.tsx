@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Creatiancy Billing Hub',
+  title: 'Creatiancy Billing',
   description: 'Isolated invoice and billing application for Creatiancy legal entities.',
 };
 

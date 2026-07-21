@@ -569,9 +569,12 @@ export default function NewInvoicePage() {
                       <label className="block font-semibold text-gray-500 mb-0.5">Quantity</label>
                       <input
                         type="number"
+                        min="0"
                         step="any"
                         value={item.quantity}
-                        onChange={(e) => handleItemChange(idx, 'quantity', e.target.value)}
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                        onKeyDown={(e) => { if (e.key === '-' || e.key === 'e') e.preventDefault(); }}
+                        onChange={(e) => handleItemChange(idx, 'quantity', Math.max(0, parseFloat(e.target.value) || 0))}
                         className="block w-full rounded-lg border border-gray-200 bg-white py-1.5 px-2.5 text-xs text-[#1E1E1E] focus:outline-none"
                       />
                     </div>
@@ -593,10 +596,13 @@ export default function NewInvoicePage() {
                       <label className="block font-semibold text-gray-500 mb-0.5">Rate / Unit Price</label>
                       <input
                         type="number"
-                        step="any"
+                        min="0"
+                        step="0.01"
                         value={item.rate}
-                        onChange={(e) => handleItemChange(idx, 'rate', e.target.value)}
-                        className="block w-full rounded-lg border border-gray-200 bg-white py-1.5 px-2.5 text-xs text-[#1E1E1E] focus:outline-none"
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                        onKeyDown={(e) => { if (e.key === '-' || e.key === 'e') e.preventDefault(); }}
+                        onChange={(e) => handleItemChange(idx, 'rate', Math.max(0, parseFloat(e.target.value) || 0))}
+                        className="block w-full rounded-lg border border-gray-200 bg-white py-1.5 px-2.5 text-xs text-[#1E1E1E] focus:outline-none font-semibold"
                       />
                     </div>
 

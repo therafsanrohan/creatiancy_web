@@ -17,7 +17,11 @@ import {
   Menu,
   X,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Percent,
+  Mail,
+  Calculator,
+  Wallet
 } from 'lucide-react';
 
 export default function BillingLayout({
@@ -73,7 +77,7 @@ export default function BillingLayout({
       <div className="flex h-screen items-center justify-center bg-[#FBFDF9]">
         <div className="flex flex-col items-center space-y-4">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#9B1C22] border-t-transparent" />
-          <p className="text-sm text-gray-500">Loading Billing Hub session...</p>
+          <p className="text-sm text-gray-500">Loading Billing Portal session...</p>
         </div>
       </div>
     );
@@ -84,15 +88,32 @@ export default function BillingLayout({
     { label: 'Clients', href: '/billing/clients', icon: Users },
     { label: 'Invoices', href: '/billing/invoices', icon: FileText },
     { label: 'Payments', href: '/billing/payments', icon: CreditCard },
-    { label: 'Receipts', href: '/billing/payments', icon: Receipt, customMatch: '/billing/receipts' }, // Grouped under payments in list view
+    { label: 'Receipts', href: '/billing/payments', icon: Receipt, customMatch: '/billing/receipts' },
     { label: 'Reports', href: '/billing/reports', icon: BarChart3 },
+    { label: 'Tax Ledger', href: '/billing/tax', icon: Calculator, customMatch: '/billing/tax' },
+    { label: 'Cashflow', href: '/billing/expenses', icon: Wallet, customMatch: '/billing/expenses' },
+    { label: 'Inbox', href: '/billing/inbox', icon: Mail },
     { label: 'Team', href: '/billing/team', icon: Shield },
-    { label: 'Settings', href: '/billing/settings/entities', icon: Settings, customMatch: '/billing/settings' },
+    { label: 'Entity Settings', href: '/billing/settings/entities', icon: Settings, customMatch: '/billing/settings/entities' },
+    { label: 'Gateway Rates', href: '/billing/settings/gateway-rates', icon: Percent, customMatch: '/billing/settings/gateway-rates' },
   ];
 
   const filteredNavItems = navItems.filter((item) => {
-    if (item.label === 'Team' && currentUser?.role_name !== 'Super Admin') {
-      return false;
+    const role = currentUser?.role_name;
+    if (item.label === 'Team') {
+      return role === 'Super Admin' || role === 'Admin';
+    }
+    if (item.label === 'Tax Ledger') {
+      return role === 'Super Admin' || role === 'Admin' || role === 'Finance Admin';
+    }
+    if (item.label === 'Cashflow') {
+      return role === 'Super Admin' || role === 'Admin' || role === 'Finance Admin';
+    }
+    if (item.label === 'Entity Settings') {
+      return role === 'Super Admin' || role === 'Finance Admin';
+    }
+    if (item.label === 'Gateway Rates') {
+      return role === 'Super Admin' || role === 'Admin' || role === 'Finance Admin';
     }
     return true;
   });
@@ -152,13 +173,16 @@ export default function BillingLayout({
         
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r border-gray-100 bg-[#FBFDF9] p-4 space-y-6 no-print">
-          <div className="flex items-center space-x-3 px-3 py-4">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#9B1C22] text-[#FBFDF9] font-bold text-lg">
-              ৳
-            </div>
-            <div>
-              <span className="text-md font-bold tracking-tight">Creatiancy</span>
-              <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Billing Hub</p>
+          <div className="flex flex-col items-start space-y-2 px-2 py-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/Creatiancy logo.svg"
+              alt="Creatiancy Logo"
+              className="h-8 w-auto object-contain"
+              onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
+            />
+            <div className="min-w-0">
+              <span className="text-md font-bold tracking-tight block leading-tight text-gray-500">Billing Desk</span>
             </div>
           </div>
 
@@ -204,11 +228,15 @@ export default function BillingLayout({
         {/* Mobile Header / Navigation */}
         <div className="flex flex-col flex-1 min-w-0">
           <header className="flex md:hidden items-center justify-between border-b border-gray-100 bg-[#FBFDF9] px-6 py-4 no-print">
-            <div className="flex items-center space-x-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#9B1C22] text-[#FBFDF9] font-bold text-md">
-                ৳
-              </div>
-              <span className="font-bold">Billing Hub</span>
+            <div className="flex items-center space-x-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logos/Creatiancy logo.svg"
+                alt="Creatiancy"
+                className="h-6 w-auto object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
+              />
+              <span className="font-bold text-sm text-gray-500">Billing Desk</span>
             </div>
             
             <button
@@ -259,12 +287,12 @@ export default function BillingLayout({
           )}
 
           {/* Main Content Area */}
-          <main className="flex-1 overflow-y-auto p-6 md:p-8">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-8">
             {children}
           </main>
 
-          {/* Mobile Bottom Navigation (Always accessible bar on mobile layout) */}
-          <nav className="md:hidden sticky bottom-0 border-t border-gray-100 bg-[#FBFDF9]/95 backdrop-blur-md flex items-center justify-around py-3 px-2 no-print z-30">
+          {/* Mobile Bottom Navigation */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-100 bg-[#FBFDF9]/95 backdrop-blur-md flex items-center justify-around py-2 px-2 no-print z-30" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
             {navItems.slice(0, 4).map((item) => {
               const Icon = item.icon;
               const active = isLinkActive(item);

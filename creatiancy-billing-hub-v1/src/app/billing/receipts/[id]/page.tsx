@@ -76,7 +76,16 @@ export default function ReceiptDetailsPage() {
   }
 
   const handlePrint = () => {
+    const originalTitle = document.title;
+    if (payment?.receipt_number) {
+      document.title = `Receipt_${payment.receipt_number.replace(/[\/\\?%*:|"<>]/g, '-')}`;
+    } else {
+      document.title = 'Creatiancy_Receipt';
+    }
     window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
   };
 
   return (
@@ -107,14 +116,14 @@ export default function ReceiptDetailsPage() {
         <div>
           {/* Header */}
           <div className="flex justify-between items-start pb-6 border-b border-gray-100">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#9B1C22] text-white font-extrabold text-lg">
-                ৳
-              </div>
-              <div>
-                <h1 className="font-extrabold text-md leading-none tracking-tight">Creatiancy</h1>
-                <span className="text-[9px] text-gray-400 font-semibold tracking-widest uppercase block mt-0.5">Official Receipt</span>
-              </div>
+            <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logos/Creatiancy%20logo.svg"
+                alt="Creatiancy"
+                className="h-9 w-auto"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy logo.svg'; }}
+              />
             </div>
 
             <div className="text-right">
@@ -178,19 +187,19 @@ export default function ReceiptDetailsPage() {
         <div className="mt-12">
           <div className="flex justify-between items-end">
             <div className="text-[8px] text-gray-400 leading-normal max-w-sm">
-              <p className="font-bold text-gray-500 uppercase tracking-wide">Creatiancy Billing Desk Disclosure</p>
+              <p className="font-bold text-gray-500 uppercase tracking-wide">Creatiancy Billing Disclosure</p>
               <p className="mt-1">This official document validates that payment has been successfully recorded in the financial books of the respective Creatiancy legal entity.</p>
             </div>
             
             {/* Signature placeholder */}
             <div className="w-40 border-t border-gray-300 text-center pt-2">
               <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">Authorized Signatory</span>
-              <span className="text-[8px] text-gray-300 italic block mt-0.5">Creatiancy Billing Hub V1</span>
+              <span className="text-[8px] text-gray-300 italic block mt-0.5">Creatiancy Billing</span>
             </div>
           </div>
 
           <div className="mt-8 text-center text-[7px] text-gray-400 border-t border-gray-100 pt-4 leading-normal">
-            <p className="font-bold text-[#9B1C22] uppercase tracking-wider">{entity.legal_name}</p>
+            <p className="font-bold text-[#9B1C22] tracking-wider">{entity.legal_name}</p>
             <p className="mt-0.5">This document does not represent a credit note. Unsettled balance due is subject to standard service terms.</p>
           </div>
         </div>
