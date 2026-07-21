@@ -36,6 +36,7 @@ export default function BillingLayout({
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     // Check auth
@@ -59,17 +60,23 @@ export default function BillingLayout({
       await db.setCurrentUser(matched);
       setCurrentUser(matched);
       setRoleDropdownOpen(false);
-      // Reload current page to trigger authorization state refresh
+      setUserMenuOpen(false);
+      setSidebarOpen(false);
       window.location.reload();
     }
   };
 
   const handleSignOut = async () => {
-    // Clear user and redirect
+    setSidebarOpen(false);
+    setUserMenuOpen(false);
+    setRoleDropdownOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem('billing_hub_current_user');
     }
     router.push('/login');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
   };
 
   if (!currentUser) {
@@ -169,16 +176,16 @@ export default function BillingLayout({
           </nav>
 
           {/* User profile section */}
-          <div className="border-t border-gray-100 pt-4">
-            <div className="flex items-center justify-between px-3 mb-2">
+          <div className="border-t border-gray-100 pt-4 space-y-3">
+            <div className="flex items-center justify-between px-3">
               <div className="min-w-0">
                 <p className="text-sm font-bold truncate">{currentUser.full_name}</p>
-                <p className="text-[10px] text-gray-400 font-semibold truncate">{currentUser.email}</p>
+                <span className="text-[10px] text-[#9B1C22] font-extrabold uppercase tracking-wider block">{currentUser.role_name}</span>
               </div>
             </div>
             <button
               onClick={handleSignOut}
-              className="flex w-full items-center space-x-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 cursor-pointer"
+              className="flex w-full items-center space-x-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 cursor-pointer transition"
             >
               <LogOut className="h-4.5 w-4.5" />
               <span>Log out</span>
@@ -188,7 +195,7 @@ export default function BillingLayout({
 
         {/* Mobile Header / Navigation */}
         <div className="flex flex-col flex-1 min-w-0">
-          <header className="flex md:hidden items-center justify-between border-b border-gray-100 bg-[#FBFDF9] px-6 py-4 no-print">
+          <header className="flex md:hidden items-center justify-between border-b border-gray-100 bg-[#FBFDF9] px-4 py-3.5 no-print relative z-50">
             <div className="flex items-center space-x-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -197,21 +204,63 @@ export default function BillingLayout({
                 className="h-6 w-auto object-contain"
                 onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
               />
-              <span className="font-bold text-sm text-gray-500">Billing Desk</span>
+              <span className="font-bold text-xs text-gray-500">Billing Desk</span>
             </div>
             
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="rounded-lg p-1.5 text-gray-500 hover:bg-gray-100 focus:outline-none"
-            >
-              {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <div className="flex items-center space-x-2">
+              {/* Mobile Quick User Profile Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => {
+                    setUserMenuOpen(!userMenuOpen);
+                    setSidebarOpen(false);
+                  }}
+                  className="flex items-center space-x-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 px-2.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer"
+                >
+                  <span className="w-5 h-5 rounded-full bg-[#9B1C22] text-white flex items-center justify-center text-[10px] font-extrabold shrink-0">
+                    {currentUser.full_name.charAt(0)}
+                  </span>
+                  <span className="max-w-[70px] truncate">{currentUser.full_name.split(' ')[0]}</span>
+                  <ChevronDown className="h-3 w-3 text-gray-500" />
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white border border-gray-100 shadow-2xl p-3 z-50 space-y-3">
+                    <div className="border-b border-gray-50 pb-2">
+                      <p className="text-xs font-bold text-gray-900 truncate">{currentUser.full_name}</p>
+                      <p className="text-[10px] text-gray-400 truncate">{currentUser.email}</p>
+                      <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase bg-red-50 text-[#9B1C22]">
+                        {currentUser.role_name}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={handleSignOut}
+                      className="flex w-full items-center justify-center space-x-2 rounded-xl bg-red-50 hover:bg-red-100 py-2.5 text-xs font-bold text-red-600 transition cursor-pointer"
+                    >
+                      <LogOut className="h-4 w-4" />
+                      <span>Log out</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={() => {
+                  setSidebarOpen(!sidebarOpen);
+                  setUserMenuOpen(false);
+                }}
+                className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 focus:outline-none cursor-pointer"
+              >
+                {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
+            </div>
           </header>
 
           {/* Mobile Fullscreen Navigation menu */}
           {sidebarOpen && (
-            <div className="md:hidden fixed inset-0 top-[60px] bg-[#FBFDF9] z-40 p-6 flex flex-col space-y-6 no-print">
-              <nav className="flex-1 space-y-2">
+            <div className="md:hidden fixed inset-0 top-[57px] bg-[#FBFDF9] z-50 p-5 flex flex-col justify-between overflow-y-auto pb-28 no-print">
+              <nav className="space-y-1.5">
                 {filteredNavItems.map((item) => {
                   const Icon = item.icon;
                   const active = isLinkActive(item);
@@ -220,27 +269,33 @@ export default function BillingLayout({
                       key={item.label}
                       href={item.href}
                       onClick={() => setSidebarOpen(false)}
-                      className={`flex items-center space-x-3 rounded-xl px-4 py-3.5 text-md font-semibold transition-all ${
+                      className={`flex items-center space-x-3 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${
                         active
                           ? 'bg-[#9B1C22]/5 text-[#9B1C22]'
-                          : 'text-gray-500'
+                          : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon className="h-5 w-5" />
+                      <Icon className="h-4.5 w-4.5" />
                       <span>{item.label}</span>
                     </Link>
                   );
                 })}
               </nav>
 
-              <div className="border-t border-gray-100 pt-4">
-                <p className="text-md font-bold mb-1">{currentUser.full_name}</p>
-                <p className="text-xs text-gray-400 font-semibold mb-4">{currentUser.email}</p>
+              <div className="border-t border-gray-100 pt-4 mt-6 space-y-3">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">{currentUser.full_name}</p>
+                  <p className="text-xs text-gray-400 font-semibold">{currentUser.email}</p>
+                  <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-extrabold uppercase bg-red-50 text-[#9B1C22]">
+                    {currentUser.role_name}
+                  </span>
+                </div>
+                
                 <button
                   onClick={handleSignOut}
-                  className="flex w-full items-center justify-center space-x-3 rounded-xl bg-red-50 py-3 text-md font-semibold text-red-600"
+                  className="flex w-full items-center justify-center space-x-2 rounded-xl bg-red-50 hover:bg-red-100 py-3 text-sm font-bold text-red-600 cursor-pointer shadow-xs transition"
                 >
-                  <LogOut className="h-5 w-5" />
+                  <LogOut className="h-4.5 w-4.5" />
                   <span>Log out</span>
                 </button>
               </div>
@@ -253,7 +308,7 @@ export default function BillingLayout({
           </main>
 
           {/* Mobile Bottom Navigation */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-100 bg-[#FBFDF9]/95 backdrop-blur-md flex items-center justify-around py-2 px-2 no-print z-30" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-gray-100 bg-[#FBFDF9]/95 backdrop-blur-md flex items-center justify-around py-2 px-2 no-print z-40" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
             {navItems.slice(0, 4).map((item) => {
               const Icon = item.icon;
               const active = isLinkActive(item);
@@ -261,6 +316,7 @@ export default function BillingLayout({
                 <Link
                   key={item.label}
                   href={item.href}
+                  onClick={() => setSidebarOpen(false)}
                   className={`flex flex-col items-center space-y-1 ${
                     active ? 'text-[#9B1C22]' : 'text-gray-400 hover:text-gray-650'
                   }`}
@@ -271,8 +327,8 @@ export default function BillingLayout({
               );
             })}
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="flex flex-col items-center space-y-1 text-gray-400"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="flex flex-col items-center space-y-1 text-gray-400 cursor-pointer"
             >
               <Menu className="h-5 w-5" />
               <span className="text-[10px] font-semibold">More</span>
