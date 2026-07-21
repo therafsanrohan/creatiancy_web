@@ -256,6 +256,16 @@ export default function TeamManagementPage() {
 
       const updatedList = await db.getProfiles();
       setProfiles(updatedList);
+      
+      // If updating own profile, sync currentUser session state
+      if (currentUser && editingProfile.id === currentUser.id) {
+        const selfUpdated = updatedList.find(p => p.id === currentUser.id);
+        if (selfUpdated) {
+          await db.setCurrentUser(selfUpdated);
+          setCurrentUser(selfUpdated);
+        }
+      }
+
       const logs = await db.getAuditLogs();
       setAuditLogs(logs);
 
@@ -388,23 +398,23 @@ export default function TeamManagementPage() {
                     </div>
                   </div>
 
-                  {!isSelf && !cannotTouch && (
-                    <div className="flex items-center space-x-1 shrink-0 ml-2">
-                      {isSuperAdmin && (
-                        <button
-                          onClick={() => {
-                            setEditingProfile(p);
-                            setEditFullName(p.full_name);
-                            setEditUsername(p.username || '');
-                            setEditEmail(p.email);
-                            setEditPassword('');
-                          }}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
-                          title="Edit account credentials & password"
-                        >
-                          <UserCog className="h-3.5 w-3.5" />
-                        </button>
-                      )}
+                  <div className="flex items-center space-x-1 shrink-0 ml-2">
+                    {(isSuperAdmin || (isAdmin && !isTargetSuperAdmin)) && (
+                      <button
+                        onClick={() => {
+                          setEditingProfile(p);
+                          setEditFullName(p.full_name);
+                          setEditUsername(p.username || '');
+                          setEditEmail(p.email);
+                          setEditPassword('');
+                        }}
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                        title="Edit account credentials & password"
+                      >
+                        <UserCog className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                    {!isSelf && !cannotTouch && (
                       <button
                         onClick={() => handleDeleteProfile(p.id, p.full_name, p.role_name)}
                         className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
@@ -412,8 +422,8 @@ export default function TeamManagementPage() {
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Role Selector with strict confirmation */}
