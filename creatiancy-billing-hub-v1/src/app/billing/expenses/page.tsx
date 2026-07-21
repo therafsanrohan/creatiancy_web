@@ -445,7 +445,8 @@ export default function ExpensesPage() {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-400">
@@ -476,6 +477,31 @@ export default function ExpensesPage() {
                 </tbody>
               </table>
             </div>
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-50">
+              {[...filteredExpenses].sort((a, b) => b.expense_date.localeCompare(a.expense_date)).map(exp => (
+                <div key={exp.id} className="px-4 py-3 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{exp.description}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{exp.vendor}</p>
+                    </div>
+                    <div className="text-right ml-3 shrink-0">
+                      <p className="text-sm font-extrabold text-gray-900">{formatCurrency(exp.amount, exp.currency)}</p>
+                      <p className="text-[10px] text-gray-400">{exp.expense_date}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${CATEGORY_COLORS[exp.category]}`}>{exp.category}</span>
+                    <button onClick={() => setConfirmDeleteId(exp.id)}
+                      className="text-red-400 hover:text-red-600 transition cursor-pointer p-1">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
         </div>
       </div>

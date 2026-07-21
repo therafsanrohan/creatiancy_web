@@ -310,169 +310,10 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   }
 ];
 
-const MOCK_CLIENTS: BillingClient[] = [
-  {
-    id: 'cli-1',
-    client_type: 'company',
-    company_name: 'Fictional Dhaka Tech Ltd',
-    contact_person: 'Rahim Ahmed',
-    billing_email: 'billing@dhakatech.local',
-    additional_emails: ['info@dhakatech.local'],
-    phone: '+880 1711 223344',
-    billing_address: 'Gulshan 2, Dhaka, Bangladesh',
-    city: 'Dhaka',
-    country: 'Bangladesh',
-    tax_number: 'TIN-999888777',
-    preferred_currency: 'BDT',
-    default_payment_terms: '15 Days',
-    account_manager_id: 'usr-3',
-    internal_note: 'Important client. Always pays on time.',
-    status: 'active'
-  },
-  {
-    id: 'cli-2',
-    client_type: 'company',
-    company_name: 'Fictional Boston Studios Inc',
-    contact_person: 'Sarah Connor',
-    billing_email: 'accounting@bostonstudios.local',
-    additional_emails: ['sarah@bostonstudios.local'],
-    phone: '+1 617 555 0122',
-    billing_address: '100 Main St, Boston, MA 02108, USA',
-    city: 'Boston',
-    country: 'USA',
-    tax_number: 'EIN-00-1122334',
-    preferred_currency: 'USD',
-    default_payment_terms: '30 Days',
-    account_manager_id: 'usr-3',
-    internal_note: 'US campaign contracts.',
-    status: 'active'
-  }
-];
-
-const MOCK_INVOICES: Invoice[] = [
-  {
-    id: 'inv-1',
-    secure_token: 'token-inv-1',
-    client_id: 'cli-1',
-    currency: 'BDT',
-    entity_id: 'ent-1',
-    invoice_number: null,
-    status: 'draft',
-    issue_date: '2026-07-01',
-    payment_terms: '15 Days',
-    due_date: '2026-07-16',
-    project_name: 'Website Redesign',
-    service_period: 'July 2026',
-    po_number: 'PO-BDT-001',
-    reference_number: 'REF-DHAKA-101',
-    account_manager_id: 'usr-3',
-    discount_type: 'none',
-    discount_value: 0,
-    vat_rate: 15.00,
-    vat_inclusive: true,
-    client_note: 'Thank you for your business.',
-    payment_instructions: 'Please transfer to our BDT bank account. Reference invoice number.',
-    terms_conditions: 'Standard terms apply.',
-    internal_note: 'Client requested VAT inclusive.',
-    pdf_file_url: null,
-    pdf_generated_at: null,
-    created_by: 'usr-3',
-    approved_by: null,
-    approved_at: null,
-    created_at: '2026-07-01T00:00:00Z',
-    updated_at: '2026-07-01T00:00:00Z'
-  },
-  {
-    id: 'inv-2',
-    secure_token: 'token-inv-2',
-    client_id: 'cli-2',
-    currency: 'USD',
-    entity_id: 'ent-2',
-    invoice_number: null,
-    status: 'draft',
-    issue_date: '2026-07-05',
-    payment_terms: '30 Days',
-    due_date: '2026-08-04',
-    project_name: 'Brand Identity Design',
-    service_period: 'Q3 2026',
-    po_number: 'PO-USD-002',
-    reference_number: 'REF-BOSTON-202',
-    account_manager_id: 'usr-3',
-    discount_type: 'percentage',
-    discount_value: 10,
-    vat_rate: 0,
-    vat_inclusive: true,
-    client_note: 'Initial drafts approved.',
-    payment_instructions: 'Please wire transfer to our USD bank account. SWIFT/Routing code details below.',
-    terms_conditions: 'Standard terms apply.',
-    internal_note: '10% discount approved by CS Lead.',
-    pdf_file_url: null,
-    pdf_generated_at: null,
-    created_by: 'usr-3',
-    approved_by: null,
-    approved_at: null,
-    created_at: '2026-07-05T00:00:00Z',
-    updated_at: '2026-07-05T00:00:00Z'
-  },
-  {
-    id: 'inv-3',
-    secure_token: 'token-inv-3',
-    client_id: 'cli-1',
-    currency: 'BDT',
-    entity_id: 'ent-1',
-    invoice_number: 'CLTD-BDT-2026-0001',
-    status: 'approved',
-    issue_date: '2026-07-10',
-    payment_terms: '15 Days',
-    due_date: '2026-07-25',
-    project_name: 'Mobile App Strategy',
-    service_period: 'July 2026',
-    po_number: 'PO-BDT-003',
-    reference_number: 'REF-DHAKA-103',
-    account_manager_id: 'usr-3',
-    discount_type: 'fixed',
-    discount_value: 5000,
-    vat_rate: 15.00,
-    vat_inclusive: true,
-    client_note: 'Strategy document finalized.',
-    payment_instructions: 'Please transfer to our BDT bank account. Reference invoice number.',
-    terms_conditions: 'Standard terms apply.',
-    internal_note: 'Urgent strategy consultation.',
-    pdf_file_url: null,
-    pdf_generated_at: null,
-    created_by: 'usr-3',
-    approved_by: 'usr-1',
-    approved_at: '2026-07-10T12:00:00Z',
-    created_at: '2026-07-10T00:00:00Z',
-    updated_at: '2026-07-10T12:00:00Z'
-  }
-];
-
-const MOCK_ITEMS: InvoiceItem[] = [
-  { id: 'itm-1', invoice_id: 'inv-1', service_name: 'UX design workshop', description: 'Creative design thinking session', quantity: 2, unit: 'Day', rate: 25000, amount: 50000, sort_order: 0 },
-  { id: 'itm-2', invoice_id: 'inv-1', service_name: 'Prototype development', description: 'Figma dynamic wireframes', quantity: 1, unit: 'Project', rate: 120000, amount: 120000, sort_order: 1 },
-  { id: 'itm-3', invoice_id: 'inv-2', service_name: 'Logo concepts', description: '3 custom brand guidelines', quantity: 1, unit: 'Project', rate: 1500, amount: 1500, sort_order: 0 },
-  { id: 'itm-4', invoice_id: 'inv-2', service_name: 'Stationery kit', description: 'Business cards & letterheads', quantity: 1, unit: 'Item', rate: 500, amount: 500, sort_order: 1 },
-  { id: 'itm-5', invoice_id: 'inv-3', service_name: 'Strategic planning consultation', description: 'Review of roadmap and milestones', quantity: 1, unit: 'Milestone', rate: 75000, amount: 75000, sort_order: 0 },
-  { id: 'itm-6', invoice_id: 'inv-3', service_name: 'Market analysis research', description: 'Competitor benchmarking study', quantity: 1, unit: 'Project', rate: 50000, amount: 50000, sort_order: 1 }
-];
-
-const MOCK_SNAPSHOTS: InvoiceSnapshot[] = [
-  {
-    invoice_id: 'inv-3',
-    entity_snapshot: MOCK_ENTITIES[0],
-    bank_snapshot: MOCK_BANK_ACCOUNTS[0],
-    client_snapshot: MOCK_CLIENTS[0],
-    totals_snapshot: {
-      subtotal: 125000,
-      discount_amount: 5000,
-      total_payable: 120000,
-      amount_paid: 0,
-      amount_due: 120000
-    }
-  }
-];
-
+const MOCK_CLIENTS: BillingClient[] = [];
+const MOCK_INVOICES: Invoice[] = [];
+const MOCK_ITEMS: InvoiceItem[] = [];
+const MOCK_SNAPSHOTS: InvoiceSnapshot[] = [];
 const MOCK_PAYMENTS: Payment[] = [];
 const MOCK_EMAIL_LOGS: EmailLog[] = [];
 const MOCK_AUDIT_LOGS: AuditLog[] = [];
@@ -481,6 +322,23 @@ const MOCK_EXPENSES: Expense[] = [];
 
 // HELPER STATE MANAGEMENT USING LOCALSTORAGE (DEMO MODE ENGINE)
 class LocalStore {
+  constructor() {
+    if (typeof window !== 'undefined') {
+      const version = localStorage.getItem('billing_hub_v1_prod_clean');
+      if (!version) {
+        localStorage.removeItem('billing_hub_invoices');
+        localStorage.removeItem('billing_hub_clients');
+        localStorage.removeItem('billing_hub_items');
+        localStorage.removeItem('billing_hub_snapshots');
+        localStorage.removeItem('billing_hub_payments');
+        localStorage.removeItem('billing_hub_expenses');
+        localStorage.removeItem('billing_hub_tax_payments');
+        localStorage.removeItem('billing_hub_email_logs');
+        localStorage.setItem('billing_hub_v1_prod_clean', 'true');
+      }
+    }
+  }
+
   private getVal(key: string, def: any): any {
     if (typeof window === 'undefined') return def;
     const val = localStorage.getItem(`billing_hub_${key}`);
@@ -758,9 +616,16 @@ export const db = {
 
     // Update snapshots dynamically so live invoice previews reflect updated entity info
     const snapshotsList = localStore.snapshots;
+    const invoicesList = localStore.invoices;
     let snapshotUpdated = false;
     for (let i = 0; i < snapshotsList.length; i++) {
-      if (snapshotsList[i].entity_snapshot && snapshotsList[i].entity_snapshot.id === id) {
+      const inv = invoicesList.find(x => x.id === snapshotsList[i].invoice_id);
+      const isMatch = (inv && inv.entity_id === id) ||
+        (snapshotsList[i].entity_snapshot && (
+          snapshotsList[i].entity_snapshot.id === id || 
+          snapshotsList[i].entity_snapshot.entity_code === updated.entity_code
+        ));
+      if (isMatch) {
         snapshotsList[i].entity_snapshot = { ...snapshotsList[i].entity_snapshot, ...updated };
         snapshotUpdated = true;
       }

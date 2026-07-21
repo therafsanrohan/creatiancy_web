@@ -128,46 +128,7 @@ export default function BillingLayout({
   return (
     <div className="flex min-h-screen flex-col bg-[#FBFDF9] text-[#1E1E1E]">
       
-      {/* Sandbox/Demo Mode banner */}
-      {isDemoMode && (
-        <div className="flex flex-col sm:flex-row items-center justify-between bg-yellow-50 px-6 py-2.5 text-xs text-yellow-800 border-b border-yellow-100 no-print z-50">
-          <div className="flex items-center space-x-1.5 font-medium mb-2 sm:mb-0">
-            <Sparkles className="h-3.5 w-3.5 text-yellow-600" />
-            <span>Sandbox Mode: Using Local Browser Storage. Perfect for offline sandbox testing.</span>
-          </div>
-          
-          {/* Quick role-switcher */}
-          <div className="relative">
-            <button
-              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-              className="flex items-center space-x-1.5 bg-white border border-yellow-200 px-3 py-1 rounded-md text-yellow-800 hover:bg-yellow-100 font-semibold cursor-pointer"
-            >
-              <span>Current Role: {currentUser.role_name}</span>
-              <ChevronDown className="h-3 w-3" />
-            </button>
-            
-            {roleDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-48 rounded-md bg-white shadow-lg ring-1 ring-black/5 z-50">
-                <div className="py-1">
-                  {profiles.map((p) => (
-                    <button
-                      key={p.id}
-                      onClick={() => handleRoleChange(p.role_name)}
-                      className={`block w-full text-left px-4 py-2 text-xs hover:bg-gray-100 ${
-                        currentUser.role_name === p.role_name
-                          ? 'font-bold text-[#9B1C22]'
-                          : 'text-gray-700'
-                      }`}
-                    >
-                      {p.role_name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+
 
       <div className="flex flex-1">
         

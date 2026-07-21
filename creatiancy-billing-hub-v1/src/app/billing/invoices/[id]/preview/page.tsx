@@ -64,7 +64,7 @@ export default function InvoicePreviewPage() {
         if (cl) setClient(cl);
 
         const ents = await db.getEntities();
-        const activeEnt = ents.find(e => e.id === inv.entity_id);
+        const activeEnt = ents.find(e => e.id === inv.entity_id) || ents.find(e => e.entity_code === (inv.currency === 'BDT' ? 'CLTD' : 'CLLC'));
         if (activeEnt) setEntity(activeEnt);
 
         const invItems = await db.getInvoiceItems(id);

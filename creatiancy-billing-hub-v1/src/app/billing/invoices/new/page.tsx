@@ -356,10 +356,10 @@ export default function NewInvoicePage() {
               <div className="rounded-xl bg-gray-50 p-4 text-xs border border-gray-100">
                 <span className="text-gray-400 font-semibold uppercase block">Locked Mapped Entity</span>
                 <p className="font-extrabold text-sm text-gray-800 mt-1">
-                  {currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+                  {activeEntity ? activeEntity.legal_name : (currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                 </p>
                 <p className="text-[10px] text-gray-400 font-semibold mt-1">
-                  {currency === 'BDT' ? 'CLTD-BDT prefix • Banani Address' : 'CLLC-USD prefix • New York Address'}
+                  {activeEntity ? `${activeEntity.invoice_prefix} prefix • ${activeEntity.registered_address}` : (currency === 'BDT' ? 'CLTD-BDT prefix • Banani Address' : 'CLLC-USD prefix • New York Address')}
                 </p>
               </div>
             </div>
@@ -801,12 +801,12 @@ export default function NewInvoicePage() {
                 {/* Header */}
                 <div className="flex justify-between items-start pb-4 border-b border-gray-100">
                   <div>
-                    <div className="h-6 w-6 rounded bg-[#9B1C22] flex items-center justify-center text-white font-bold text-xs">৳</div>
+                    <div className="h-6 w-6 rounded bg-[#9B1C22] flex items-center justify-center text-white font-bold text-xs">{currency === 'BDT' ? '৳' : '$'}</div>
                     <span className="block font-bold text-sm mt-1">
-                      {currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+                      {activeEntity ? activeEntity.legal_name : (currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                     </span>
                     <span className="text-gray-450 block leading-tight text-[8px] whitespace-pre-line mt-0.5">
-                      {currency === 'BDT' ? 'Banani, Dhaka, Bangladesh' : 'Broadway, NY, USA'}
+                      {activeEntity ? activeEntity.registered_address : (currency === 'BDT' ? 'Banani, Dhaka, Bangladesh' : 'Broadway, NY, USA')}
                     </span>
                   </div>
 
@@ -888,8 +888,12 @@ export default function NewInvoicePage() {
                 </div>
 
                 <div className="mt-6 pt-3 border-t border-gray-100 text-[6px] text-gray-400 text-center leading-normal">
-                  <p className="font-bold text-[#9B1C22]">{currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC'}</p>
-                  <p className="mt-1">{currency === 'BDT' ? 'All rates are inclusive of applicable VAT in accordance with prevailing laws.' : 'All rates are inclusive of applicable taxes.'}</p>
+                  <p className="font-bold text-[#9B1C22]">
+                    {activeEntity ? activeEntity.legal_name : (currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}
+                  </p>
+                  <p className="mt-1">
+                    {activeEntity ? activeEntity.vat_footer : (currency === 'BDT' ? 'All rates are inclusive of applicable VAT in accordance with prevailing laws.' : 'All rates are inclusive of applicable taxes.')}
+                  </p>
                 </div>
               </div>
 

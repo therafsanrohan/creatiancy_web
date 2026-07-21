@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { db, Invoice, BillingClient, Profile, InvoiceItem, Payment, EmailLog, GatewayRates, localStore } from '@/lib/db';
+import { db, Invoice, BillingClient, BusinessEntity, Profile, InvoiceItem, Payment, EmailLog, GatewayRates, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import NotificationModal from '@/components/NotificationModal';
 import Link from 'next/link';
@@ -33,6 +33,7 @@ export default function InvoiceDetailsPage() {
 
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [client, setClient] = useState<BillingClient | null>(null);
+  const [entity, setEntity] = useState<BusinessEntity | null>(null);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -97,21 +98,23 @@ export default function InvoiceDetailsPage() {
         }
         setInvoice(inv);
 
+        const ents = await db.getEntities();
+        const activeEnt = ents.find(e => e.id === inv.entity_id) || ents.find(e => e.entity_code === (inv.currency === 'BDT' ? 'CLTD' : 'CLLC'));
+        if (activeEnt) setEntity(activeEnt);
+
         const cl = await db.getClientById(inv.client_id);
         if (cl) {
           setClient(cl);
           setEmailRecipient(cl.billing_email);
-          const companyEmail = inv.currency === 'BDT' ? 'billing@creatiancy.com' : 'billing@creatiancy.com';
+          const companyEmail = activeEnt?.email || 'billing@creatiancy.com';
           const ccList = [companyEmail, ...(cl.additional_emails || [])].filter(Boolean).join(', ');
           setEmailCC(ccList);
           
-          const subject = inv.currency === 'BDT'
-            ? `Invoice ${inv.invoice_number || 'Draft'} from Creatiancy Limited`
-            : `Invoice ${inv.invoice_number || 'Draft'} from Creatiancy LLC`;
+          const subject = `Invoice ${inv.invoice_number || 'Draft'} from ${activeEnt?.legal_name || (inv.currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
           setEmailSubject(subject);
           
           setEmailMessage(
-            `Hi ${cl.contact_person},\n\nPlease find attached invoice ${inv.invoice_number || 'Draft'} for ${inv.project_name}.\n\nThank you,\nCreatiancy Billing Team`
+            `Hi ${cl.contact_person},\n\nPlease find attached invoice ${inv.invoice_number || 'Draft'} for ${inv.project_name}.\n\nThank you,\n${activeEnt?.legal_name || 'Creatiancy Billing Team'}`
           );
         }
 
@@ -390,7 +393,7 @@ export default function InvoiceDetailsPage() {
               <div>
                 <span className="text-gray-400 font-semibold uppercase block">Legal Entity</span>
                 <span className="text-sm font-bold text-[#9B1C22] block mt-1">
-                  {invoice.currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+                  {entity?.legal_name || (invoice.currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                 </span>
               </div>
             </div>

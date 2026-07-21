@@ -326,15 +326,15 @@ export default function TeamManagementPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Team Management & Access Controls</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Team Management & Access Controls</h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
             Configure team accounts, assign granular role permissions, and audit system integrity
           </p>
         </div>
         <button
           id="btn-create-team-account"
           onClick={() => setShowCreateModal(true)}
-          className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#9B1C22]/90 shadow-md cursor-pointer transition"
+          className="flex items-center justify-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#9B1C22]/90 shadow-md cursor-pointer transition w-full sm:w-auto"
         >
           <UserPlus className="h-4 w-4" />
           <span>Create Team Account</span>

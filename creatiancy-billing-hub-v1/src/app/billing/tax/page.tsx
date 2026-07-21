@@ -220,7 +220,7 @@ export default function TaxLedgerPage() {
             {/* Inline Tax & VAT Rate Editor for Active Region */}
             <div className="flex items-center gap-3 mt-1.5 flex-wrap">
               {editingRates ? (
-                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-gray-200">
+                <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-xl border border-gray-200 flex-wrap">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-gray-500">Corp Tax:</span>
                     <input type="number" min="0" max="50" step="0.5" value={localTaxRate}
@@ -235,11 +235,13 @@ export default function TaxLedgerPage() {
                       className="w-16 text-xs font-bold border border-gray-300 bg-white rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30 font-mono" />
                     <span className="text-xs text-gray-400">%</span>
                   </div>
-                  <button onClick={handleSaveRates} disabled={savingRate}
-                    className="text-[11px] font-bold bg-[#9B1C22] text-white px-3 py-1 rounded-lg hover:bg-[#7d1219] cursor-pointer flex items-center gap-1">
-                    {savingRate ? <Loader2 className="h-3 w-3 animate-spin" /> : null} Save Rates
-                  </button>
-                  <button onClick={() => setEditingRates(false)} className="text-[11px] font-bold text-gray-400 hover:text-gray-600 cursor-pointer">Cancel</button>
+                  <div className="flex items-center gap-2">
+                    <button onClick={handleSaveRates} disabled={savingRate}
+                      className="text-[11px] font-bold bg-[#9B1C22] text-white px-3 py-1 rounded-lg hover:bg-[#7d1219] cursor-pointer flex items-center gap-1">
+                      {savingRate ? <Loader2 className="h-3 w-3 animate-spin" /> : null} Save Rates
+                    </button>
+                    <button onClick={() => setEditingRates(false)} className="text-[11px] font-bold text-gray-400 hover:text-gray-600 cursor-pointer">Cancel</button>
+                  </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
@@ -414,7 +416,8 @@ export default function TaxLedgerPage() {
               <button onClick={() => setShowRecordModal(true)} className="text-xs font-bold text-[#9B1C22] hover:underline cursor-pointer">Record your first Challan →</button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-400">
@@ -438,6 +441,25 @@ export default function TaxLedgerPage() {
                 </tbody>
               </table>
             </div>
+            {/* Mobile Card View */}
+            <div className="md:hidden divide-y divide-gray-50">
+              {[...taxPayments].sort((a, b) => b.payment_date.localeCompare(a.payment_date)).map(tp => (
+                <div key={tp.id} className="px-4 py-3 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div className="min-w-0">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${tp.tax_type === 'VAT' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{tp.tax_type}</span>
+                      <p className="text-xs text-gray-500 mt-1">{tp.payment_date}</p>
+                    </div>
+                    <p className="text-sm font-extrabold text-gray-900 shrink-0 ml-3">{formatCurrency(tp.amount, regionTab)}</p>
+                  </div>
+                  <div className="flex justify-between items-center text-xs text-gray-500">
+                    <span className="font-mono">{tp.challan_number}</span>
+                    <span>{tp.period_start} → {tp.period_end}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            </>
           )}
         </div>
       </div>
