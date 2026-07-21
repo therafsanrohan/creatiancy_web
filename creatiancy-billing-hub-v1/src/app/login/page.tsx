@@ -73,14 +73,11 @@ export default function LoginPage() {
             <img
               src="/logos/Creatiancy logo.svg"
               alt="Creatiancy Logo"
-              className="h-12 w-auto object-contain"
+              className="h-8 w-auto object-contain"
               onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
             />
           </div>
-          <h1 className="mt-4 text-3xl font-bold tracking-tight text-[#1E1E1E]">
-            Creatiancy
-          </h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
             Billing • Secure Authentication Portal
           </p>
         </div>
