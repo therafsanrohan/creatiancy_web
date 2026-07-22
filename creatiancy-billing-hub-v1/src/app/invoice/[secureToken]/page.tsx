@@ -153,12 +153,21 @@ export default function PublicInvoicePage() {
         </div>
       </div>
 
-      {/* A4 Canvas */}
-      <div
-        id="print-area"
-        className="max-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-12 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none"
-        style={{ width: '210mm', minHeight: '297mm' }}
-      >
+      {/* Mobile Horizontal Slide Hint */}
+      <div className="max-w-[210mm] mx-auto mb-2 text-center block sm:hidden no-print">
+        <span className="inline-flex items-center space-x-1.5 text-[11px] font-bold text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1 shadow-xs">
+          <span>👈 Slide horizontally to view full invoice 👉</span>
+        </span>
+      </div>
+
+      {/* Outer Scroll Wrapper for Mobile Responsiveness */}
+      <div className="w-full overflow-x-auto pb-6 scrollbar-thin">
+        {/* A4 Canvas */}
+        <div
+          id="print-area"
+          className="w-[210mm] min-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-6 sm:p-12 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none"
+          style={{ width: '210mm', minHeight: '297mm' }}
+        >
         <div className="print-watermark">Creatiancy Original</div>
         <div>
           {/* Header */}
@@ -428,6 +437,7 @@ export default function PublicInvoicePage() {
           </div>
         </div>
 
+        </div>
       </div>
     </div>
   );
