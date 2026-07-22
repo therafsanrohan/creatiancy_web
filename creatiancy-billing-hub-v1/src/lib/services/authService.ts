@@ -2,7 +2,7 @@ import { supabase, isSupabaseConfigured } from '../supabase';
 import { Profile, localStore } from '../db';
 
 export const authService = {
-  getCurrentUser: async (): Promise<Profile> => {
+  getCurrentUser: async (): Promise<Profile | null> => {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data: authData } = await supabase.auth.getUser();
@@ -29,8 +29,10 @@ export const authService = {
           localStore.currentUser = authProfile;
           return authProfile;
         }
+        return null;
       } catch (e) {
         console.warn('getCurrentUser warning:', e);
+        return null;
       }
     }
     return localStore.currentUser;
