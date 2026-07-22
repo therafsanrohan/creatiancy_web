@@ -1437,6 +1437,20 @@ export const db = {
   },
 
   getProfiles: async (): Promise<Profile[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: true });
+        if (!error && data && data.length > 0) {
+          localStore.profiles = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getProfiles cloud fetch warning:', e);
+      }
+    }
     return localStore.profiles;
   },
 
@@ -1455,14 +1469,35 @@ export const db = {
       id: generateUUID(),
       created_at: new Date().toISOString()
     };
+    // Sync to Supabase cloud if connected
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('profiles').upsert({
+        id: newProfile.id,
+        full_name: newProfile.full_name,
+        email: newProfile.email,
+        role_name: newProfile.role_name,
+        created_at: newProfile.created_at,
+        updated_at: new Date().toISOString()
+      });
+      if (error) throw new Error(`Cloud create failed: ${error.message}`);
+    }
     list.push(newProfile);
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'create_team_account', 'users', newProfile.id, null, { full_name: newProfile.full_name, email: newProfile.email, username: newProfile.username, role: newProfile.role_name });
+    db.logAudit(user?.id || 'system', 'create_team_account', 'users', newProfile.id, null, { full_name: newProfile.full_name, email: newProfile.email, username: newProfile.username, role: newProfile.role_name });
     return newProfile;
   },
 
   updateProfileRole: async (userId: string, newRole: Profile['role_name']): Promise<Profile> => {
+    // 1. Update Supabase cloud if connected
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ role_name: newRole, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+      if (error) throw new Error(`Cloud update failed: ${error.message}`);
+    }
+    // 2. Update local store
     const list = localStore.profiles;
     const idx = list.findIndex(p => p.id === userId);
     if (idx === -1) throw new Error('User not found');
@@ -1470,15 +1505,24 @@ export const db = {
     list[idx].role_name = newRole;
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'change_user_role', 'users', userId, { role: oldRole }, { role: newRole });
+    db.logAudit(user?.id || 'system', 'change_user_role', 'users', userId, { role: oldRole }, { role: newRole });
     return list[idx];
   },
 
   deleteProfile: async (userId: string): Promise<void> => {
+    // 1. Delete from Supabase cloud if connected
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+      if (error) throw new Error(`Cloud delete failed: ${error.message}`);
+    }
+    // 2. Delete from local store
     const list = localStore.profiles.filter(p => p.id !== userId);
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'delete_team_account', 'users', userId, null, { deleted: true });
+    db.logAudit(user?.id || 'system', 'delete_team_account', 'users', userId, null, { deleted: true });
   },
 
   updateProfileCredentials: async (
@@ -1540,95 +1584,121 @@ export const db = {
 
   // Business Entities
   getEntities: async (): Promise<BusinessEntity[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('business_entities').select('*');
+        if (!error && data && data.length > 0) {
+          localStore.entities = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getEntities cloud fetch warning:', e);
+      }
+    }
     return localStore.entities;
   },
 
   updateEntity: async (id: string, updates: Partial<BusinessEntity>): Promise<BusinessEntity> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('business_entities')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Cloud entity update failed: ${error.message}`);
+    }
+
     const list = localStore.entities;
     const idx = list.findIndex(e => e.id === id);
-    if (idx === -1) throw new Error('Entity not found');
-    const updated = { ...list[idx], ...updates };
-    list[idx] = updated;
-    localStore.entities = list;
-
-    // Update snapshots dynamically so live invoice previews reflect updated entity info
-    const snapshotsList = localStore.snapshots;
-    const invoicesList = localStore.invoices;
-    let snapshotUpdated = false;
-    for (let i = 0; i < snapshotsList.length; i++) {
-      const inv = invoicesList.find(x => x.id === snapshotsList[i].invoice_id);
-      const isMatch = (inv && inv.entity_id === id) ||
-        (snapshotsList[i].entity_snapshot && (
-          snapshotsList[i].entity_snapshot.id === id || 
-          snapshotsList[i].entity_snapshot.entity_code === updated.entity_code
-        ));
-      if (isMatch) {
-        snapshotsList[i].entity_snapshot = { ...snapshotsList[i].entity_snapshot, ...updated };
-        snapshotUpdated = true;
-      }
-    }
-    if (snapshotUpdated) {
-      localStore.snapshots = snapshotsList;
+    if (idx !== -1) {
+      const updated = { ...list[idx], ...updates };
+      list[idx] = updated;
+      localStore.entities = list;
     }
 
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_entity', 'entities', id, null, updates);
-    return updated;
+    db.logAudit(user?.id || 'system', 'update_entity', 'entities', id, null, updates);
+    return localStore.entities.find(e => e.id === id) || (updates as BusinessEntity);
   },
 
   // Bank Accounts
   getBankAccounts: async (): Promise<BankAccount[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('entity_bank_accounts').select('*');
+        if (!error && data && data.length > 0) {
+          localStore.bankAccounts = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getBankAccounts cloud fetch warning:', e);
+      }
+    }
     return localStore.bankAccounts;
   },
 
   updateBankAccount: async (id: string, updates: Partial<BankAccount>): Promise<BankAccount> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('entity_bank_accounts')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Cloud bank account update failed: ${error.message}`);
+    }
+
     const list = localStore.bankAccounts;
     const idx = list.findIndex(b => b.id === id);
-    if (idx === -1) throw new Error('Bank account not found');
-    const updated = { ...list[idx], ...updates };
-    list[idx] = updated;
-    localStore.bankAccounts = list;
-
-    // Update bank snapshots dynamically
-    const snapshotsList = localStore.snapshots;
-    let snapshotUpdated = false;
-    for (let i = 0; i < snapshotsList.length; i++) {
-      if (snapshotsList[i].bank_snapshot && snapshotsList[i].bank_snapshot.id === id) {
-        snapshotsList[i].bank_snapshot = { ...snapshotsList[i].bank_snapshot, ...updated };
-        snapshotUpdated = true;
-      }
-    }
-    if (snapshotUpdated) {
-      localStore.snapshots = snapshotsList;
+    if (idx !== -1) {
+      const updated = { ...list[idx], ...updates };
+      list[idx] = updated;
+      localStore.bankAccounts = list;
     }
 
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_bank', 'bank_accounts', id, null, updates);
-    return updated;
+    db.logAudit(user?.id || 'system', 'update_bank', 'bank_accounts', id, null, updates);
+    return localStore.bankAccounts.find(b => b.id === id) || (updates as BankAccount);
   },
 
   // Client Actions
   getClients: async (): Promise<BillingClient[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('billing_clients').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          localStore.clients = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getClients cloud fetch warning:', e);
+      }
+    }
     return localStore.clients;
   },
 
   getClientById: async (id: string): Promise<BillingClient | undefined> => {
-    return localStore.clients.find(c => c.id === id);
+    const clients = await db.getClients();
+    return clients.find(c => c.id === id);
   },
 
   createClient: async (client: Omit<BillingClient, 'id' | 'status'>): Promise<BillingClient> => {
-    const list = localStore.clients;
     const newClient: BillingClient = {
       ...client,
       id: generateUUID(),
       status: 'active'
     };
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('billing_clients').insert(newClient);
+      if (error) throw new Error(`Cloud client create failed: ${error.message}`);
+    }
+
+    const list = localStore.clients;
     list.push(newClient);
     localStore.clients = list;
+
     const user = await db.getCurrentUser();
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
       title: `New Client Registered: ${newClient.company_name || newClient.contact_person}`,
       message: `Corporate client ${newClient.company_name} registered under ${newClient.preferred_currency} billing.`,
       category: 'client_added',
@@ -1636,33 +1706,55 @@ export const db = {
       link_url: `/billing/clients/${newClient.id}`
     });
 
-    db.logAudit(user.id, 'create_client', 'clients', newClient.id, null, newClient);
+    db.logAudit(user?.id || 'system', 'create_client', 'clients', newClient.id, null, newClient);
     return newClient;
   },
 
   updateClient: async (id: string, updates: Partial<BillingClient>): Promise<BillingClient> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('billing_clients')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Cloud client update failed: ${error.message}`);
+    }
+
     const list = localStore.clients;
     const idx = list.findIndex(c => c.id === id);
-    if (idx === -1) throw new Error('Client not found');
-    const updated = { ...list[idx], ...updates };
-    list[idx] = updated;
-    localStore.clients = list;
+    if (idx !== -1) {
+      const updated = { ...list[idx], ...updates };
+      list[idx] = updated;
+      localStore.clients = list;
+    }
+
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_client', 'clients', id, null, updates);
-    return updated;
+    db.logAudit(user?.id || 'system', 'update_client', 'clients', id, null, updates);
+    return localStore.clients.find(c => c.id === id) || (updates as BillingClient);
   },
 
   // Invoice Actions
   getInvoices: async (): Promise<Invoice[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          localStore.invoices = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getInvoices cloud fetch warning:', e);
+      }
+    }
     return localStore.invoices;
   },
 
   getInvoiceById: async (id: string): Promise<Invoice | undefined> => {
-    return localStore.invoices.find(i => i.id === id);
+    const list = await db.getInvoices();
+    return list.find(i => i.id === id);
   },
 
   getInvoiceByToken: async (token: string): Promise<Invoice | undefined> => {
-    const list = localStore.invoices;
+    const list = await db.getInvoices();
     const cleanToken = token.trim();
     return list.find(i => 
       i.secure_token === cleanToken || 
@@ -1674,10 +1766,30 @@ export const db = {
   },
 
   getInvoiceItems: async (invoiceId: string): Promise<InvoiceItem[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('invoice_items').select('*').eq('invoice_id', invoiceId).order('sort_order', { ascending: true });
+        if (!error && data) {
+          return data;
+        }
+      } catch (e) {
+        console.warn('getInvoiceItems cloud fetch warning:', e);
+      }
+    }
     return localStore.items.filter(item => item.invoice_id === invoiceId);
   },
 
   getSnapshotByInvoiceId: async (invoiceId: string): Promise<InvoiceSnapshot | undefined> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('invoice_snapshots').select('*').eq('invoice_id', invoiceId).single();
+        if (!error && data) {
+          return data;
+        }
+      } catch (e) {
+        console.warn('getSnapshotByInvoiceId cloud fetch warning:', e);
+      }
+    }
     return localStore.snapshots.find(s => s.invoice_id === invoiceId);
   },
 
@@ -1692,7 +1804,7 @@ export const db = {
       secure_token: generateUUID(),
       invoice_number: null,
       status: 'draft',
-      created_by: user.id,
+      created_by: user?.id || 'system',
       approved_by: null,
       approved_at: null,
       pdf_file_url: null,
@@ -1701,42 +1813,38 @@ export const db = {
       updated_at: new Date().toISOString()
     };
 
-    // Save invoice
-    const invoicesList = localStore.invoices;
-    invoicesList.push(newInvoice);
-    localStore.invoices = invoicesList;
-
-    // Save items
-    const itemsList = localStore.items;
     const newItems: InvoiceItem[] = items.map((itm, index) => ({
       ...itm,
       id: generateUUID(),
       invoice_id: newInvoice.id,
       sort_order: index
     }));
-    itemsList.push(...newItems);
-    localStore.items = itemsList;
 
-    // Auto-enlist & update Client Service Rates memory for this client
-    for (const itm of items) {
-      if (newInvoice.client_id && itm.service_name && itm.rate > 0) {
-        await db.saveClientServiceRate({
-          client_id: newInvoice.client_id,
-          service_name: itm.service_name,
-          unit_price: itm.rate,
-          unit: itm.unit || 'pcs',
-          is_paid_media: itm.is_paid_media,
-          usd_budget: itm.usd_amount,
-          usd_rate: itm.usd_rate
-        });
+    if (isSupabaseConfigured && supabase) {
+      const { error: invErr } = await supabase.from('invoices').insert(newInvoice);
+      if (invErr) throw new Error(`Cloud invoice create failed: ${invErr.message}`);
+      if (newItems.length > 0) {
+        const { error: itemErr } = await supabase.from('invoice_items').insert(newItems);
+        if (itemErr) console.warn('Cloud invoice items insert warning:', itemErr);
       }
     }
 
-    const clientObj = localStore.clients.find(c => c.id === newInvoice.client_id);
+    // Save invoice in localStore cache
+    const invoicesList = localStore.invoices;
+    invoicesList.push(newInvoice);
+    localStore.invoices = invoicesList;
+
+    // Save items in localStore cache
+    const itemsList = localStore.items;
+    itemsList.push(...newItems);
+    localStore.items = itemsList;
+
+    const clients = await db.getClients();
+    const clientObj = clients.find(c => c.id === newInvoice.client_id);
     const clientName = clientObj ? (clientObj.company_name || clientObj.contact_person) : 'Client';
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
       title: `New Invoice Created: ${newInvoice.project_name || 'Draft'}`,
       message: `Invoice draft generated for ${clientName} (${newInvoice.currency}). Access detail page to review.`,
       category: 'invoice_created',
@@ -1744,7 +1852,7 @@ export const db = {
       link_url: `/billing/invoices/${newInvoice.id}`
     });
 
-    db.logAudit(user.id, 'create_invoice', 'invoices', newInvoice.id, null, newInvoice);
+    db.logAudit(user?.id || 'system', 'create_invoice', 'invoices', newInvoice.id, null, newInvoice);
     return newInvoice;
   },
 
@@ -1968,10 +2076,31 @@ export const db = {
 
   // Payment Actions
   getPayments: async (): Promise<Payment[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('invoice_payments').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          localStore.payments = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getPayments cloud fetch warning:', e);
+      }
+    }
     return localStore.payments;
   },
 
   getPaymentsForInvoice: async (invoiceId: string): Promise<Payment[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('invoice_payments').select('*').eq('invoice_id', invoiceId).order('created_at', { ascending: false });
+        if (!error && data) {
+          return data;
+        }
+      } catch (e) {
+        console.warn('getPaymentsForInvoice cloud fetch warning:', e);
+      }
+    }
     return localStore.payments.filter(p => p.invoice_id === invoiceId);
   },
 
@@ -1991,8 +2120,8 @@ export const db = {
     localStore.taxPayments = list;
 
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
       title: `Treasury Tax Payment Recorded: ৳${payment.amount.toLocaleString()}`,
       message: `Challan #${payment.challan_number} tax payment recorded for ${payment.tax_type}.`,
       category: 'tax_recorded',
@@ -2005,16 +2134,33 @@ export const db = {
   },
 
   getExpenses: async (): Promise<Expense[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('expenses').select('*').order('expense_date', { ascending: false });
+        if (!error && data && data.length > 0) {
+          localStore.expenses = data;
+          return data;
+        }
+      } catch (e) {
+        console.warn('getExpenses cloud fetch warning:', e);
+      }
+    }
     return localStore.expenses;
   },
 
   addExpense: async (expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> => {
-    const list = localStore.expenses;
     const newExpense: Expense = {
       ...expense,
       id: generateUUID(),
       created_at: new Date().toISOString()
     };
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('expenses').insert(newExpense);
+      if (error) throw new Error(`Cloud expense create failed: ${error.message}`);
+    }
+
+    const list = localStore.expenses;
     list.push(newExpense);
     localStore.expenses = list;
     db.logAudit(expense.recorded_by, 'add_expense', 'expenses', newExpense.id, null, newExpense);
@@ -2022,6 +2168,10 @@ export const db = {
   },
 
   deleteExpense: async (id: string): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('expenses').delete().eq('id', id);
+      if (error) throw new Error(`Cloud expense delete failed: ${error.message}`);
+    }
     const list = localStore.expenses.filter(e => e.id !== id);
     localStore.expenses = list;
   },
