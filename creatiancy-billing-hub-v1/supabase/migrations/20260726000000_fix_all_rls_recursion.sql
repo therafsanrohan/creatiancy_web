@@ -38,9 +38,9 @@ BEGIN
     now(),
     now()
   )
-  ON CONFLICT (id) DO UPDATE SET
+  ON CONFLICT (email) DO UPDATE SET
+    id = EXCLUDED.id,
     full_name = EXCLUDED.full_name,
-    email = EXCLUDED.email,
     username = COALESCE(EXCLUDED.username, profiles.username),
     updated_at = now();
   RETURN new;
