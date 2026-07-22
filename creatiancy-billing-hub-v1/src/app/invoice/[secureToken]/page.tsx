@@ -108,8 +108,13 @@ export default function PublicInvoicePage() {
     const clientPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
     const shareLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
     const messageText = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official billing invoice from ${entity?.legal_name || (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}.\n\nInvoice Number: ${invoice.invoice_number || 'DRAFT'}\nTotal Amount: ${formatCurrency(totals.totalPayable, invoice.currency)}\nDue Date: ${invoice.due_date}\n\nView & Pay Secure Invoice Online:\n${shareLink}\n\nThank you,\n${entity?.legal_name || (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
-    const targetUrl = clientPhone ? `https://wa.me/${clientPhone}?text=${encodeURIComponent(messageText)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
-    window.open(targetUrl, '_blank');
+    const targetUrl = clientPhone ? `https://api.whatsapp.com/send?phone=${clientPhone}&text=${encodeURIComponent(messageText)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
+    if (typeof window !== 'undefined') {
+      const win = window.open(targetUrl, '_blank');
+      if (!win) {
+        window.location.href = targetUrl;
+      }
+    }
   };
 
   const statusColor: Record<string, string> = {

@@ -119,52 +119,44 @@ export default function InvoicePreviewPage() {
     window.print();
   };
 
-  const handleWhatsAppShare = async () => {
-    try {
-      setSharingWa(true);
-      const element = document.getElementById('print-area') as HTMLElement;
-      // @ts-ignore
-      const html2pdf = (await import('html2pdf.js')).default;
-      
-      const opt: any = {
-        margin:       [5, 5, 5, 5],
-        filename:     `Invoice_${invoice.invoice_number || 'Draft'}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
+  const handleWhatsAppShare = () => {
+    if (!invoice) return;
+    const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+    const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+    const waUrl = cleanPhone
+      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
 
-      // 1. Generate & download PDF
-      await html2pdf().set(opt).from(element).save();
-
-      // 2. Build WhatsApp message with direct verification/public invoice URL
-      const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
-      const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
-
-      // 3. Open WhatsApp Web / App directly
-      const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
-      const waUrl = cleanPhone
-        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
-        : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-
-      if (typeof window !== 'undefined') {
-        window.open(waUrl, '_blank');
+    // Open WhatsApp immediately and synchronously to bypass browser popup restrictions on mobile & desktop
+    if (typeof window !== 'undefined') {
+      const win = window.open(waUrl, '_blank');
+      if (!win) {
+        window.location.href = waUrl;
       }
-    } catch (error) {
-      console.error('Error sharing to WhatsApp:', error);
-      // Direct fallback: open WhatsApp even if PDF stream encountered browser restriction
-      const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
-      const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
-      const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
-      const waUrl = cleanPhone
-        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
-        : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-      if (typeof window !== 'undefined') {
-        window.open(waUrl, '_blank');
-      }
-    } finally {
-      setSharingWa(false);
     }
+
+    // Trigger PDF download asynchronously in background
+    (async () => {
+      try {
+        setSharingWa(true);
+        const element = document.getElementById('print-area') as HTMLElement;
+        // @ts-ignore
+        const html2pdf = (await import('html2pdf.js')).default;
+        const opt: any = {
+          margin:       [5, 5, 5, 5],
+          filename:     `Invoice_${invoice.invoice_number || 'Draft'}.pdf`,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        await html2pdf().set(opt).from(element).save();
+      } catch (err) {
+        console.error('PDF export background error:', err);
+      } finally {
+        setSharingWa(false);
+      }
+    })();
   };
 
   const statusColor: Record<string, string> = {

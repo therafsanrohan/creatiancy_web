@@ -288,9 +288,6 @@ export default function InvoiceDetailsPage() {
     e.preventDefault();
     setActionLoading(true);
     try {
-      // Simulate Resend Email send request
-      await new Promise(res => setTimeout(res, 1200));
-
       await db.logEmail({
         invoice_id: id,
         recipient: emailRecipient,
@@ -298,7 +295,7 @@ export default function InvoiceDetailsPage() {
         email_type: 'invoice',
         subject: emailSubject,
         message_body: emailMessage,
-        provider_message_id: `resend_msg_${Date.now()}`,
+        provider_message_id: `email_log_${Date.now()}`,
         delivery_status: 'success',
         error_message: null
       });
@@ -306,11 +303,24 @@ export default function InvoiceDetailsPage() {
       // Save from email if changed by super admin
       await db.setFromEmail(fromEmail);
 
+      // Construct live dynamic mailto URL with secure invoice token link
+      const origin = typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app';
+      const secureLink = `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
+      const fullBody = `${emailMessage}\n\n----------------------------------------\nDirect Public Invoice Link (Pay & View Online):\n${secureLink}`;
+      
+      const mailtoUrl = `mailto:${encodeURIComponent(emailRecipient)}?cc=${encodeURIComponent(emailCC)}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(fullBody)}`;
+
+      if (typeof window !== 'undefined') {
+        window.location.href = mailtoUrl;
+      }
+
       setSendingEmail(false);
-      showNotif('Email Dispatched', 'Billing email dispatched successfully with invoice attachment.', 'success');
-      window.location.reload();
-    } catch (err) {
-      showNotif('Dispatch Failed', 'Email dispatch failed. Please try again.', 'error');
+      showNotif('Email Dispatched', `Invoice email logged & opened in your default email client (From: ${fromEmail}).`, 'success');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (err: any) {
+      showNotif('Dispatch Failed', err?.message || 'Email dispatch failed. Please try again.', 'error');
     } finally {
       setActionLoading(false);
     }
