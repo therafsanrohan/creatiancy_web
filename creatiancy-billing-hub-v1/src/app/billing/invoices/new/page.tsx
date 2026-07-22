@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { db, BillingClient, Profile, BusinessEntity, InvoiceItem, Invoice, localStore } from '@/lib/db';
+import { db, BillingClient, Profile, BusinessEntity, InvoiceItem, Invoice, ClientServiceRate, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
-import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Sparkles, Megaphone, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormItem {
@@ -51,6 +51,17 @@ export default function NewInvoicePage() {
   const [paymentInstructions, setPaymentInstructions] = useState('');
   const [termsConditions, setTermsConditions] = useState('Standard payment terms apply. Interest of 1.5% per month will be charged on late invoices.');
   const [internalNote, setInternalNote] = useState('');
+
+  // Paid Media & Exchange Rate states
+  const [usdExchangeRate, setUsdExchangeRate] = useState<number>(125.50);
+  const [clientRates, setClientRates] = useState<ClientServiceRate[]>([]);
+  
+  // Paid Media Modal Drawer states
+  const [showPaidMediaModal, setShowPaidMediaModal] = useState(false);
+  const [mediaPlatform, setMediaPlatform] = useState('Meta Ads (FB/Instagram)');
+  const [mediaUsdBudget, setMediaUsdBudget] = useState(1000);
+  const [mediaUsdRate, setMediaUsdRate] = useState(125.50);
+  const [mediaFeePercent, setMediaFeePercent] = useState(10);
 
   // Items list
   const [items, setItems] = useState<FormItem[]>([
@@ -114,8 +125,8 @@ export default function NewInvoicePage() {
     }
   }, [activeEntity]);
 
-  // Sync client default terms & manager
-  const handleClientChange = (clientId: string) => {
+  // Sync client default terms & manager + load Client Service Rates memory
+  const handleClientChange = async (clientId: string) => {
     setSelectedClientId(clientId);
     const client = clients.find(c => c.id === clientId);
     if (client) {
@@ -123,6 +134,74 @@ export default function NewInvoicePage() {
       setPaymentTerms(client.default_payment_terms);
       setAccountManagerId(client.account_manager_id);
     }
+    if (clientId) {
+      const rates = await db.getClientServiceRates(clientId);
+      setClientRates(rates);
+    } else {
+      setClientRates([]);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedClientId) {
+      db.getClientServiceRates(selectedClientId).then(setClientRates);
+    }
+  }, [selectedClientId]);
+
+  // Apply enlisted client service rate preset
+  const applyClientRatePreset = (preset: ClientServiceRate) => {
+    const lastItem = items[items.length - 1];
+    if (items.length === 1 && !lastItem.service_name && lastItem.rate === 0) {
+      setItems([{
+        service_name: preset.service_name,
+        description: preset.is_paid_media ? `Paid media buying budget converted @ ৳${preset.usd_rate || usdExchangeRate}/USD` : `Agreed pricing rate for ${activeClient?.company_name || 'Client'}`,
+        quantity: 1,
+        unit: preset.unit || 'pcs',
+        rate: preset.unit_price
+      }]);
+    } else {
+      setItems([...items, {
+        service_name: preset.service_name,
+        description: preset.is_paid_media ? `Paid media buying budget converted @ ৳${preset.usd_rate || usdExchangeRate}/USD` : `Agreed pricing rate for ${activeClient?.company_name || 'Client'}`,
+        quantity: 1,
+        unit: preset.unit || 'pcs',
+        rate: preset.unit_price
+      }]);
+    }
+  };
+
+  // Insert Paid Media Buying Segment Line Items
+  const handleInsertPaidMedia = () => {
+    const budgetBdt = parseFloat((mediaUsdBudget * mediaUsdRate).toFixed(2));
+    const feeBdt = mediaFeePercent > 0 ? parseFloat(((budgetBdt * mediaFeePercent) / 100).toFixed(2)) : 0;
+
+    const mediaItem: FormItem = {
+      service_name: `${mediaPlatform} Media Buying ($${mediaUsdBudget.toLocaleString()} @ ৳${mediaUsdRate}/USD)`,
+      description: `Ad Media Spend Budget: $${mediaUsdBudget.toLocaleString()} USD converted at manual rate ৳${mediaUsdRate} BDT/USD`,
+      quantity: 1,
+      unit: 'Budget',
+      rate: currency === 'USD' ? mediaUsdBudget : budgetBdt
+    };
+
+    const newItemsList = [...items];
+    if (newItemsList.length === 1 && !newItemsList[0].service_name && newItemsList[0].rate === 0) {
+      newItemsList[0] = mediaItem;
+    } else {
+      newItemsList.push(mediaItem);
+    }
+
+    if (feeBdt > 0) {
+      newItemsList.push({
+        service_name: `${mediaPlatform} Management Fee (${mediaFeePercent}%)`,
+        description: `Digital agency media management, strategy, and ad campaign optimization fee`,
+        quantity: 1,
+        unit: 'Fee',
+        rate: currency === 'USD' ? parseFloat(((mediaUsdBudget * mediaFeePercent) / 100).toFixed(2)) : feeBdt
+      });
+    }
+
+    setItems(newItemsList);
+    setShowPaidMediaModal(false);
   };
 
   // Sync due date calculation
@@ -322,12 +401,12 @@ export default function NewInvoicePage() {
 
           {/* Section 2: Currency & Business Entity Mapping */}
           <div className="space-y-4 pt-6 border-t border-gray-50">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">2. Billing Currency & Entity</h3>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">2. Billing Currency & Dollar Rate</h3>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div>
                 <span className="block text-xs font-semibold uppercase tracking-wider text-gray-550 mb-2">Select Invoice Currency</span>
-                <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-6 pt-1">
                   <label className="flex items-center space-x-2 text-sm font-semibold cursor-pointer">
                     <input
                       type="radio"
@@ -352,14 +431,37 @@ export default function NewInvoicePage() {
                 </div>
               </div>
 
+              <div>
+                <label htmlFor="usd_exchange_rate" className="block text-xs font-semibold uppercase tracking-wider text-gray-550 mb-1">
+                  Manual USD Exchange Rate
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs font-bold text-gray-400">৳</span>
+                  <input
+                    id="usd_exchange_rate"
+                    type="number"
+                    step="any"
+                    value={usdExchangeRate}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value) || 0;
+                      setUsdExchangeRate(val);
+                      setMediaUsdRate(val);
+                    }}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-7 pr-3 text-sm font-bold text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none"
+                    placeholder="125.50"
+                  />
+                </div>
+                <span className="text-[10px] text-gray-400 mt-0.5 block">Market USD/BDT rate for media buying</span>
+              </div>
+
               {/* Locked mapped entity summary */}
-              <div className="rounded-xl bg-gray-50 p-4 text-xs border border-gray-100">
+              <div className="rounded-xl bg-gray-50 p-3.5 text-xs border border-gray-100">
                 <span className="text-gray-400 font-semibold uppercase block">Locked Mapped Entity</span>
-                <p className="font-extrabold text-sm text-gray-800 mt-1">
+                <p className="font-extrabold text-xs text-gray-800 mt-0.5 truncate">
                   {activeEntity ? activeEntity.legal_name : (currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                 </p>
-                <p className="text-[10px] text-gray-400 font-semibold mt-1">
-                  {activeEntity ? `${activeEntity.invoice_prefix} prefix • ${activeEntity.registered_address}` : (currency === 'BDT' ? 'CLTD-BDT prefix • Banani Address' : 'CLLC-USD prefix • New York Address')}
+                <p className="text-[10px] text-gray-400 font-semibold mt-0.5 truncate">
+                  {activeEntity ? `${activeEntity.invoice_prefix} prefix` : (currency === 'BDT' ? 'CLTD-BDT prefix' : 'CLLC-USD prefix')}
                 </p>
               </div>
             </div>
@@ -503,17 +605,53 @@ export default function NewInvoicePage() {
 
           {/* Section 4: Line Items Table */}
           <div className="space-y-4 pt-6 border-t border-gray-50">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-2">
               <h3 className="text-sm font-bold uppercase tracking-wider text-gray-400">4. Service Line Items</h3>
-              <button
-                type="button"
-                onClick={addItem}
-                className="flex items-center space-x-1 text-xs font-semibold text-[#9B1C22] border border-[#9B1C22] rounded-lg px-2.5 py-1 hover:bg-[#9B1C22]/5 cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5" />
-                <span>Add Item</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPaidMediaModal(true)}
+                  className="flex items-center space-x-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition cursor-pointer shadow-2xs"
+                >
+                  <Megaphone className="h-3.5 w-3.5 text-amber-600" />
+                  <span>➕ Add Paid Media Buying ($)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={addItem}
+                  className="flex items-center space-x-1 text-xs font-semibold text-[#9B1C22] border border-[#9B1C22] rounded-lg px-3 py-1.5 hover:bg-[#9B1C22]/5 cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Item</span>
+                </button>
+              </div>
             </div>
+
+            {/* Enlisted Client Pricing Memory Presets */}
+            {clientRates.length > 0 && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3.5 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-amber-900 flex items-center gap-1.5 text-xs">
+                    <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                    <span>Enlisted Pricing Memory for {activeClient?.company_name || activeClient?.contact_person || 'Client'}</span>
+                  </span>
+                  <span className="text-[10px] text-amber-700 font-medium">Click pill to auto-fill agreed rate</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {clientRates.map(rate => (
+                    <button
+                      key={rate.id}
+                      type="button"
+                      onClick={() => applyClientRatePreset(rate)}
+                      className="rounded-lg bg-white border border-amber-300/80 px-2.5 py-1 text-[11px] font-semibold text-gray-800 hover:bg-amber-100/80 transition cursor-pointer shadow-2xs flex items-center space-x-1.5"
+                    >
+                      <span>{rate.service_name}</span>
+                      <span className="text-[#9B1C22] font-bold">({formatCurrency(rate.unit_price, currency)})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               {items.map((item, idx) => (
@@ -902,6 +1040,126 @@ export default function NewInvoicePage() {
         </div>
 
       </div>
+
+      {/* Paid Media Marketing & Digital Media Buying Segment Modal */}
+      {showPaidMediaModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 p-4 z-50 no-print">
+          <div className="bg-white border border-gray-100 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <h3 className="font-bold text-sm text-gray-900 flex items-center space-x-2">
+                <Megaphone className="h-4.5 w-4.5 text-amber-600" />
+                <span>Paid Media Marketing & Buying Calculator</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowPaidMediaModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Select Ad Platform</label>
+                <select
+                  value={mediaPlatform}
+                  onChange={(e) => setMediaPlatform(e.target.value)}
+                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
+                >
+                  <option value="Meta Ads (FB/Instagram)">Meta Ads (Facebook & Instagram)</option>
+                  <option value="Google Ads (Search/Display/YouTube)">Google Ads (Search, Display, YouTube)</option>
+                  <option value="TikTok Ads">TikTok Ads</option>
+                  <option value="LinkedIn Ads">LinkedIn Ads</option>
+                  <option value="Twitter/X Ads">Twitter / X Ads</option>
+                  <option value="Digital Media Buying">Digital Media Buying (General)</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Ad Media Budget (USD)</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs font-bold text-gray-400">$</span>
+                    <input
+                      type="number"
+                      step="any"
+                      min="1"
+                      value={mediaUsdBudget}
+                      onChange={(e) => setMediaUsdBudget(parseFloat(e.target.value) || 0)}
+                      className="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-6 pr-2.5 text-xs font-bold text-[#1E1E1E] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">USD Exchange Rate (BDT)</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs font-bold text-gray-400">৳</span>
+                    <input
+                      type="number"
+                      step="any"
+                      min="1"
+                      value={mediaUsdRate}
+                      onChange={(e) => setMediaUsdRate(parseFloat(e.target.value) || 125.5)}
+                      className="block w-full rounded-lg border border-gray-200 bg-white py-2 pl-6 pr-2.5 text-xs font-bold text-[#1E1E1E] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1">Agency Management Fee (%)</label>
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={mediaFeePercent}
+                  onChange={(e) => setMediaFeePercent(parseFloat(e.target.value) || 0)}
+                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs font-bold text-[#1E1E1E] focus:outline-none"
+                  placeholder="10"
+                />
+              </div>
+
+              {/* Conversion calculation summary */}
+              <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-3 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Media Spend ({mediaUsdBudget} USD):</span>
+                  <span className="font-bold text-gray-900">৳{(mediaUsdBudget * mediaUsdRate).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
+                </div>
+                {mediaFeePercent > 0 && (
+                  <div className="flex justify-between text-amber-900">
+                    <span>Agency Fee ({mediaFeePercent}%):</span>
+                    <span className="font-bold">৳{(((mediaUsdBudget * mediaUsdRate) * mediaFeePercent) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
+                  </div>
+                )}
+                <div className="pt-1.5 border-t border-amber-200 flex justify-between font-extrabold text-sm text-[#9B1C22]">
+                  <span>Total Line Amount:</span>
+                  <span>৳{((mediaUsdBudget * mediaUsdRate) * (1 + mediaFeePercent / 100)).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPaidMediaModal(false)}
+                  className="rounded-lg border border-gray-200 bg-white py-2 px-4 font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleInsertPaidMedia}
+                  className="rounded-lg bg-amber-600 py-2 px-5 font-bold text-white hover:bg-amber-700 shadow-sm transition cursor-pointer flex items-center space-x-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Insert Line Items</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

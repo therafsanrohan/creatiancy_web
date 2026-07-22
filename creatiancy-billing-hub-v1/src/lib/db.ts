@@ -121,6 +121,18 @@ export interface BillingClient {
   status: 'active' | 'archived';
 }
 
+export interface ClientServiceRate {
+  id: string;
+  client_id: string;
+  service_name: string;
+  unit_price: number;
+  unit: string;
+  is_paid_media?: boolean;
+  usd_budget?: number;
+  usd_rate?: number;
+  updated_at: string;
+}
+
 export interface InvoiceItem {
   id: string;
   invoice_id: string;
@@ -131,6 +143,9 @@ export interface InvoiceItem {
   rate: number;
   amount: number;
   sort_order: number;
+  is_paid_media?: boolean;
+  usd_amount?: number;
+  usd_rate?: number;
 }
 
 export interface Invoice {
@@ -138,6 +153,7 @@ export interface Invoice {
   secure_token: string;
   client_id: string;
   currency: 'BDT' | 'USD';
+  usd_rate?: number;
   entity_id: string;
   invoice_number: string | null;
   status: 'draft' | 'pending_approval' | 'approved' | 'sent' | 'viewed' | 'partially_paid' | 'paid' | 'overdue' | 'void';
@@ -319,6 +335,12 @@ const MOCK_EMAIL_LOGS: EmailLog[] = [];
 const MOCK_AUDIT_LOGS: AuditLog[] = [];
 const MOCK_TAX_PAYMENTS: TaxPayment[] = [];
 const MOCK_EXPENSES: Expense[] = [];
+const MOCK_CLIENT_SERVICE_RATES: ClientServiceRate[] = [
+  { id: 'csr-1', client_id: 'cli-1', service_name: 'Static Banner Design', unit_price: 1300, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'csr-2', client_id: 'cli-1', service_name: 'Meta Ads Media Buying ($1,000)', unit_price: 125500, unit: 'budget', is_paid_media: true, usd_budget: 1000, usd_rate: 125.5, updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'csr-3', client_id: 'cli-2', service_name: 'Static Banner Design', unit_price: 5000, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'csr-4', client_id: 'cli-2', service_name: 'Full Stack Web Development', unit_price: 45000, unit: 'project', updated_at: '2026-07-01T00:00:00Z' }
+];
 
 // HELPER STATE MANAGEMENT USING LOCALSTORAGE (DEMO MODE ENGINE)
 class LocalStore {
@@ -415,6 +437,14 @@ class LocalStore {
 
   set expenses(val: Expense[]) {
     this.setVal('expenses', [...val]);
+  }
+
+  get clientServiceRates(): ClientServiceRate[] {
+    return this.getVal('client_service_rates', MOCK_CLIENT_SERVICE_RATES);
+  }
+
+  set clientServiceRates(val: ClientServiceRate[]) {
+    this.setVal('client_service_rates', [...val]);
   }
 
   get emailLogs(): EmailLog[] {
@@ -764,6 +794,21 @@ export const db = {
     itemsList.push(...newItems);
     localStore.items = itemsList;
 
+    // Auto-enlist & update Client Service Rates memory for this client
+    for (const itm of items) {
+      if (newInvoice.client_id && itm.service_name && itm.rate > 0) {
+        await db.saveClientServiceRate({
+          client_id: newInvoice.client_id,
+          service_name: itm.service_name,
+          unit_price: itm.rate,
+          unit: itm.unit || 'pcs',
+          is_paid_media: itm.is_paid_media,
+          usd_budget: itm.usd_amount,
+          usd_rate: itm.usd_rate
+        });
+      }
+    }
+
     db.logAudit(user.id, 'create_invoice', 'invoices', newInvoice.id, null, newInvoice);
     return newInvoice;
   },
@@ -802,6 +847,22 @@ export const db = {
       }));
       itemsList.push(...newItems);
       localStore.items = itemsList;
+
+      // Auto-enlist & update Client Service Rates memory for this client
+      const targetClientId = updatedInvoice.client_id;
+      for (const itm of items) {
+        if (targetClientId && itm.service_name && itm.rate > 0) {
+          await db.saveClientServiceRate({
+            client_id: targetClientId,
+            service_name: itm.service_name,
+            unit_price: itm.rate,
+            unit: itm.unit || 'pcs',
+            is_paid_media: itm.is_paid_media,
+            usd_budget: itm.usd_amount,
+            usd_rate: itm.usd_rate
+          });
+        }
+      }
     }
 
     const user = await db.getCurrentUser();
@@ -1075,5 +1136,52 @@ export const db = {
     };
     list.unshift(newLog); // Put new logs at top
     localStore.auditLogs = list;
+  },
+
+  // Client Service Rate Memory Engine
+  getClientServiceRates: async (clientId?: string): Promise<ClientServiceRate[]> => {
+    const list = localStore.clientServiceRates;
+    if (!clientId) return list;
+    return list.filter(r => r.client_id === clientId);
+  },
+
+  saveClientServiceRate: async (rate: Omit<ClientServiceRate, 'id' | 'updated_at'> & { id?: string }): Promise<ClientServiceRate> => {
+    const list = localStore.clientServiceRates;
+    const existingIdx = list.findIndex(r => r.client_id === rate.client_id && r.service_name.trim().toLowerCase() === rate.service_name.trim().toLowerCase());
+    const now = new Date().toISOString();
+    let saved: ClientServiceRate;
+
+    if (existingIdx >= 0) {
+      saved = {
+        ...list[existingIdx],
+        unit_price: rate.unit_price,
+        unit: rate.unit || list[existingIdx].unit || 'qty',
+        is_paid_media: rate.is_paid_media,
+        usd_budget: rate.usd_budget,
+        usd_rate: rate.usd_rate,
+        updated_at: now
+      };
+      list[existingIdx] = saved;
+    } else {
+      saved = {
+        id: `csr-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        client_id: rate.client_id,
+        service_name: rate.service_name.trim(),
+        unit_price: rate.unit_price,
+        unit: rate.unit || 'qty',
+        is_paid_media: rate.is_paid_media,
+        usd_budget: rate.usd_budget,
+        usd_rate: rate.usd_rate,
+        updated_at: now
+      };
+      list.push(saved);
+    }
+    localStore.clientServiceRates = list;
+    return saved;
+  },
+
+  deleteClientServiceRate: async (id: string): Promise<void> => {
+    const list = localStore.clientServiceRates.filter(r => r.id !== id);
+    localStore.clientServiceRates = list;
   }
 };

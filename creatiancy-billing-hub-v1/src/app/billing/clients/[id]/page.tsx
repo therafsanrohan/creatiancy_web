@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { db, BillingClient, Invoice, Payment, Profile, localStore } from '@/lib/db';
+import { db, BillingClient, Invoice, Payment, Profile, ClientServiceRate, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
 import {
@@ -15,13 +15,22 @@ import {
   Clock,
   CircleCheck,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Sparkles,
+  Trash2,
+  Plus,
+  Megaphone
 } from 'lucide-react';
 
 export default function ClientProfilePage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+
+  const [rates, setRates] = useState<ClientServiceRate[]>([]);
+  const [newServiceName, setNewServiceName] = useState('');
+  const [newUnitPrice, setNewUnitPrice] = useState<number>(0);
+  const [addingRate, setAddingRate] = useState(false);
 
   const [client, setClient] = useState<BillingClient | null>(null);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -64,6 +73,10 @@ export default function ClientProfilePage() {
         const invoiceIds = clientInvs.map(i => i.id);
         const clientPays = allPays.filter(p => invoiceIds.includes(p.invoice_id));
         setPayments(clientPays);
+
+        // Get client custom service rates
+        const clientRatesList = await db.getClientServiceRates(id);
+        setRates(clientRatesList);
 
         // Calculate stats
         let bdtInv = 0;
@@ -110,6 +123,37 @@ export default function ClientProfilePage() {
     }
     loadClientData();
   }, [id, router]);
+
+  const handleAddRate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newServiceName.trim() || newUnitPrice <= 0) return;
+    try {
+      await db.saveClientServiceRate({
+        client_id: id,
+        service_name: newServiceName.trim(),
+        unit_price: newUnitPrice,
+        unit: 'pcs'
+      });
+      setNewServiceName('');
+      setNewUnitPrice(0);
+      setAddingRate(false);
+      const updated = await db.getClientServiceRates(id);
+      setRates(updated);
+    } catch (err) {
+      console.error('Error saving client rate:', err);
+    }
+  };
+
+  const handleDeleteRate = async (rateId: string) => {
+    if (!confirm('Remove this custom rate preset for this client?')) return;
+    try {
+      await db.deleteClientServiceRate(rateId);
+      const updated = await db.getClientServiceRates(id);
+      setRates(updated);
+    } catch (err) {
+      console.error('Error deleting client rate:', err);
+    }
+  };
 
   const getStatusBadgeColor = (status: Invoice['status']) => {
     switch (status) {
@@ -263,6 +307,95 @@ export default function ClientProfilePage() {
               <p className="text-gray-600 leading-normal">{client.internal_note}</p>
             </div>
           )}
+
+          {/* Enlisted Client Pricing Memory & Custom Service Rates */}
+          <div className="rounded-2xl bg-white border border-gray-100 p-5 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-xs uppercase tracking-wider text-gray-700 flex items-center space-x-1.5">
+                <Sparkles className="h-4 w-4 text-amber-600" />
+                <span>Client Enlisted Service Rates</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setAddingRate(!addingRate)}
+                className="flex items-center space-x-1 text-[11px] font-bold text-[#9B1C22] hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Add Rate</span>
+              </button>
+            </div>
+
+            {addingRate && (
+              <form onSubmit={handleAddRate} className="rounded-xl border border-amber-200 bg-amber-50/50 p-3 space-y-3 text-xs">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Regular Service Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={newServiceName}
+                    onChange={(e) => setNewServiceName(e.target.value)}
+                    placeholder="e.g. Static Banner Design"
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-1.5 px-2.5 text-xs text-[#1E1E1E] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Agreed Client Price ({client.preferred_currency})</label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={newUnitPrice}
+                    onChange={(e) => setNewUnitPrice(parseFloat(e.target.value) || 0)}
+                    placeholder="1300"
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-1.5 px-2.5 text-xs font-bold text-[#1E1E1E] focus:outline-none"
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setAddingRate(false)}
+                    className="px-2.5 py-1 text-xs text-gray-500 hover:text-gray-700 font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-3 py-1 rounded-lg bg-[#9B1C22] text-white text-xs font-bold hover:bg-[#7d1219]"
+                  >
+                    Save Rate
+                  </button>
+                </div>
+              </form>
+            )}
+
+            <div className="space-y-2">
+              {rates.length === 0 ? (
+                <p className="text-xs text-gray-400 italic">No custom rates saved yet. Rates are auto-enlisted when invoices are saved.</p>
+              ) : (
+                rates.map(rate => (
+                  <div key={rate.id} className="flex items-center justify-between p-2.5 rounded-xl border border-gray-100 bg-gray-50 text-xs">
+                    <div>
+                      <span className="font-bold text-gray-800 block">{rate.service_name}</span>
+                      {rate.is_paid_media && <span className="text-[9px] text-amber-700 font-semibold uppercase">Paid Media Buying</span>}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="font-extrabold text-[#9B1C22] text-sm">
+                        {formatCurrency(rate.unit_price, client.preferred_currency)}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteRate(rate.id)}
+                        className="text-gray-400 hover:text-red-600 p-1"
+                        title="Delete custom rate"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Ledger Summary Cards */}
