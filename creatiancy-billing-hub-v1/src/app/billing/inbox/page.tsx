@@ -1,66 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db, Profile } from '@/lib/db';
+import { db, Profile, SystemNotification } from '@/lib/db';
+import Link from 'next/link';
 import {
   Mail, Send, AlertOctagon, Info, CheckCircle2, User,
-  Clock, Trash2, ShieldAlert
+  Clock, Trash2, ShieldAlert, FileText, ExternalLink,
+  Sparkles, CreditCard, Landmark, UserPlus, Bell, RefreshCw
 } from 'lucide-react';
 import NotificationModal from '@/components/NotificationModal';
 
-interface TeamMessage {
-  id: string;
-  senderName: string;
-  senderRole: string;
-  subject: string;
-  content: string;
-  type: 'emergency' | 'info' | 'success';
-  timestamp: string;
-  isRead: boolean;
-}
-
-const DEFAULT_MESSAGES: TeamMessage[] = [
-  {
-    id: 'msg-1',
-    senderName: 'Rafsan Rohan',
-    senderRole: 'Super Admin',
-    subject: '🚨 EMERGENCY: Standardize Security Rules immediately',
-    content: 'Team, please ensure all password creations strictly adhere to the new 12-character alphanumeric complexity standard. Do not whitelist any weak passwords to protect our financial databases.',
-    type: 'emergency',
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-    isRead: false
-  },
-  {
-    id: 'msg-2',
-    senderName: 'Finance Executive',
-    senderRole: 'Finance Admin',
-    subject: 'Custom Gateway rates successfully live',
-    content: 'Custom platform cutoff fees can now be set dynamically under Gateway Rates setting page. The dashboard has been upgraded to track these auto-deductions in real-time.',
-    type: 'success',
-    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
-    isRead: true
-  },
-  {
-    id: 'msg-3',
-    senderName: 'System Auditor',
-    senderRole: 'System',
-    subject: 'Cryptographic Audit Trail active',
-    content: 'All state mutations (invoice creation, voiding, role modifications) are now logged cryptographically. Super Admins can export these logs from the Team page.',
-    type: 'info',
-    timestamp: new Date(Date.now() - 3600000 * 24).toISOString(),
-    isRead: true
-  }
-];
-
 export default function TeamInboxPage() {
-  const [messages, setMessages] = useState<TeamMessage[]>([]);
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
-  const [selectedMessage, setSelectedMessage] = useState<TeamMessage | null>(null);
+  const [selectedNotif, setSelectedNotif] = useState<SystemNotification | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // Compose form states
-  const [subject, setSubject] = useState('');
-  const [content, setContent] = useState('');
-  const [msgType, setMsgType] = useState<'emergency' | 'info' | 'success'>('info');
+  // Compose broadcast states
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
+  const [category, setCategory] = useState<SystemNotification['category']>('broadcast');
+  const [targetRole, setTargetRole] = useState<string>('all');
   const [sending, setSending] = useState(false);
 
   // Generic Notification Modal
@@ -75,59 +35,80 @@ export default function TeamInboxPage() {
     setModalState({ isOpen: true, title, message, type });
   };
 
-  useEffect(() => {
-    async function initInbox() {
+  const loadInboxData = async () => {
+    try {
       const u = await db.getCurrentUser();
       setCurrentUser(u);
-
-      const stored = localStorage.getItem('creatiancy_team_inbox');
-      if (stored) {
-        setMessages(JSON.parse(stored));
-      } else {
-        localStorage.setItem('creatiancy_team_inbox', JSON.stringify(DEFAULT_MESSAGES));
-        setMessages(DEFAULT_MESSAGES);
-      }
+      const list = await db.getSystemNotifications(u.role_name, u.id);
+      setNotifications(list);
+    } catch (err) {
+      console.error('Error loading notifications:', err);
+    } finally {
+      setLoading(false);
     }
-    initInbox();
+  };
+
+  useEffect(() => {
+    loadInboxData();
   }, []);
 
-  const saveMessages = (updated: TeamMessage[]) => {
-    setMessages(updated);
-    localStorage.setItem('creatiancy_team_inbox', JSON.stringify(updated));
+  const handleSelectNotif = async (notif: SystemNotification) => {
+    setSelectedNotif(notif);
+    if (currentUser && !notif.read_by.includes(currentUser.id)) {
+      await db.markNotificationRead(notif.id, currentUser.id);
+      await loadInboxData();
+    }
   };
 
-  const handleSelectMessage = (msg: TeamMessage) => {
-    setSelectedMessage(msg);
-    const updated = messages.map(m => m.id === msg.id ? { ...m, isRead: true } : m);
-    saveMessages(updated);
+  const handleClearSingleNotif = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await db.deleteNotification(id);
+      if (selectedNotif?.id === id) {
+        setSelectedNotif(null);
+      }
+      await loadInboxData();
+      showModal('Cleared', 'Notification removed from inbox.', 'success');
+    } catch (err) {
+      showModal('Error', 'Failed to clear notification.', 'error');
+    }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
+  const handleClearAll = async () => {
+    if (!confirm('Are you sure you want to clear all notifications from your inbox?')) return;
+    try {
+      await db.clearAllNotifications();
+      setSelectedNotif(null);
+      await loadInboxData();
+      showModal('Cleared All', 'All inbox notifications cleared successfully.', 'success');
+    } catch (err) {
+      showModal('Error', 'Failed to clear notifications.', 'error');
+    }
+  };
+
+  const handleSendBroadcast = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject.trim() || !content.trim()) {
-      showModal('Validation Failed', 'Subject and content fields are required.', 'error');
+    if (!title.trim() || !message.trim()) {
+      showModal('Validation Error', 'Title and message fields are required.', 'error');
       return;
     }
     setSending(true);
 
     try {
-      const newMsg: TeamMessage = {
-        id: `msg-${Date.now()}`,
-        senderName: currentUser?.full_name || 'Anonymous',
-        senderRole: currentUser?.role_name || 'Team Member',
-        subject: subject.trim(),
-        content: content.trim(),
-        type: msgType,
-        timestamp: new Date().toISOString(),
-        isRead: false
-      };
+      await db.notifyAction({
+        sender_name: currentUser?.full_name || 'System Admin',
+        sender_role: currentUser?.role_name || 'Super Admin',
+        title: title.trim(),
+        message: message.trim(),
+        category,
+        target_roles: targetRole === 'all' ? ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'] : [targetRole]
+      });
 
-      const updated = [newMsg, ...messages];
-      saveMessages(updated);
-      setSubject('');
-      setContent('');
-      setMsgType('info');
-      showModal('Broadcast Sent', 'Your team communication has been successfully published.', 'success');
+      setTitle('');
+      setMessage('');
+      setCategory('broadcast');
+      await loadInboxData();
+      showModal('Broadcast Sent', 'Your communication announcement has been published.', 'success');
     } catch (err) {
       showModal('Broadcast Failed', 'Failed to publish communication.', 'error');
     } finally {
@@ -135,125 +116,158 @@ export default function TeamInboxPage() {
     }
   };
 
-  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
-
-  const requestDeleteMessage = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setDeletingMessageId(id);
-  };
-
-  const confirmDeleteMessage = () => {
-    if (!deletingMessageId) return;
-    const updated = messages.filter(m => m.id !== deletingMessageId);
-    saveMessages(updated);
-    if (selectedMessage?.id === deletingMessageId) {
-      setSelectedMessage(null);
+  const getCategoryIcon = (cat: SystemNotification['category']) => {
+    switch (cat) {
+      case 'invoice_created': return <FileText className="h-4 w-4 text-blue-600" />;
+      case 'approval_required': return <Clock className="h-4 w-4 text-amber-600" />;
+      case 'invoice_approved': return <CheckCircle2 className="h-4 w-4 text-emerald-600" />;
+      case 'payment_recorded': return <CreditCard className="h-4 w-4 text-emerald-600" />;
+      case 'tax_recorded': return <Landmark className="h-4 w-4 text-purple-600" />;
+      case 'client_added': return <UserPlus className="h-4 w-4 text-indigo-600" />;
+      case 'emergency': return <AlertOctagon className="h-4 w-4 text-red-600" />;
+      default: return <Bell className="h-4 w-4 text-gray-600" />;
     }
-    setDeletingMessageId(null);
-    showModal('Message Deleted', 'The message has been removed from your inbox.', 'success');
   };
 
-  const unreadCount = messages.filter(m => !m.isRead).length;
-  const emergenciesCount = messages.filter(m => m.type === 'emergency' && !m.isRead).length;
+  const unreadCount = currentUser ? notifications.filter(n => !n.read_by.includes(currentUser.id)).length : 0;
+  const emergencyCount = notifications.filter(n => n.category === 'emergency').length;
 
   return (
     <div className="space-y-6">
       
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Internal Team Inbox</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Broadcast critical alerts and coordinate emergency actions within the corporate team securely
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Role-Based System Inbox</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Real-time dynamic activity notifications, approval alerts, and broadcast communications
+          </p>
+        </div>
+        <div className="flex items-center space-x-3">
+          <span className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+            <RefreshCw className="h-3 w-3 text-amber-600" />
+            <span>48-Hour Auto Clean Active</span>
+          </span>
+          {notifications.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="flex items-center space-x-1.5 text-xs font-semibold text-red-600 hover:text-red-800 border border-red-200 rounded-xl px-3 py-1.5 hover:bg-red-50 transition cursor-pointer"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Clear All</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-xl border border-gray-150 bg-white p-4 flex items-center space-x-3.5 shadow-xs">
-          <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
+        <div className="rounded-2xl border border-gray-100 bg-white p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
             <Mail className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total Messages</span>
-            <p className="text-2xl font-extrabold text-gray-800">{messages.length}</p>
+            <span className="text-[10px] uppercase font-bold text-gray-400 block tracking-wider">Total Notifications</span>
+            <p className="text-2xl font-extrabold text-gray-900">{notifications.length}</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#9B1C22]/15 bg-[#9B1C22]/4 p-4 flex items-center space-x-3.5 shadow-xs">
-          <div className="h-10 w-10 rounded-lg bg-[#9B1C22]/10 flex items-center justify-center text-[#9B1C22] shrink-0">
-            <Info className="h-5 w-5" />
+        <div className="rounded-2xl border border-[#9B1C22]/15 bg-[#9B1C22]/4 p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="h-10 w-10 rounded-xl bg-[#9B1C22]/10 flex items-center justify-center text-[#9B1C22] shrink-0">
+            <Bell className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-[#9B1C22] block tracking-wider">Unread Communications</span>
+            <span className="text-[10px] uppercase font-bold text-[#9B1C22] block tracking-wider">Unread Action Alerts</span>
             <p className="text-2xl font-extrabold text-[#9B1C22]">{unreadCount}</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-amber-250 bg-amber-50/50 p-4 flex items-center space-x-3.5 shadow-xs">
-          <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
-            <AlertOctagon className="h-5 w-5 animate-bounce" />
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/50 p-4 flex items-center space-x-3.5 shadow-xs">
+          <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700 shrink-0">
+            <AlertOctagon className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold text-amber-700 block tracking-wider">Emergency Alerts</span>
-            <p className="text-2xl font-extrabold text-amber-700">{emergenciesCount}</p>
+            <span className="text-[10px] uppercase font-bold text-amber-800 block tracking-wider">High Priority Alerts</span>
+            <p className="text-2xl font-extrabold text-amber-800">{emergencyCount}</p>
           </div>
         </div>
       </div>
 
-      {/* Interactive Main Area */}
+      {/* Main Interactive Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left Side: Messages list & Compose form */}
+        {/* Left Side: Notification List & Broadcast Form */}
         <div className="lg:col-span-7 space-y-6">
           
-          {/* Message List */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4">
-            <h3 className="font-bold text-sm text-gray-800 border-b border-gray-50 pb-3">Received Communications</h3>
+          {/* Notification List */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-gray-50 pb-3">
+              <h3 className="font-bold text-sm text-gray-900 flex items-center space-x-2">
+                <Bell className="h-4 w-4 text-[#9B1C22]" />
+                <span>Inbox Activity Feed</span>
+              </h3>
+              <span className="text-[11px] text-gray-400 font-medium">Logged in as: {currentUser?.role_name || 'User'}</span>
+            </div>
             
-            {messages.length === 0 ? (
-              <div className="text-center py-12 text-sm text-gray-400">
-                <Mail className="h-8 w-8 mx-auto text-gray-200 mb-2" />
-                <p>Your team inbox is empty.</p>
+            {notifications.length === 0 ? (
+              <div className="text-center py-12 text-sm text-gray-400 space-y-2">
+                <Mail className="h-8 w-8 mx-auto text-gray-300" />
+                <p className="font-semibold text-gray-600">Your role inbox is clean and up to date.</p>
+                <p className="text-xs text-gray-400">Notifications automatically clean up after 48 hours.</p>
               </div>
             ) : (
-              <div className="space-y-3 max-h-[450px] overflow-y-auto pr-1">
-                {messages.map((msg) => {
-                  const isSelected = selectedMessage?.id === msg.id;
-                  const typeStyles = {
-                    emergency: 'border-l-4 border-l-[#9B1C22] bg-red-50/30',
-                    success: 'border-l-4 border-l-green-500 bg-green-50/10',
-                    info: 'border-l-4 border-l-blue-500 bg-blue-50/10'
-                  };
+              <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+                {notifications.map((notif) => {
+                  const isSelected = selectedNotif?.id === notif.id;
+                  const isRead = currentUser ? notif.read_by.includes(currentUser.id) : false;
 
                   return (
                     <div
-                      key={msg.id}
-                      onClick={() => handleSelectMessage(msg)}
-                      className={`p-4 rounded-xl border border-gray-150 transition cursor-pointer hover:bg-gray-50 flex gap-3 justify-between items-start ${
-                        isSelected ? 'ring-2 ring-[#9B1C22]/20 border-[#9B1C22]/30' : ''
-                      } ${typeStyles[msg.type]} ${!msg.isRead ? 'font-bold' : ''}`}
+                      key={notif.id}
+                      onClick={() => handleSelectNotif(notif)}
+                      className={`p-4 rounded-xl border transition cursor-pointer flex gap-3 justify-between items-start ${
+                        isSelected ? 'ring-2 ring-[#9B1C22]/20 border-[#9B1C22]' : 'border-gray-150 hover:bg-gray-50/80'
+                      } ${!isRead ? 'bg-amber-50/30 font-bold border-amber-200/80' : 'bg-white'}`}
                     >
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center space-x-2">
-                          {!msg.isRead && (
-                            <span className="w-2 h-2 rounded-full bg-[#9B1C22] shrink-0" />
-                          )}
-                          <span className="text-[10px] text-gray-400 uppercase font-semibold">
-                            {msg.senderName} • {msg.senderRole}
-                          </span>
+                      <div className="flex items-start space-x-3 min-w-0 flex-1">
+                        <div className="mt-0.5 p-2 rounded-lg bg-gray-50 border border-gray-100 shrink-0">
+                          {getCategoryIcon(notif.category)}
                         </div>
-                        <h4 className="text-xs text-gray-800 mt-1 truncate">{msg.subject}</h4>
-                        <p className="text-[11px] text-gray-400 mt-0.5 truncate font-normal">{msg.content}</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center space-x-2">
+                            {!isRead && (
+                              <span className="w-2 h-2 rounded-full bg-[#9B1C22] shrink-0" />
+                            )}
+                            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">
+                              {notif.sender_name} ({notif.sender_role})
+                            </span>
+                          </div>
+                          <h4 className="text-xs font-bold text-gray-900 mt-0.5 truncate">{notif.title}</h4>
+                          <p className="text-[11px] text-gray-500 mt-0.5 truncate font-normal">{notif.message}</p>
+                          
+                          {notif.link_url && (
+                            <Link
+                              href={notif.link_url}
+                              className="inline-flex items-center space-x-1 text-[11px] font-bold text-[#9B1C22] hover:underline mt-2"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <span>View Related Record</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </Link>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex items-center space-x-2 shrink-0">
                         <span className="text-[9px] text-gray-400 font-mono">
-                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {new Date(notif.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         <button
                           type="button"
-                          onClick={(e) => requestDeleteMessage(msg.id, e)}
-                          className="text-gray-400 hover:text-red-600 p-1 rounded hover:bg-red-50 transition"
+                          onClick={(e) => handleClearSingleNotif(notif.id, e)}
+                          className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
+                          title="Clear notification"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </button>
@@ -265,59 +279,62 @@ export default function TeamInboxPage() {
             )}
           </div>
 
-          {/* Broadcast/Compose Form */}
+          {/* Broadcast/Compose Form for Management Roles */}
           {currentUser && (currentUser.role_name === 'Super Admin' || currentUser.role_name === 'Admin' || currentUser.role_name === 'Finance Admin') && (
-            <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4">
-              <h3 className="font-bold text-sm text-gray-800 border-b border-gray-50 pb-3 flex items-center space-x-2">
+            <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4 shadow-sm">
+              <h3 className="font-bold text-sm text-gray-900 border-b border-gray-50 pb-3 flex items-center space-x-2">
                 <Send className="h-4 w-4 text-[#9B1C22]" />
-                <span>Broadcast Team Communication</span>
+                <span>Broadcast System Announcement</span>
               </h3>
 
-              <form onSubmit={handleSendMessage} className="space-y-4 text-xs">
+              <form onSubmit={handleSendBroadcast} className="space-y-4 text-xs">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Subject Header</label>
+                    <label className="block font-semibold text-gray-700 mb-1">Announcement Header</label>
                     <input
                       type="text"
                       required
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      placeholder="e.g. Audit checklist update"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g. End of Month Financial Reconciliation Notice"
                       className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block font-semibold text-gray-700 mb-1">Communication Category</label>
+                    <label className="block font-semibold text-gray-700 mb-1">Target Roles</label>
                     <select
-                      value={msgType}
-                      onChange={(e) => setMsgType(e.target.value as any)}
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value)}
                       className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none cursor-pointer font-semibold"
                     >
-                      <option value="info">💡 Information Announcement</option>
-                      <option value="success">🎉 Milestone Success Banner</option>
-                      <option value="emergency">🚨 STRICT EMERGENCY ALERT</option>
+                      <option value="all">All Organization Roles</option>
+                      <option value="Super Admin">Super Admin Only</option>
+                      <option value="Finance Admin">Finance Admin Only</option>
+                      <option value="Client Service">Client Service Only</option>
+                      <option value="Project Manager">Project Managers Only</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1">Message Content</label>
+                  <label className="block font-semibold text-gray-700 mb-1">Announcement Message Body</label>
                   <textarea
                     required
                     rows={3}
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    placeholder="Enter internal announcement body details..."
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Provide details regarding operational rules, billing audits, or policy updates..."
                     className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 px-3 text-xs text-[#1E1E1E] focus:outline-none resize-y"
                   />
                 </div>
 
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-end pt-1">
                   <button
                     type="submit"
                     disabled={sending}
-                    className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] py-2 px-5 font-bold text-white hover:bg-[#9B1C22]/90 shadow-md cursor-pointer transition disabled:opacity-50"
+                    className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] py-2 px-5 font-bold text-white hover:bg-[#7d1219] shadow-md cursor-pointer transition disabled:opacity-50"
                   >
+                    <Send className="h-3.5 w-3.5" />
                     <span>Publish Broadcast</span>
                   </button>
                 </div>
@@ -326,51 +343,76 @@ export default function TeamInboxPage() {
           )}
         </div>
 
-        {/* Right Side: Message Detail Panel */}
+        {/* Right Side: Notification Detail Inspector */}
         <div className="lg:col-span-5">
-          <div className="bg-white border border-gray-100 rounded-2xl p-6 min-h-[300px] flex flex-col justify-between">
-            {selectedMessage ? (
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 min-h-[340px] flex flex-col justify-between shadow-sm">
+            {selectedNotif ? (
               <div className="space-y-6">
                 
                 {/* Meta details */}
-                <div className="border-b border-gray-150 pb-4 space-y-2">
-                  <div className="flex items-center space-x-2 text-xs">
-                    <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 shrink-0">
-                      <User className="h-4 w-4" />
+                <div className="border-b border-gray-100 pb-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="p-2 rounded-xl bg-gray-50 border border-gray-100 text-gray-700">
+                        {getCategoryIcon(selectedNotif.category)}
+                      </div>
+                      <div>
+                        <span className="font-bold text-gray-900 text-xs block">{selectedNotif.sender_name}</span>
+                        <span className="text-[10px] text-gray-400 font-semibold uppercase">{selectedNotif.sender_role}</span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="font-bold text-gray-800 block">{selectedMessage.senderName}</span>
-                      <span className="text-[10px] text-gray-400 font-semibold">{selectedMessage.senderRole}</span>
-                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleClearSingleNotif(selectedNotif.id, e)}
+                      className="text-gray-400 hover:text-red-600 p-1.5 rounded-lg hover:bg-red-50 transition"
+                      title="Clear Notification"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
 
-                  <div className="flex items-center space-x-2 text-[10px] text-gray-400 font-mono pt-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{new Date(selectedMessage.timestamp).toLocaleString()}</span>
+                  <div className="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
+                    <Clock className="h-3.5 w-3.5" />
+                    <span>{new Date(selectedNotif.timestamp).toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Content */}
-                <div className="space-y-4">
-                  <h4 className="font-extrabold text-sm text-gray-800 leading-snug">{selectedMessage.subject}</h4>
+                <div className="space-y-3">
+                  <h4 className="font-extrabold text-sm text-gray-900 leading-snug">{selectedNotif.title}</h4>
                   
-                  <div className="text-xs text-gray-650 leading-relaxed bg-gray-50/50 p-4 rounded-xl border border-gray-100 font-normal whitespace-pre-wrap">
-                    {selectedMessage.content}
+                  <div className="text-xs text-gray-700 leading-relaxed bg-gray-50/80 p-4 rounded-xl border border-gray-100 whitespace-pre-wrap font-normal">
+                    {selectedNotif.message}
                   </div>
                 </div>
 
-                {selectedMessage.type === 'emergency' && (
-                  <div className="rounded-xl border border-red-200 bg-red-50/40 p-3 flex items-start space-x-2.5 text-[10px] text-red-800 font-medium">
-                    <ShieldAlert className="h-4 w-4 shrink-0 text-[#9B1C22]" />
-                    <span>This represents a strict emergency announcement. Adhere to internal operational protocols immediately.</span>
+                {/* Direct Action Link */}
+                {selectedNotif.link_url && (
+                  <div className="pt-2">
+                    <Link
+                      href={selectedNotif.link_url}
+                      className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#9B1C22] py-2.5 px-4 font-bold text-white text-xs hover:bg-[#7d1219] shadow-sm transition"
+                    >
+                      <span>Open Associated Document</span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                )}
+
+                {selectedNotif.category === 'emergency' && (
+                  <div className="rounded-xl border border-red-200 bg-red-50/50 p-3 flex items-start space-x-2.5 text-[11px] text-red-900 font-medium">
+                    <ShieldAlert className="h-4 w-4 shrink-0 text-[#9B1C22] mt-0.5" />
+                    <span>High priority security announcement. Follow organizational compliance procedures immediately.</span>
                   </div>
                 )}
 
               </div>
             ) : (
               <div className="flex-1 flex flex-col items-center justify-center text-center py-20 text-gray-400">
-                <Mail className="h-10 w-10 text-gray-250 mb-3" />
-                <p className="text-xs font-semibold">Select a team message to view details</p>
+                <Mail className="h-10 w-10 text-gray-300 mb-3" />
+                <p className="text-xs font-semibold text-gray-600">Select any notification to inspect details</p>
+                <p className="text-[11px] text-gray-400 mt-1">Direct links allow immediate record navigation</p>
               </div>
             )}
           </div>

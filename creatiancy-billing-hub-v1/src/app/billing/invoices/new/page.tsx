@@ -614,7 +614,7 @@ export default function NewInvoicePage() {
                   className="flex items-center space-x-1.5 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-300 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition cursor-pointer shadow-2xs"
                 >
                   <Megaphone className="h-3.5 w-3.5 text-amber-600" />
-                  <span>➕ Add Paid Media Buying ($)</span>
+                  <span>Add Paid Media Buying ($)</span>
                 </button>
                 <button
                   type="button"

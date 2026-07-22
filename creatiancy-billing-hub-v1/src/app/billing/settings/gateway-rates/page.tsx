@@ -332,7 +332,7 @@ export default function GatewayRatesSettingsPage() {
         {/* Custom gateway list */}
         {(rates.customGateways || []).length === 0 && !addingCustom ? (
           <div className="py-8 text-center space-y-2">
-            <div className="text-3xl">🔌</div>
+            <Settings2 className="h-8 w-8 mx-auto text-gray-300" />
             <p className="text-sm font-semibold text-gray-400">No custom gateways yet</p>
             <p className="text-[11px] text-gray-350">
               Click "Add Gateway" to register a new payment platform with a custom cutoff fee rate.

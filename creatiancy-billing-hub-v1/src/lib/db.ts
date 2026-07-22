@@ -213,6 +213,19 @@ export interface Payment {
   created_at: string;
 }
 
+export interface SystemNotification {
+  id: string;
+  sender_name: string;
+  sender_role: string;
+  title: string;
+  message: string;
+  category: 'invoice_created' | 'approval_required' | 'invoice_approved' | 'payment_recorded' | 'tax_recorded' | 'client_added' | 'broadcast' | 'emergency';
+  target_roles: string[];
+  link_url?: string;
+  timestamp: string;
+  read_by: string[];
+}
+
 export interface EmailLog {
   id: string;
   invoice_id: string;
@@ -342,6 +355,33 @@ const MOCK_CLIENT_SERVICE_RATES: ClientServiceRate[] = [
   { id: 'csr-4', client_id: 'cli-2', service_name: 'Full Stack Web Development', unit_price: 45000, unit: 'project', updated_at: '2026-07-01T00:00:00Z' }
 ];
 
+const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
+  {
+    id: 'notif-1',
+    sender_name: 'Rafsan Rohan',
+    sender_role: 'Super Admin',
+    title: 'Security Compliance Rules & Data Safeguard Active',
+    message: 'Team, please ensure all billing entries adhere to legal entity and verification standards.',
+    category: 'emergency',
+    target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+    link_url: '/billing/team',
+    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
+    read_by: []
+  },
+  {
+    id: 'notif-2',
+    sender_name: 'Finance Executive',
+    sender_role: 'Finance Admin',
+    title: 'Custom Gateway Rates Updated',
+    message: 'Platform cutoff fees can now be set dynamically under Gateway Rates setting page.',
+    category: 'broadcast',
+    target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+    link_url: '/billing/settings/gateway-rates',
+    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
+    read_by: []
+  }
+];
+
 // HELPER STATE MANAGEMENT USING LOCALSTORAGE (DEMO MODE ENGINE)
 class LocalStore {
   constructor() {
@@ -445,6 +485,21 @@ class LocalStore {
 
   set clientServiceRates(val: ClientServiceRate[]) {
     this.setVal('client_service_rates', [...val]);
+  }
+
+  get systemNotifications(): SystemNotification[] {
+    const list: SystemNotification[] = this.getVal('system_notifications', MOCK_SYSTEM_NOTIFICATIONS);
+    // Strict 48-Hour Auto-Clean Purge Rule:
+    const cutoff48h = Date.now() - 48 * 60 * 60 * 1000;
+    const cleanList = list.filter(n => new Date(n.timestamp).getTime() > cutoff48h);
+    if (cleanList.length !== list.length) {
+      this.setVal('system_notifications', cleanList);
+    }
+    return cleanList;
+  }
+
+  set systemNotifications(val: SystemNotification[]) {
+    this.setVal('system_notifications', [...val]);
   }
 
   get emailLogs(): EmailLog[] {
@@ -713,6 +768,16 @@ export const db = {
     list.push(newClient);
     localStore.clients = list;
     const user = await db.getCurrentUser();
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `New Client Registered: ${newClient.company_name || newClient.contact_person}`,
+      message: `Corporate client ${newClient.company_name} registered under ${newClient.preferred_currency} billing.`,
+      category: 'client_added',
+      target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+      link_url: `/billing/clients/${newClient.id}`
+    });
+
     db.logAudit(user.id, 'create_client', 'clients', newClient.id, null, newClient);
     return newClient;
   },
@@ -809,6 +874,18 @@ export const db = {
       }
     }
 
+    const clientObj = localStore.clients.find(c => c.id === newInvoice.client_id);
+    const clientName = clientObj ? (clientObj.company_name || clientObj.contact_person) : 'Client';
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `New Invoice Created: ${newInvoice.project_name || 'Draft'}`,
+      message: `Invoice draft generated for ${clientName} (${newInvoice.currency}). Access detail page to review.`,
+      category: 'invoice_created',
+      target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+      link_url: `/billing/invoices/${newInvoice.id}`
+    });
+
     db.logAudit(user.id, 'create_invoice', 'invoices', newInvoice.id, null, newInvoice);
     return newInvoice;
   },
@@ -878,6 +955,17 @@ export const db = {
     localStore.invoices = list;
 
     const user = await db.getCurrentUser();
+    const inv = list[idx];
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `Invoice Approval Requested: ${inv.project_name}`,
+      message: `Invoice #${inv.invoice_number || inv.id} has been submitted for management review and final approval.`,
+      category: 'approval_required',
+      target_roles: ['Super Admin', 'Finance Admin'],
+      link_url: `/billing/invoices/${id}`
+    });
+
     db.logAudit(user.id, 'submit_approval', 'invoices', id, { status: 'draft' }, { status: 'pending_approval' });
     return list[idx];
   },
@@ -944,6 +1032,16 @@ export const db = {
     invoice.approved_at = new Date().toISOString();
     localStore.invoices = invoicesList;
 
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `Invoice Approved: ${invoiceNumber}`,
+      message: `Invoice ${invoiceNumber} for ${invoice.project_name} has been approved and sequence locked.`,
+      category: 'invoice_approved',
+      target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+      link_url: `/billing/invoices/${id}`
+    });
+
     db.logAudit(user.id, 'approve_invoice', 'invoices', id, null, { status: 'approved', number: invoiceNumber });
     return invoice;
   },
@@ -977,6 +1075,7 @@ export const db = {
 
   recordTaxPayment: async (payment: Omit<TaxPayment, 'id' | 'created_at'>): Promise<TaxPayment> => {
     const list = localStore.taxPayments;
+    const user = await db.getCurrentUser();
     const newPayment: TaxPayment = {
       ...payment,
       id: `taxpay-${Date.now()}`,
@@ -984,6 +1083,17 @@ export const db = {
     };
     list.push(newPayment);
     localStore.taxPayments = list;
+
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `Treasury Tax Payment Recorded: ৳${payment.amount.toLocaleString()}`,
+      message: `Challan #${payment.challan_number} tax payment recorded for ${payment.tax_type}.`,
+      category: 'tax_recorded',
+      target_roles: ['Super Admin', 'Finance Admin'],
+      link_url: `/billing/tax`
+    });
+
     db.logAudit(payment.recorded_by, 'record_tax_payment', 'tax', newPayment.id, null, newPayment);
     return newPayment;
   },
@@ -1075,6 +1185,16 @@ export const db = {
         localStore.snapshots = snapshots;
       }
     }
+
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `Payment Recorded: ${newPayment.currency} ${newPayment.amount.toLocaleString()}`,
+      message: `Payment received for ${invoice.invoice_number || invoice.id} via ${newPayment.payment_method} (Receipt #${newPayment.receipt_number}).`,
+      category: 'payment_recorded',
+      target_roles: ['Super Admin', 'Finance Admin', 'Client Service'],
+      link_url: `/billing/invoices/${invoice.id}`
+    });
 
     db.logAudit(user.id, 'record_payment', 'payments', newPayment.id, null, newPayment);
     return newPayment;
@@ -1183,5 +1303,49 @@ export const db = {
   deleteClientServiceRate: async (id: string): Promise<void> => {
     const list = localStore.clientServiceRates.filter(r => r.id !== id);
     localStore.clientServiceRates = list;
+  },
+
+  // Dynamic Role-Based System Notifications & 48-Hour Purge Engine
+  getSystemNotifications: async (userRole?: string, userId?: string): Promise<SystemNotification[]> => {
+    const list = localStore.systemNotifications;
+    if (!userRole) return list;
+    return list.filter(n => 
+      n.target_roles.includes('all') || 
+      n.target_roles.includes(userRole) ||
+      (userId && n.read_by.includes(userId))
+    );
+  },
+
+  notifyAction: async (notif: Omit<SystemNotification, 'id' | 'timestamp' | 'read_by'>): Promise<SystemNotification> => {
+    const list = localStore.systemNotifications;
+    const newNotif: SystemNotification = {
+      ...notif,
+      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      timestamp: new Date().toISOString(),
+      read_by: []
+    };
+    list.unshift(newNotif);
+    localStore.systemNotifications = list;
+    return newNotif;
+  },
+
+  markNotificationRead: async (notifId: string, userId: string): Promise<void> => {
+    const list = localStore.systemNotifications;
+    const idx = list.findIndex(n => n.id === notifId);
+    if (idx !== -1) {
+      if (!list[idx].read_by.includes(userId)) {
+        list[idx].read_by.push(userId);
+        localStore.systemNotifications = list;
+      }
+    }
+  },
+
+  deleteNotification: async (notifId: string): Promise<void> => {
+    const list = localStore.systemNotifications.filter(n => n.id !== notifId);
+    localStore.systemNotifications = list;
+  },
+
+  clearAllNotifications: async (): Promise<void> => {
+    localStore.systemNotifications = [];
   }
 };
