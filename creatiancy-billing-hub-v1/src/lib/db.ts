@@ -741,11 +741,7 @@ export const isDemoMode = !isSupabaseConfigured;
 
 // Workspace default entity and seed configurations
 const MOCK_PROFILES: Profile[] = [
-  { id: 'usr-1', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', username: 'rafsan', role_name: 'Super Admin' },
-  { id: 'usr-5', full_name: 'Executive Director (Admin)', email: 'manager@creatiancy.com', username: 'manager', role_name: 'Admin' },
-  { id: 'usr-2', full_name: 'Finance Executive', email: 'finance@creatiancy.com', username: 'finance', role_name: 'Finance Admin' },
-  { id: 'usr-3', full_name: 'Client Manager', email: 'cs@creatiancy.com', username: 'cs', role_name: 'Client Service' },
-  { id: 'usr-4', full_name: 'Project Coordinator', email: 'pm@creatiancy.com', username: 'pm', role_name: 'Project Manager' }
+  { id: 'usr-1', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', username: 'rafsan', role_name: 'Super Admin' }
 ];
 
 const MOCK_ENTITIES: BusinessEntity[] = [
