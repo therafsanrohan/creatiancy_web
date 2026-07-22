@@ -144,10 +144,17 @@ export default function InvoicePreviewPage() {
         // @ts-ignore
         const html2pdf = (await import('html2pdf.js')).default;
         const opt: any = {
-          margin:       [8, 8, 12, 8],
+          margin:       [6, 6, 8, 6],
           filename:     `Invoice_${invoice.invoice_number || 'Draft'}.pdf`,
           image:        { type: 'jpeg', quality: 0.98 },
-          html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false },
+          html2canvas:  {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            windowWidth: 1024,
+            width: 794
+          },
           jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
         };
@@ -209,19 +216,19 @@ export default function InvoicePreviewPage() {
         </span>
       </div>
 
-      {/* A4 Canvas - scrollable horizontally on mobile */}
-      <div className="w-full overflow-x-auto pb-6 scrollbar-thin">
+      {/* A4 Canvas Container */}
+      <div className="w-full flex justify-center pb-6">
       <div
         id="print-area"
-        className="w-[210mm] min-w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg border border-gray-100 p-6 sm:p-12 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none"
-        style={{ width: '210mm', minHeight: '297mm' }}
+        className="w-full max-w-[210mm] bg-white shadow-lg border border-gray-100 p-6 sm:p-10 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none box-border"
+        style={{ minHeight: '297mm' }}
       >
         <div className="print-watermark">Creatiancy Original</div>
         
         {/* Document Top */}
         <div>
           {/* Header block */}
-          <div className="flex justify-between items-start pb-8 border-b border-gray-100">
+          <div className="flex justify-between items-start pb-4 border-b border-gray-100">
             <div>
               {/* Creatiancy Logo */}
               <div className="flex items-center space-x-3">
@@ -235,7 +242,7 @@ export default function InvoicePreviewPage() {
               </div>
 
               {/* Entity address particulars */}
-              <div className="mt-5 text-[10px] text-gray-500 space-y-0.5 leading-normal">
+              <div className="mt-3 text-[10px] text-gray-500 space-y-0.5 leading-normal">
                 <span className="font-bold text-gray-800 block">
                   {entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}
                 </span>
@@ -256,9 +263,9 @@ export default function InvoicePreviewPage() {
             </div>
 
             {/* Invoice meta + status */}
-            <div className="text-right flex flex-col items-end space-y-4">
+            <div className="text-right flex flex-col items-end space-y-3">
               <div>
-                <h2 className="text-3xl font-extrabold text-gray-200 tracking-widest uppercase">INVOICE</h2>
+                <h2 className="text-2xl font-extrabold text-gray-300 tracking-widest uppercase">INVOICE</h2>
                 {invoice.status && (
                   <span className={`mt-1 inline-block rounded-md border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider ${statusColor[invoice.status] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                     {invoice.status.replace(/_/g, ' ')}
@@ -266,17 +273,17 @@ export default function InvoicePreviewPage() {
                 )}
               </div>
               
-              <div className="space-y-1.5 text-xs text-gray-500">
+              <div className="space-y-1 text-xs text-gray-500">
                 <div>
-                  <span className="text-[10px] text-gray-400 uppercase font-semibold block">Invoice Number</span>
+                  <span className="text-[9px] text-gray-400 uppercase font-semibold block">Invoice Number</span>
                   <span className="font-bold text-gray-800">{invoice.invoice_number || 'DRAFT-PENDING'}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-400 uppercase font-semibold block">Issue Date</span>
+                  <span className="text-[9px] text-gray-400 uppercase font-semibold block">Issue Date</span>
                   <span className="font-bold text-gray-800">{invoice.issue_date}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-gray-400 uppercase font-semibold block">Due Date</span>
+                  <span className="text-[9px] text-gray-400 uppercase font-semibold block">Due Date</span>
                   <span className="font-bold text-[#9B1C22]">{invoice.due_date}</span>
                 </div>
               </div>
@@ -284,17 +291,17 @@ export default function InvoicePreviewPage() {
           </div>
 
           {/* Billing particulars split */}
-          <div className="grid grid-cols-2 gap-8 py-8 border-b border-gray-100 text-xs">
+          <div className="grid grid-cols-2 gap-6 py-4 border-b border-gray-100 text-xs">
             <div>
-              <span className="font-bold text-gray-400 uppercase tracking-wider block text-[10px] mb-2">BILL TO:</span>
+              <span className="font-bold text-gray-400 uppercase tracking-wider block text-[9px] mb-1">BILL TO:</span>
               {client ? (
-                <div className="space-y-1 text-gray-600 leading-normal">
-                  <p className="font-bold text-gray-800 text-sm">{client.company_name || client.contact_person}</p>
-                  {client.company_name && <p className="font-semibold text-xs">{client.contact_person}</p>}
-                  <p>{client.billing_address}</p>
-                  <p>{client.city}, {client.country}</p>
-                  <p>Email: {client.billing_email}</p>
-                  {client.tax_number && <p className="font-semibold">Tax/VAT ID: {client.tax_number}</p>}
+                <div className="space-y-0.5 text-gray-600 leading-normal">
+                  <p className="font-bold text-gray-800 text-xs">{client.company_name || client.contact_person}</p>
+                  {client.company_name && <p className="font-semibold text-[11px]">{client.contact_person}</p>}
+                  <p className="text-[11px]">{client.billing_address}</p>
+                  <p className="text-[11px]">{client.city}, {client.country}</p>
+                  <p className="text-[11px]">Email: {client.billing_email}</p>
+                  {client.tax_number && <p className="font-semibold text-[11px]">Tax/VAT ID: {client.tax_number}</p>}
                 </div>
               ) : (
                 <span className="text-gray-400 italic">No client profile mapped</span>
@@ -302,42 +309,42 @@ export default function InvoicePreviewPage() {
             </div>
 
             <div>
-              <span className="font-bold text-gray-400 uppercase tracking-wider block text-[10px] mb-2">PROJECT INFORMATION:</span>
-              <div className="space-y-1 text-gray-600">
-                <p className="font-bold text-gray-800 text-sm">{invoice.project_name}</p>
+              <span className="font-bold text-gray-400 uppercase tracking-wider block text-[9px] mb-1">PROJECT INFORMATION:</span>
+              <div className="space-y-0.5 text-gray-600">
+                <p className="font-bold text-gray-800 text-xs">{invoice.project_name}</p>
                 {invoice.service_period && (
-                  <p className="text-xs">
+                  <p className="text-[11px]">
                     <span className="font-semibold text-gray-400 block text-[9px] uppercase">Service Period</span>
                     <span className="font-semibold">{invoice.service_period}</span>
                   </p>
                 )}
-                {invoice.po_number && <p>PO Number: <span className="font-semibold">{invoice.po_number}</span></p>}
-                {invoice.reference_number && <p>Reference: <span className="font-semibold">{invoice.reference_number}</span></p>}
+                {invoice.po_number && <p className="text-[11px]">PO Number: <span className="font-semibold">{invoice.po_number}</span></p>}
+                {invoice.reference_number && <p className="text-[11px]">Reference: <span className="font-semibold">{invoice.reference_number}</span></p>}
               </div>
             </div>
           </div>
 
           {/* Items table */}
-          <div className="py-8">
+          <div className="py-4">
             <table className="w-full text-left text-xs border-collapse table-fixed">
               <thead>
                 <tr className="border-b border-gray-200 text-gray-400 font-bold uppercase tracking-wider text-[9px]">
-                  <th className="py-2.5 w-[46%] pr-3">Service Lines Description</th>
-                  <th className="py-2.5 text-right w-[16%] px-2">Quantity</th>
-                  <th className="py-2.5 text-right w-[19%] px-2">Rate</th>
-                  <th className="py-2.5 text-right w-[19%] pl-2">Amount</th>
+                  <th className="py-2 w-[48%] pr-2">Service Lines Description</th>
+                  <th className="py-2 text-right w-[14%] px-1">Quantity</th>
+                  <th className="py-2 text-right w-[19%] px-1">Rate</th>
+                  <th className="py-2 text-right w-[19%] pl-1">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-gray-700">
                 {items.map((itm) => (
                   <tr key={itm.id} className="align-top avoid-break">
-                    <td className="py-3.5 pr-3 break-words">
+                    <td className="py-2.5 pr-2 break-words">
                       <span className="font-bold text-gray-800 block text-xs">{itm.service_name}</span>
-                      {itm.description && <span className="text-[10px] text-gray-400 leading-normal block mt-0.5 whitespace-pre-line">{itm.description}</span>}
+                      {itm.description && <span className="text-[10px] text-gray-400 leading-tight block mt-0.5 whitespace-pre-line">{itm.description}</span>}
                     </td>
-                    <td className="py-3.5 text-right whitespace-nowrap px-2 font-medium">{itm.quantity} {itm.unit}</td>
-                    <td className="py-3.5 text-right whitespace-nowrap px-2 font-medium">{formatCurrency(itm.rate, invoice.currency)}</td>
-                    <td className="py-3.5 text-right font-bold text-gray-800 whitespace-nowrap pl-2">{formatCurrency(itm.quantity * itm.rate, invoice.currency)}</td>
+                    <td className="py-2.5 text-right whitespace-nowrap px-1 font-medium">{itm.quantity} {itm.unit}</td>
+                    <td className="py-2.5 text-right whitespace-nowrap px-1 font-medium">{formatCurrency(itm.rate, invoice.currency)}</td>
+                    <td className="py-2.5 text-right font-bold text-gray-800 whitespace-nowrap pl-1">{formatCurrency(itm.quantity * itm.rate, invoice.currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -346,10 +353,10 @@ export default function InvoicePreviewPage() {
         </div>
 
         {/* Document Bottom */}
-        <div className="space-y-6 pt-4 border-t border-gray-150 avoid-break">
+        <div className="space-y-4 pt-3 border-t border-gray-150 avoid-break">
           {/* Totals Section (Right Aligned) */}
           <div className="flex justify-end avoid-break">
-            <div className="w-full sm:w-80 space-y-2 text-xs text-gray-700 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <div className="w-full sm:w-72 space-y-1.5 text-xs text-gray-700 bg-gray-50/50 p-3 rounded-xl border border-gray-100">
               <div className="flex justify-between">
                 <span className="text-gray-500 font-semibold">Subtotal:</span>
                 <span className="font-bold">{formatCurrency(totals.subtotal, invoice.currency)}</span>
@@ -376,17 +383,17 @@ export default function InvoicePreviewPage() {
                 </div>
               )}
 
-              <div className="flex justify-between border-t border-gray-200 pt-2 text-sm font-extrabold text-[#9B1C22]">
+              <div className="flex justify-between border-t border-gray-200 pt-1.5 text-xs font-extrabold text-[#9B1C22]">
                 <span>Total Payable:</span>
                 <span>{formatCurrency(totals.totalPayable, invoice.currency)}</span>
               </div>
 
-              <div className="flex justify-between text-green-600 font-semibold text-xs pt-1">
+              <div className="flex justify-between text-green-600 font-semibold text-[11px]">
                 <span>Amount Paid:</span>
                 <span>{formatCurrency(totals.amountPaid, invoice.currency)}</span>
               </div>
 
-              <div className="flex justify-between border-t border-gray-200 pt-2 text-xs font-bold text-gray-900">
+              <div className="flex justify-between border-t border-gray-200 pt-1.5 text-xs font-bold text-gray-900">
                 <span>Amount Due:</span>
                 <span>{formatCurrency(totals.amountDue, invoice.currency)}</span>
               </div>
@@ -394,46 +401,45 @@ export default function InvoicePreviewPage() {
           </div>
 
           {/* Full Width Bank Details & Payment Instructions Section */}
-          <div className="border-t border-gray-200 pt-6 space-y-4">
-            <span className="font-extrabold text-xs uppercase tracking-wider text-gray-500 block">
+          <div className="border-t border-gray-200 pt-3 space-y-3 avoid-break">
+            <span className="font-extrabold text-[10px] uppercase tracking-wider text-gray-400 block">
               PAYMENT & REMITTANCE INSTRUCTIONS
             </span>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* Bank Account Box with LARGER Readable Fonts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+              {/* Bank Account Box */}
               {bankAccount ? (
-                <div className="rounded-xl bg-gray-50 p-4 border border-gray-200/70 space-y-1.5 text-gray-700">
-                  <div className="flex items-center space-x-2 text-[#9B1C22] font-bold text-sm mb-1">
-                    <Building2 className="h-4 w-4" />
+                <div className="rounded-xl bg-gray-50 p-3 border border-gray-200/70 space-y-1 text-gray-700">
+                  <div className="flex items-center space-x-1.5 text-[#9B1C22] font-bold text-xs mb-0.5">
+                    <Building2 className="h-3.5 w-3.5" />
                     <span>{bankAccount.bank_name}</span>
                   </div>
-                  <p><span className="font-semibold text-gray-500">Account Holder:</span> <strong className="text-gray-900">{bankAccount.account_holder}</strong></p>
-                  <p><span className="font-semibold text-gray-500">Account Number:</span> <strong className="font-mono text-gray-900 text-sm">{bankAccount.account_number}</strong></p>
-                  {bankAccount.branch && <p><span className="font-semibold text-gray-500">Branch Name:</span> <span className="text-gray-800">{bankAccount.branch}</span></p>}
-                  {bankAccount.routing_number && <p><span className="font-semibold text-gray-500">Routing Code:</span> <span className="font-mono text-gray-800">{bankAccount.routing_number}</span></p>}
-                  {bankAccount.swift_bic && <p><span className="font-semibold text-gray-500">SWIFT / BIC:</span> <span className="font-mono text-gray-800">{bankAccount.swift_bic}</span></p>}
-                  {bankAccount.bank_address && <p><span className="font-semibold text-gray-500">Bank Address:</span> <span className="text-gray-800">{bankAccount.bank_address}</span></p>}
+                  <p className="text-[11px]"><span className="font-semibold text-gray-500">Account Holder:</span> <strong className="text-gray-900">{bankAccount.account_holder}</strong></p>
+                  <p className="text-[11px]"><span className="font-semibold text-gray-500">Account Number:</span> <strong className="font-mono text-gray-900">{bankAccount.account_number}</strong></p>
+                  {bankAccount.branch && <p className="text-[11px]"><span className="font-semibold text-gray-500">Branch Name:</span> <span className="text-gray-800">{bankAccount.branch}</span></p>}
+                  {bankAccount.routing_number && <p className="text-[11px]"><span className="font-semibold text-gray-500">Routing Code:</span> <span className="font-mono text-gray-800">{bankAccount.routing_number}</span></p>}
+                  {bankAccount.swift_bic && <p className="text-[11px]"><span className="font-semibold text-gray-500">SWIFT / BIC:</span> <span className="font-mono text-gray-800">{bankAccount.swift_bic}</span></p>}
                 </div>
               ) : (
                 <p className="text-gray-400 italic text-xs">No bank account details specified.</p>
               )}
 
               {/* Mobile Wallets & Instructions */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {isBdt && (entity?.bkash_merchant || entity?.nagad_merchant) && (
-                  <div className="rounded-xl border border-gray-200/70 bg-gray-50 p-4 space-y-2">
-                    <p className="font-bold text-xs text-gray-600 uppercase tracking-wider">Mobile Wallet (Merchant Payment)</p>
+                  <div className="rounded-xl border border-gray-200/70 bg-gray-50 p-3 space-y-1.5">
+                    <p className="font-bold text-[10px] text-gray-500 uppercase tracking-wider">Mobile Wallet (Merchant Payment)</p>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       {entity.bkash_merchant && (
-                        <div className="rounded-lg bg-white p-2.5 border border-gray-200/80">
-                          <span className="text-[10px] font-bold text-pink-600 block uppercase">bKash Merchant</span>
-                          <span className="font-mono font-extrabold text-gray-900 text-sm">{entity.bkash_merchant}</span>
+                        <div className="rounded-lg bg-white p-2 border border-gray-200/80">
+                          <span className="text-[9px] font-bold text-pink-600 block uppercase">bKash Merchant</span>
+                          <span className="font-mono font-extrabold text-gray-900 text-xs">{entity.bkash_merchant}</span>
                         </div>
                       )}
                       {entity.nagad_merchant && (
-                        <div className="rounded-lg bg-white p-2.5 border border-gray-200/80">
-                          <span className="text-[10px] font-bold text-orange-600 block uppercase">Nagad Merchant</span>
-                          <span className="font-mono font-extrabold text-gray-900 text-sm">{entity.nagad_merchant}</span>
+                        <div className="rounded-lg bg-white p-2 border border-gray-200/80">
+                          <span className="text-[9px] font-bold text-orange-600 block uppercase">Nagad Merchant</span>
+                          <span className="font-mono font-extrabold text-gray-900 text-xs">{entity.nagad_merchant}</span>
                         </div>
                       )}
                     </div>
@@ -441,42 +447,37 @@ export default function InvoicePreviewPage() {
                 )}
 
                 {invoice.payment_instructions && (
-                  <div className="rounded-xl bg-gray-50 p-3.5 border border-gray-200/70 text-xs text-gray-700 leading-relaxed italic">
+                  <div className="rounded-xl bg-gray-50 p-3 border border-gray-200/70 text-[11px] text-gray-700 leading-relaxed italic">
                     {invoice.payment_instructions}
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Hyper-Strict QR Verification Badge */}
+            {/* QR Verification Badge */}
             {verifyUrl && (
-              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#9B1C22]/20 bg-[#9B1C22]/5 p-3.5">
-                <div className="flex items-center space-x-3">
+              <div className="mt-2 flex items-center justify-between rounded-xl border border-[#9B1C22]/20 bg-[#9B1C22]/5 p-2.5 avoid-break">
+                <div className="flex items-center space-x-2.5">
                   <QRCodeSVG
                     value={verifyUrl}
-                    size={56}
+                    size={48}
                     bgColor="#ffffff"
                     fgColor="#9B1C22"
                     level="H"
                     marginSize={1}
                   />
                   <div>
-                    <div className="flex items-center space-x-1.5">
-                      <ShieldCheck className="h-4 w-4 text-[#9B1C22]" />
-                      <span className="font-extrabold text-[#9B1C22] text-xs uppercase tracking-wider">Creatiancy Authenticity Verified</span>
+                    <div className="flex items-center space-x-1">
+                      <ShieldCheck className="h-3.5 w-3.5 text-[#9B1C22]" />
+                      <span className="font-extrabold text-[#9B1C22] text-[11px] uppercase tracking-wider">Creatiancy Authenticity Verified</span>
                     </div>
-                    <p className="text-gray-600 text-[10px] leading-tight mt-0.5">
-                      Scan QR code with smartphone to verify digital signature on official portal.
+                    <p className="text-gray-600 text-[9px] leading-tight mt-0.5">
+                      Scan QR code to verify digital signature on official portal.
                     </p>
-                    <div className="flex items-center space-x-2 mt-1.5">
-                      <span className="font-mono text-[9px] font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200">
-                        Invoice No: {invoice.invoice_number || 'DRAFT'}
-                      </span>
-                    </div>
                   </div>
                 </div>
                 <div className="hidden sm:block text-right">
-                  <span className="text-[9px] font-bold uppercase text-[#9B1C22] bg-white border border-[#9B1C22]/20 px-2.5 py-1 rounded-md shadow-2xs">
+                  <span className="text-[9px] font-bold uppercase text-[#9B1C22] bg-white border border-[#9B1C22]/20 px-2 py-0.5 rounded shadow-2xs">
                     Creatiancy Original
                   </span>
                 </div>
@@ -485,16 +486,16 @@ export default function InvoicePreviewPage() {
           </div>
 
           {/* Legal footer */}
-          <div className="mt-8 pt-4 border-t border-gray-200 text-[9px] text-gray-500 text-center leading-normal space-y-1">
+          <div className="mt-4 pt-2 border-t border-gray-200 text-[9px] text-gray-500 text-center leading-normal space-y-0.5 avoid-break">
             <p className="font-bold text-[#9B1C22] tracking-wide">
               {entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}
             </p>
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-[8px]">
               {isBdt
                 ? 'All rates are inclusive of applicable VAT in accordance with the prevailing laws and regulations of Bangladesh.'
                 : 'All rates are inclusive of applicable taxes in accordance with the prevailing laws and regulations.'}
             </p>
-            <div className="pt-2 border-t border-dashed border-gray-200 text-[9px] font-semibold text-gray-400">
+            <div className="pt-1 border-t border-dashed border-gray-200 text-[8px] font-semibold text-gray-400">
               Creatiancy Original Document • Computer-generated • No physical signature required.
             </div>
           </div>
