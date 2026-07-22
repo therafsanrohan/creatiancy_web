@@ -64,8 +64,28 @@ export const authService = {
     return localStore.profiles;
   },
 
-  loginWithEmail: async (email: string, password?: string): Promise<Profile | null> => {
+  loginWithEmail: async (emailOrUsername: string, password?: string): Promise<Profile | null> => {
     if (isSupabaseConfigured && supabase && password) {
+      let email = emailOrUsername.trim();
+
+      // Resolve username to email if it does not contain '@'
+      if (!email.includes('@')) {
+        try {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('username', email.toLowerCase())
+            .maybeSingle();
+          if (profileData?.email) {
+            email = profileData.email;
+          } else {
+            throw new Error(`Username "${emailOrUsername}" not found. Please use a registered email or username.`);
+          }
+        } catch (err: any) {
+          throw new Error(err.message || 'Username lookup failed');
+        }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         throw new Error(error.message);
@@ -100,7 +120,7 @@ export const authService = {
 
     // Fallback profile lookup for local development
     const profiles = localStore.profiles;
-    const found = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
+    const found = profiles.find(p => p.email.toLowerCase() === emailOrUsername.toLowerCase() || (p.username && p.username.toLowerCase() === emailOrUsername.toLowerCase()));
     if (found) {
       localStore.currentUser = found;
       return found;

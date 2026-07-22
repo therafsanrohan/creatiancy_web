@@ -1454,7 +1454,7 @@ export const db = {
     return localStore.profiles;
   },
 
-  createProfile: async (profile: Omit<Profile, 'id' | 'created_at'>): Promise<Profile> => {
+  createProfile: async (profile: Omit<Profile, 'id' | 'created_at'> & { password?: string }): Promise<Profile> => {
     const list = localStore.profiles;
     // Check email uniqueness
     if (list.some(p => p.email.toLowerCase() === profile.email.toLowerCase())) {
@@ -1464,9 +1464,50 @@ export const db = {
     if (profile.username && list.some(p => p.username && p.username.toLowerCase() === profile.username?.toLowerCase())) {
       throw new Error('This username is already taken. Please choose a unique username.');
     }
+
+    let authUserId = generateUUID();
+
+    // Register user in Supabase Auth if connected
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { createClient: createSupabaseClient } = await import('@supabase/supabase-js');
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nefnjnngviaywjteduhm.supabase.co';
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_WwFaeFNaO5DRUGYa3FXWDw_SnsvbW9V';
+        
+        const tempSupabase = createSupabaseClient(supabaseUrl, supabaseAnonKey, {
+          auth: {
+            persistSession: false,
+            autoRefreshToken: false,
+            detectSessionInUrl: false
+          }
+        });
+
+        const { data: authData, error: authErr } = await tempSupabase.auth.signUp({
+          email: profile.email.toLowerCase(),
+          password: profile.password || 'TemporaryPass123!',
+          options: {
+            data: {
+              full_name: profile.full_name,
+              role_name: profile.role_name
+            }
+          }
+        });
+
+        if (authErr) {
+          throw new Error(`Auth registration failed: ${authErr.message}`);
+        }
+
+        if (authData?.user) {
+          authUserId = authData.user.id;
+        }
+      } catch (err: any) {
+        throw new Error(err.message || 'Supabase Auth registration failed');
+      }
+    }
+
     const newProfile: Profile = {
       ...profile,
-      id: generateUUID(),
+      id: authUserId,
       created_at: new Date().toISOString()
     };
     // Sync to Supabase cloud if connected
@@ -1476,6 +1517,7 @@ export const db = {
         full_name: newProfile.full_name,
         email: newProfile.email,
         role_name: newProfile.role_name,
+        username: newProfile.username,
         created_at: newProfile.created_at,
         updated_at: new Date().toISOString()
       });

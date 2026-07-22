@@ -201,7 +201,8 @@ export default function TeamManagementPage() {
         username: newUsername.trim().toLowerCase(),
         email: newEmail.trim().toLowerCase(),
         role_name: newRole,
-        password_hash: hash
+        password_hash: hash,
+        password: newPassword
       });
       
       const updatedList = await db.getProfiles();
