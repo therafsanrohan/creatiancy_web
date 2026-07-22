@@ -1,5 +1,16 @@
 import { calculateTotals } from './calculations';
 
+export function generateUUID(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export interface Profile {
   id: string;
   full_name: string;
@@ -1445,7 +1456,7 @@ export const db = {
     }
     const newProfile: Profile = {
       ...profile,
-      id: `usr-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
     list.push(newProfile);
@@ -1613,7 +1624,7 @@ export const db = {
     const list = localStore.clients;
     const newClient: BillingClient = {
       ...client,
-      id: `cli-${Date.now()}`,
+      id: generateUUID(),
       status: 'active'
     };
     list.push(newClient);
@@ -1681,8 +1692,8 @@ export const db = {
     const user = await db.getCurrentUser();
     const newInvoice: Invoice = {
       ...invoice,
-      id: `inv-${Date.now()}`,
-      secure_token: `token-${Date.now()}`,
+      id: generateUUID(),
+      secure_token: generateUUID(),
       invoice_number: null,
       status: 'draft',
       created_by: user.id,
@@ -1703,7 +1714,7 @@ export const db = {
     const itemsList = localStore.items;
     const newItems: InvoiceItem[] = items.map((itm, index) => ({
       ...itm,
-      id: `itm-${Date.now()}-${index}`,
+      id: generateUUID(),
       invoice_id: newInvoice.id,
       sort_order: index
     }));
@@ -1977,7 +1988,7 @@ export const db = {
     const user = await db.getCurrentUser();
     const newPayment: TaxPayment = {
       ...payment,
-      id: `taxpay-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
     list.push(newPayment);
@@ -2005,7 +2016,7 @@ export const db = {
     const list = localStore.expenses;
     const newExpense: Expense = {
       ...expense,
-      id: `exp-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
     list.push(newExpense);
@@ -2042,7 +2053,7 @@ export const db = {
 
     const newPayment: Payment = {
       ...payment,
-      id: `pay-${Date.now()}`,
+      id: generateUUID(),
       receipt_number: receiptNumber,
       created_at: new Date().toISOString()
     };

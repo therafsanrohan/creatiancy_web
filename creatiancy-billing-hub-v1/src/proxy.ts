@@ -1,26 +1,27 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
 
-export function proxy(request: NextRequest) {
-  const response = NextResponse.next();
-
-  // Add Security Headers
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-
+export async function proxy(request: NextRequest) {
   // Validate public invoice token routes to prevent path traversal / injection
   const pathname = request.nextUrl.pathname;
   if (pathname.startsWith('/invoice/')) {
     const token = pathname.replace('/invoice/', '');
-    // Sanitize token parameter
     if (!token || !/^[a-zA-Z0-9_-]+$/.test(token)) {
       return new NextResponse('Invalid or Malformed Secure Token', { status: 400 });
     }
   }
 
-  return response;
+  // Session update and route protection
+  const sessionResponse = await updateSession(request);
+
+  // Add Security Headers
+  sessionResponse.headers.set('X-Content-Type-Options', 'nosniff');
+  sessionResponse.headers.set('X-Frame-Options', 'DENY');
+  sessionResponse.headers.set('X-XSS-Protection', '1; mode=block');
+  sessionResponse.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  return sessionResponse;
 }
 
 export const config = {
