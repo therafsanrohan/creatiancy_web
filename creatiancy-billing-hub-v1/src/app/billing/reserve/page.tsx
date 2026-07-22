@@ -22,25 +22,20 @@ import {
   Wallet,
   PiggyBank,
   TrendingUp,
-  ArrowUpRight,
-  ArrowDownRight,
   Plus,
-  Filter,
   Download,
-  Printer,
-  CheckCircle2,
-  XCircle,
-  Clock,
   FileText,
-  AlertTriangle,
-  RefreshCw,
+  Clock,
   Search,
-  Lock,
   Layers,
   History,
   ShieldCheck,
   Building2,
-  Sliders
+  Sliders,
+  Edit2,
+  Trash2,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 
 export default function ReserveManagementPage() {
@@ -50,7 +45,7 @@ export default function ReserveManagementPage() {
     'overview' | 'ledger' | 'fdr' | 'dps' | 'withdrawals' | 'reconciliation' | 'reports' | 'settings' | 'audit_logs'
   >('overview');
 
-  // Filters
+  // Global Filters
   const [selectedEntity, setSelectedEntity] = useState<string>('all');
   const [selectedCurrency, setSelectedCurrency] = useState<'BDT' | 'USD'>('BDT');
 
@@ -58,7 +53,7 @@ export default function ReserveManagementPage() {
   const [summary, setSummary] = useState<any>(null);
   const [entities, setEntities] = useState<BusinessEntity[]>([]);
 
-  // Data lists
+  // Real-time Data lists
   const [ledger, setLedger] = useState<ReserveLedgerEntry[]>([]);
   const [fdrAccounts, setFdrAccounts] = useState<FdrAccount[]>([]);
   const [dpsAccounts, setDpsAccounts] = useState<DpsAccount[]>([]);
@@ -66,7 +61,6 @@ export default function ReserveManagementPage() {
   const [withdrawalRequests, setWithdrawalRequests] = useState<ReserveWithdrawalRequest[]>([]);
   const [settingsHistory, setSettingsHistory] = useState<ReserveSettingsHistory[]>([]);
   const [auditLogs, setAuditLogs] = useState<FinancialAuditLog[]>([]);
-  const [reconciliations, setReconciliations] = useState<FinancialReconciliation[]>([]);
 
   // Search queries
   const [searchLedger, setSearchLedger] = useState('');
@@ -75,13 +69,18 @@ export default function ReserveManagementPage() {
   const [modalType, setModalType] = useState<string | null>(null);
   const [formSaving, setFormSaving] = useState(false);
 
+  // Edit Targets
+  const [editingFdr, setEditingFdr] = useState<FdrAccount | null>(null);
+  const [editingDps, setEditingDps] = useState<DpsAccount | null>(null);
+  const [editingLedger, setEditingLedger] = useState<ReserveLedgerEntry | null>(null);
+
   // Form states
   const [manualDepositForm, setManualDepositForm] = useState({
     entity_id: 'ent-1',
     currency: 'BDT' as 'BDT' | 'USD',
     amount: 100000,
     source: 'BANK_TRANSFER',
-    reason: 'Corporate savings deposit'
+    reason: 'Corporate reserve deposit'
   });
 
   const [fdrForm, setFdrForm] = useState({
@@ -95,7 +94,8 @@ export default function ReserveManagementPage() {
     interest_rate: 8.5,
     tenure_months: 12,
     auto_renewal: true,
-    funding_source: 'Company Emergency Reserve'
+    funding_source: 'Company Emergency Reserve',
+    notes: 'Fixed deposit asset for corporate reserve yield.'
   });
 
   const [dpsForm, setDpsForm] = useState({
@@ -108,7 +108,8 @@ export default function ReserveManagementPage() {
     installment_amount: 25000,
     total_installments: 36,
     start_date: new Date().toISOString().split('T')[0],
-    funding_source: 'Company Emergency Reserve'
+    funding_source: 'Company Emergency Reserve',
+    notes: 'Monthly corporate DPS investment scheme.'
   });
 
   const [withdrawalForm, setWithdrawalForm] = useState({
@@ -180,9 +181,6 @@ export default function ReserveManagementPage() {
     const audits = await db.getFinancialAuditLogs();
     setAuditLogs(audits);
 
-    const recons = await db.getFinancialReconciliations();
-    setReconciliations(recons);
-
     if (smry.reserveSettings) {
       setSettingsForm({
         reserve_percentage: smry.reserveSettings.reserve_percentage,
@@ -206,7 +204,7 @@ export default function ReserveManagementPage() {
       <div className="flex h-96 items-center justify-center">
         <div className="flex flex-col items-center space-y-3">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#9B1C22] border-t-transparent" />
-          <p className="text-xs font-semibold text-gray-500">Loading confidential company reserve ledger...</p>
+          <p className="text-xs font-semibold text-gray-500">Loading live company reserve ledger...</p>
         </div>
       </div>
     );
@@ -215,13 +213,13 @@ export default function ReserveManagementPage() {
   // Access control block
   if (!isAllowedRole) {
     return (
-      <div className="p-8 max-w-2xl mx-auto my-12 bg-white border border-rose-200 rounded-2xl shadow-sm text-center space-y-4">
+      <div className="p-8 max-w-2xl mx-auto my-12 bg-white border border-rose-200 rounded-2xl shadow-xs text-center space-y-4">
         <div className="h-14 w-14 bg-rose-100 text-rose-700 rounded-full flex items-center justify-center mx-auto">
           <ShieldAlert className="h-8 w-8" />
         </div>
         <h2 className="text-xl font-extrabold text-gray-900">Confidential Module: Access Denied</h2>
         <p className="text-xs text-gray-600 leading-relaxed">
-          The <strong>Company Reserve and Savings Management Module</strong> contains sensitive, confidential financial ledger metrics. Access is strictly limited to <strong>Super Admin</strong>, <strong>Admin</strong>, and <strong>Finance Admin</strong>.
+          The <strong>Company Reserve and Savings Management Module</strong> contains sensitive corporate financial metrics. Access is strictly limited to <strong>Super Admin</strong>, <strong>Admin</strong>, and <strong>Finance Admin</strong>.
         </p>
         <div className="pt-2">
           <span className="text-[11px] font-mono text-rose-600 bg-rose-50 px-3 py-1 rounded-full border border-rose-200 font-bold">
@@ -232,7 +230,7 @@ export default function ReserveManagementPage() {
     );
   }
 
-  // Actions
+  // Action Handlers
   const handleCreateManualDeposit = async () => {
     if (!currentUser) return;
     setFormSaving(true);
@@ -261,12 +259,37 @@ export default function ReserveManagementPage() {
     }
   };
 
+  const handleUpdateLedger = async () => {
+    if (!currentUser || !editingLedger) return;
+    setFormSaving(true);
+    try {
+      await db.updateReserveLedgerEntry(editingLedger.id, editingLedger, currentUser);
+      setModalType(null);
+      setEditingLedger(null);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setFormSaving(false);
+    }
+  };
+
+  const handleDeleteLedger = async (id: string) => {
+    if (!currentUser || !confirm('Are you sure you want to delete this ledger entry?')) return;
+    try {
+      await db.deleteReserveLedgerEntry(id, currentUser);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
   const handleCreateFdr = async () => {
     if (!currentUser) return;
     setFormSaving(true);
     try {
       const grossReturn = Math.round(fdrForm.principal_amount * (fdrForm.interest_rate / 100) * (fdrForm.tenure_months / 12));
-      const tax = Math.round(grossReturn * 0.10); // 10% AIT estimate
+      const tax = Math.round(grossReturn * 0.10);
       const charges = 500;
       const netValue = fdrForm.principal_amount + grossReturn - tax - charges;
 
@@ -296,6 +319,7 @@ export default function ReserveManagementPage() {
           lien_status: false,
           funding_source: fdrForm.funding_source,
           status: 'ACTIVE',
+          notes: fdrForm.notes,
           created_by: currentUser.full_name
         },
         currentUser
@@ -309,6 +333,31 @@ export default function ReserveManagementPage() {
     }
   };
 
+  const handleUpdateFdr = async () => {
+    if (!currentUser || !editingFdr) return;
+    setFormSaving(true);
+    try {
+      await db.updateFdrAccount(editingFdr.id, editingFdr, currentUser);
+      setModalType(null);
+      setEditingFdr(null);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setFormSaving(false);
+    }
+  };
+
+  const handleDeleteFdr = async (id: string) => {
+    if (!currentUser || !confirm('Are you sure you want to delete this FDR record?')) return;
+    try {
+      await db.deleteFdrAccount(id, currentUser);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
   const handleCreateDps = async () => {
     if (!currentUser) return;
     setFormSaving(true);
@@ -317,7 +366,6 @@ export default function ReserveManagementPage() {
       const expectedInt = Math.round(totalDep * 0.12);
       const expectedMat = totalDep + expectedInt;
 
-      const startDate = new Date(dpsForm.start_date);
       const maturityDate = new Date(dpsForm.start_date);
       maturityDate.setMonth(maturityDate.getMonth() + dpsForm.total_installments);
 
@@ -346,11 +394,57 @@ export default function ReserveManagementPage() {
           auto_debit: true,
           funding_source: dpsForm.funding_source,
           status: 'ACTIVE',
+          notes: dpsForm.notes,
           created_by: currentUser.full_name
         },
         currentUser
       );
       setModalType(null);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setFormSaving(false);
+    }
+  };
+
+  const handleUpdateDps = async () => {
+    if (!currentUser || !editingDps) return;
+    setFormSaving(true);
+    try {
+      await db.updateDpsAccount(editingDps.id, editingDps, currentUser);
+      setModalType(null);
+      setEditingDps(null);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    } finally {
+      setFormSaving(false);
+    }
+  };
+
+  const handleDeleteDps = async (id: string) => {
+    if (!currentUser || !confirm('Are you sure you want to delete this DPS account?')) return;
+    try {
+      await db.deleteDpsAccount(id, currentUser);
+      await loadAllData();
+    } catch (e: any) {
+      alert(e.message);
+    }
+  };
+
+  const handleDpsPaySubmit = async () => {
+    if (!currentUser || !activeDpsForPay) return;
+    setFormSaving(true);
+    try {
+      await db.payDpsInstallment(
+        activeDpsForPay.id,
+        dpsPayForm.transaction_reference,
+        dpsPayForm.paid_from_account,
+        currentUser
+      );
+      setModalType(null);
+      setActiveDpsForPay(null);
       await loadAllData();
     } catch (e: any) {
       alert(e.message);
@@ -445,26 +539,6 @@ export default function ReserveManagementPage() {
     }
   };
 
-  const handleDpsPaySubmit = async () => {
-    if (!currentUser || !activeDpsForPay) return;
-    setFormSaving(true);
-    try {
-      await db.payDpsInstallment(
-        activeDpsForPay.id,
-        dpsPayForm.transaction_reference,
-        dpsPayForm.paid_from_account,
-        currentUser
-      );
-      setModalType(null);
-      setActiveDpsForPay(null);
-      await loadAllData();
-    } catch (e: any) {
-      alert(e.message);
-    } finally {
-      setFormSaving(false);
-    }
-  };
-
   // CSV Export
   const exportLedgerToCsv = () => {
     const headers = ['Txn ID', 'Entity', 'Currency', 'Type', 'Amount', 'Source', 'Date', 'Status', 'Reason'];
@@ -493,7 +567,7 @@ export default function ReserveManagementPage() {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-gray-200/80 rounded-2xl p-6 shadow-xs">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center space-x-2.5">
             <div className="h-9 w-9 rounded-xl bg-[#9B1C22]/10 text-[#9B1C22] flex items-center justify-center font-bold">
@@ -504,7 +578,7 @@ export default function ReserveManagementPage() {
                 Company Reserve & Savings Management
               </h1>
               <p className="text-xs text-gray-500">
-                Confidential emergency reserve allocations, 80/20 operating cash engine, FDR & DPS portfolios.
+                Live database reserve allocations, 80/20 operating cash engine, FDR & DPS asset portfolios.
               </p>
             </div>
           </div>
@@ -546,7 +620,7 @@ export default function ReserveManagementPage() {
             className="flex items-center space-x-1.5 bg-[#9B1C22] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition shadow-xs cursor-pointer"
           >
             <Plus className="h-4 w-4" />
-            <span>Manual Reserve Deposit</span>
+            <span>Manual Deposit</span>
           </button>
         </div>
       </div>
@@ -558,10 +632,9 @@ export default function ReserveManagementPage() {
           { id: 'ledger', label: 'Reserve Ledger', icon: Layers },
           { id: 'fdr', label: 'FDR Portfolio', icon: Wallet },
           { id: 'dps', label: 'DPS Savings', icon: PiggyBank },
-          { id: 'withdrawals', label: 'Withdrawal Approvals', icon: Clock },
-          { id: 'reconciliation', label: 'Reconciliation', icon: ShieldCheck },
-          { id: 'reports', label: 'Reports & Exports', icon: FileText },
-          { id: 'settings', label: 'Reserve Policy', icon: Sliders },
+          { id: 'withdrawals', label: 'Withdrawals', icon: Clock },
+          { id: 'reports', label: 'Reports', icon: FileText },
+          { id: 'settings', label: 'Policy Settings', icon: Sliders },
           { id: 'audit_logs', label: 'Audit Logs', icon: History },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -597,14 +670,14 @@ export default function ReserveManagementPage() {
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-3">
               <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <span>Total Company Savings</span>
-                <PiggyBank className="h-5 w-5 text-emerald-600" />
+                <PiggyBank className="h-5 w-5 text-gray-700" />
               </div>
               <div>
                 <span className="text-2xl font-extrabold text-gray-900 block">
                   {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.totalCompanySavings.toLocaleString()}
                 </span>
-                <span className="text-[10px] font-semibold text-emerald-600 mt-1 block">
-                  Combined Reserve Cash + FDR + DPS
+                <span className="text-[10px] font-semibold text-gray-500 mt-1 block">
+                  Reserve Cash + FDR + DPS Balance
                 </span>
               </div>
             </div>
@@ -620,7 +693,7 @@ export default function ReserveManagementPage() {
                   {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.netReserveCash.toLocaleString()}
                 </span>
                 <span className="text-[10px] font-semibold text-gray-500 mt-1 block">
-                  Restricted Liquid Reserve Balance
+                  Liquid Reserve Balance
                 </span>
               </div>
             </div>
@@ -629,95 +702,97 @@ export default function ReserveManagementPage() {
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-3">
               <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <span>Fixed Deposit (FDR) Assets</span>
-                <Wallet className="h-5 w-5 text-indigo-600" />
+                <Wallet className="h-5 w-5 text-gray-700" />
               </div>
               <div>
                 <span className="text-2xl font-extrabold text-gray-900 block">
                   {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.totalFdrPrincipal.toLocaleString()}
                 </span>
-                <span className="text-[10px] font-semibold text-indigo-600 mt-1 block">
+                <span className="text-[10px] font-semibold text-gray-500 mt-1 block">
                   +{selectedCurrency === 'BDT' ? '৳' : '$'}{summary.expectedFdrReturns.toLocaleString()} Expected Net Yield
                 </span>
               </div>
             </div>
 
-            {/* Card 4: Operating Cash Available (80% Split) */}
+            {/* Card 4: Operating Cash Available */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-xs space-y-3">
               <div className="flex justify-between items-center text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <span>Available Operating Cash</span>
-                <TrendingUp className="h-5 w-5 text-blue-600" />
+                <TrendingUp className="h-5 w-5 text-gray-700" />
               </div>
               <div>
-                <span className="text-2xl font-extrabold text-blue-900 block">
+                <span className="text-2xl font-extrabold text-gray-900 block">
                   {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.availableOperatingCash.toLocaleString()}
                 </span>
-                <span className="text-[10px] font-semibold text-blue-600 mt-1 block">
+                <span className="text-[10px] font-semibold text-gray-500 mt-1 block">
                   80% Working Cash (After Operating Exp)
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Reserve Rule 80/20 Breakdown & Financial Safety Target */}
+          {/* Reserve Rule 80/20 & Minimal Financial Safety Target */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* 80/20 Rule Banner */}
-            <div className="lg:col-span-6 bg-gradient-to-br from-red-50/50 via-white to-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4">
-              <div className="flex items-center justify-between">
+            <div className="lg:col-span-6 bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <div className="flex items-center space-x-2">
                   <ShieldCheck className="h-5 w-5 text-[#9B1C22]" />
                   <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">
                     Automatic 20% Reserve Allocation Rule
                   </h3>
                 </div>
-                <span className="text-[10px] font-extrabold bg-[#9B1C22] text-white px-2.5 py-1 rounded-md">ACTIVE</span>
+                <span className="text-[10px] font-bold bg-[#9B1C22]/10 text-[#9B1C22] px-2.5 py-1 rounded-md">ACTIVE</span>
               </div>
 
               <p className="text-xs text-gray-600 leading-relaxed">
-                Every verified client payment is automatically split: <strong>{summary.reserveSettings?.reserve_percentage || 20}%</strong> is isolated in the Emergency Reserve ledger, and <strong>{100 - (summary.reserveSettings?.reserve_percentage || 20)}%</strong> is allocated to operating cash.
+                Every verified client payment is automatically split: <strong>{summary.reserveSettings?.reserve_percentage || 20}%</strong> is allocated to Emergency Reserve, and <strong>{100 - (summary.reserveSettings?.reserve_percentage || 20)}%</strong> is allocated to operating cash.
               </p>
 
-              <div className="grid grid-cols-2 gap-3 text-xs pt-2">
-                <div className="p-3 bg-white border border-gray-200 rounded-xl space-y-1">
+              <div className="grid grid-cols-2 gap-3 text-xs pt-1">
+                <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl space-y-1">
                   <span className="text-[10px] font-bold text-gray-400 uppercase block">Emergency Reserve</span>
                   <span className="font-extrabold text-[#9B1C22] text-base">{summary.reserveSettings?.reserve_percentage || 20}%</span>
-                  <span className="text-[10px] text-gray-500 block">Restricted Safety Funds</span>
+                  <span className="text-[10px] text-gray-500 block">Restricted Safety Balance</span>
                 </div>
-                <div className="p-3 bg-white border border-gray-200 rounded-xl space-y-1">
+                <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl space-y-1">
                   <span className="text-[10px] font-bold text-gray-400 uppercase block">Operating Cash</span>
-                  <span className="font-extrabold text-blue-800 text-base">{100 - (summary.reserveSettings?.reserve_percentage || 20)}%</span>
-                  <span className="text-[10px] text-gray-500 block">Day-to-day Operations</span>
+                  <span className="font-extrabold text-gray-800 text-base">{100 - (summary.reserveSettings?.reserve_percentage || 20)}%</span>
+                  <span className="text-[10px] text-gray-500 block">Working Operations</span>
                 </div>
               </div>
             </div>
 
-            {/* Financial Safety Target & Month Coverage */}
+            {/* MINIMAL Financial Safety Target */}
             <div className="lg:col-span-6 bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                 <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider flex items-center gap-2">
                   <span>Financial Safety Target</span>
-                  <span className="text-[10px] bg-emerald-100 text-emerald-800 font-extrabold px-2 py-0.5 rounded">
-                    {summary.coverageMonths} Months Covered
-                  </span>
                 </h3>
-                <span className="text-xs font-extrabold text-gray-800">
+                <span className="text-xs font-bold text-gray-600">
                   Target: {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.activeTargetAmount.toLocaleString()}
                 </span>
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-semibold">
-                  <span className="text-gray-500">Target Progress</span>
-                  <span className="font-extrabold text-[#9B1C22]">{summary.targetCompletionPct}% Reached</span>
+              <div className="space-y-3 pt-1">
+                <div className="flex justify-between items-baseline text-xs">
+                  <span className="text-gray-500 font-medium">Coverage Status</span>
+                  <span className="font-extrabold text-gray-900 text-sm">
+                    {summary.coverageMonths} Months <span className="text-[11px] font-normal text-gray-500">({summary.targetCompletionPct}% achieved)</span>
+                  </span>
                 </div>
-                <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden">
+
+                {/* Sleek Minimal Progress Bar */}
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-[#9B1C22] to-emerald-600 transition-all duration-500 rounded-full"
+                    className="h-full bg-[#9B1C22] transition-all duration-500 rounded-full"
                     style={{ width: `${summary.targetCompletionPct}%` }}
                   />
                 </div>
-                <div className="flex justify-between text-[11px] text-gray-500 pt-1">
+
+                <div className="flex justify-between text-[11px] text-gray-500 pt-1 font-medium">
                   <span>Current: {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.totalCompanySavings.toLocaleString()}</span>
-                  <span>Gap: {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.targetGap.toLocaleString()}</span>
+                  <span>Target Gap: {selectedCurrency === 'BDT' ? '৳' : '$'}{summary.targetGap.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -731,7 +806,7 @@ export default function ReserveManagementPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Company Reserve Double-Entry Ledger</h3>
-              <p className="text-xs text-gray-500">Live transaction trail of automatic allocations, manual deposits, FDR/DPS transfers, and withdrawals.</p>
+              <p className="text-xs text-gray-500">Live transaction log of automatic allocations, manual deposits, FDR/DPS transfers, and withdrawals.</p>
             </div>
             <div className="flex items-center gap-2">
               <div className="relative">
@@ -765,36 +840,68 @@ export default function ReserveManagementPage() {
                   <th className="py-3 px-2">Source / Ref</th>
                   <th className="py-3 px-2 text-right">Amount</th>
                   <th className="py-3 px-2 text-center">Status</th>
+                  <th className="py-3 px-2 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-gray-700">
-                {ledger
-                  .filter(l => (selectedCurrency ? l.currency === selectedCurrency : true))
-                  .filter(l => (selectedEntity !== 'all' ? l.entity_id === selectedEntity : true))
-                  .filter(l => searchLedger ? JSON.stringify(l).toLowerCase().includes(searchLedger.toLowerCase()) : true)
-                  .map(entry => {
-                    const isCredit = ['AUTOMATIC_RESERVE_ALLOCATION', 'MANUAL_DEPOSIT', 'TRANSFER_FROM_FDR', 'TRANSFER_FROM_DPS', 'INTEREST_RECEIVED', 'MATURITY_PROCEEDS', 'OPENING_BALANCE'].includes(entry.transaction_type);
-                    return (
-                      <tr key={entry.id} className="hover:bg-gray-50/60">
-                        <td className="py-3 px-2 font-mono text-[11px] text-gray-500">{entry.deposit_date}</td>
-                        <td className="py-3 px-2 font-mono font-bold text-gray-800">{entry.id}</td>
-                        <td className="py-3 px-2 font-semibold">{entry.entity_id === 'ent-1' ? 'Creatiancy Ltd' : 'Creatiancy LLC'}</td>
-                        <td className="py-3 px-2 font-bold text-gray-800">
-                          <span className="block">{entry.transaction_type.replace(/_/g, ' ')}</span>
-                          {entry.reason && <span className="text-[10px] font-normal text-gray-400 leading-tight block">{entry.reason}</span>}
-                        </td>
-                        <td className="py-3 px-2 text-gray-600">{entry.source}</td>
-                        <td className={`py-3 px-2 text-right font-extrabold text-sm ${isCredit ? 'text-emerald-700' : 'text-rose-700'}`}>
-                          {isCredit ? '+' : '-'}{entry.currency === 'BDT' ? '৳' : '$'}{entry.amount.toLocaleString()}
-                        </td>
-                        <td className="py-3 px-2 text-center">
-                          <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-2 py-0.5 rounded">
-                            {entry.status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                {ledger.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="text-center py-10 text-gray-400">
+                      <Layers className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-xs font-semibold">No reserve ledger transactions recorded yet.</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">Transactions will appear automatically when client payments are marked paid, or via manual deposits.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  ledger
+                    .filter(l => (selectedCurrency ? l.currency === selectedCurrency : true))
+                    .filter(l => (selectedEntity !== 'all' ? l.entity_id === selectedEntity : true))
+                    .filter(l => searchLedger ? JSON.stringify(l).toLowerCase().includes(searchLedger.toLowerCase()) : true)
+                    .map(entry => {
+                      const isCredit = ['AUTOMATIC_RESERVE_ALLOCATION', 'MANUAL_DEPOSIT', 'TRANSFER_FROM_FDR', 'TRANSFER_FROM_DPS', 'INTEREST_RECEIVED', 'MATURITY_PROCEEDS', 'OPENING_BALANCE'].includes(entry.transaction_type);
+                      return (
+                        <tr key={entry.id} className="hover:bg-gray-50/60">
+                          <td className="py-3 px-2 font-mono text-[11px] text-gray-500">{entry.deposit_date}</td>
+                          <td className="py-3 px-2 font-mono font-bold text-gray-800">{entry.id}</td>
+                          <td className="py-3 px-2 font-semibold">{entry.entity_id === 'ent-1' ? 'Creatiancy Ltd' : 'Creatiancy LLC'}</td>
+                          <td className="py-3 px-2 font-bold text-gray-800">
+                            <span className="block">{entry.transaction_type.replace(/_/g, ' ')}</span>
+                            {entry.reason && <span className="text-[10px] font-normal text-gray-400 leading-tight block">{entry.reason}</span>}
+                          </td>
+                          <td className="py-3 px-2 text-gray-600">{entry.source}</td>
+                          <td className={`py-3 px-2 text-right font-extrabold text-sm ${isCredit ? 'text-gray-900' : 'text-rose-700'}`}>
+                            {isCredit ? '+' : '-'}{entry.currency === 'BDT' ? '৳' : '$'}{entry.amount.toLocaleString()}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <span className="bg-gray-100 text-gray-800 text-[9px] font-extrabold px-2 py-0.5 rounded">
+                              {entry.status}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2 text-right">
+                            <div className="flex justify-end items-center space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingLedger(entry);
+                                  setModalType('edit_ledger');
+                                }}
+                                className="p-1 text-gray-400 hover:text-gray-700 transition cursor-pointer"
+                                title="Edit Ledger Entry"
+                              >
+                                <Edit2 className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteLedger(entry.id)}
+                                className="p-1 text-gray-400 hover:text-rose-600 transition cursor-pointer"
+                                title="Delete Entry"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                )}
               </tbody>
             </table>
           </div>
@@ -807,7 +914,7 @@ export default function ReserveManagementPage() {
           <div className="flex justify-between items-center bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
             <div>
               <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Fixed Deposit Receipts (FDR) Portfolio</h3>
-              <p className="text-xs text-gray-500">Manage internal asset transfers to high-yield corporate FDR accounts.</p>
+              <p className="text-xs text-gray-500">Create, manage, edit, and track corporate FDR assets and maturity proceeds.</p>
             </div>
             <button
               onClick={() => setModalType('create_fdr')}
@@ -818,67 +925,103 @@ export default function ReserveManagementPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {fdrAccounts.map(fdr => (
-              <div key={fdr.id} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
-                <div className="flex justify-between items-start border-b border-gray-100 pb-3">
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">{fdr.bank_name} ({fdr.branch_name})</span>
-                    <h4 className="font-extrabold text-sm text-gray-900">{fdr.account_title}</h4>
-                    <span className="font-mono text-xs text-gray-500 font-semibold block mt-0.5">Ref: {fdr.fdr_reference_number}</span>
-                  </div>
-                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">
-                    {fdr.status}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Principal Amount</span>
-                    <span className="font-extrabold text-gray-900 text-sm">{fdr.currency === 'BDT' ? '৳' : '$'}{fdr.principal_amount.toLocaleString()}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Interest Rate</span>
-                    <span className="font-extrabold text-indigo-600 text-sm">{fdr.interest_rate}% p.a.</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Start Date</span>
-                    <span className="font-medium text-gray-700">{fdr.start_date}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Maturity Date</span>
-                    <span className="font-extrabold text-[#9B1C22]">{fdr.maturity_date}</span>
-                  </div>
-                </div>
-
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1 text-xs">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Expected Net Maturity:</span>
-                    <strong className="font-extrabold text-emerald-700">{fdr.currency === 'BDT' ? '৳' : '$'}{fdr.expected_net_maturity_value.toLocaleString()}</strong>
-                  </div>
-                  {fdr.actual_maturity_value && (
-                    <div className="flex justify-between text-emerald-800 font-bold border-t border-gray-200 pt-1">
-                      <span>Actual Realized Proceeds:</span>
-                      <span>{fdr.currency === 'BDT' ? '৳' : '$'}{fdr.actual_maturity_value.toLocaleString()}</span>
+          {fdrAccounts.length === 0 ? (
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center space-y-3">
+              <Wallet className="h-10 w-10 text-gray-300 mx-auto" />
+              <h4 className="font-extrabold text-sm text-gray-800">No FDR Accounts Created Yet</h4>
+              <p className="text-xs text-gray-500 max-w-md mx-auto">
+                No fixed deposit receipts are currently active. Click below to add a new corporate FDR asset.
+              </p>
+              <button
+                onClick={() => setModalType('create_fdr')}
+                className="inline-flex items-center space-x-1.5 bg-[#9B1C22] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer mt-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Create First FDR</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fdrAccounts.map(fdr => (
+                <div key={fdr.id} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
+                  <div className="flex justify-between items-start border-b border-gray-100 pb-3">
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">{fdr.bank_name} ({fdr.branch_name})</span>
+                      <h4 className="font-extrabold text-sm text-gray-900">{fdr.account_title}</h4>
+                      <span className="font-mono text-xs text-gray-500 font-semibold block mt-0.5">Ref: {fdr.fdr_reference_number}</span>
                     </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="bg-gray-100 text-gray-800 text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">
+                        {fdr.status}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setEditingFdr(fdr);
+                          setModalType('edit_fdr');
+                        }}
+                        className="p-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                        title="Edit FDR"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteFdr(fdr.id)}
+                        className="p-1 text-gray-400 hover:text-rose-600 cursor-pointer"
+                        title="Delete FDR"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Principal Amount</span>
+                      <span className="font-extrabold text-gray-900 text-sm">{fdr.currency === 'BDT' ? '৳' : '$'}{fdr.principal_amount.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Interest Rate</span>
+                      <span className="font-extrabold text-gray-900 text-sm">{fdr.interest_rate}% p.a.</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Start Date</span>
+                      <span className="font-medium text-gray-700">{fdr.start_date}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Maturity Date</span>
+                      <span className="font-extrabold text-[#9B1C22]">{fdr.maturity_date}</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-3 rounded-xl border border-gray-100 space-y-1 text-xs">
+                    <div className="flex justify-between text-gray-600">
+                      <span>Expected Net Maturity:</span>
+                      <strong className="font-extrabold text-gray-900">{fdr.currency === 'BDT' ? '৳' : '$'}{fdr.expected_net_maturity_value.toLocaleString()}</strong>
+                    </div>
+                    {fdr.actual_maturity_value && (
+                      <div className="flex justify-between text-gray-900 font-bold border-t border-gray-200 pt-1">
+                        <span>Actual Realized Proceeds:</span>
+                        <span>{fdr.currency === 'BDT' ? '৳' : '$'}{fdr.actual_maturity_value.toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {fdr.status === 'ACTIVE' && (
+                    <button
+                      onClick={() => {
+                        setActiveFdrForMaturity(fdr);
+                        setMaturityForm({ actual_net_value: fdr.expected_net_maturity_value, action: 'CLOSE', notes: 'Maturity proceeds received.' });
+                        setModalType('record_maturity');
+                      }}
+                      className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold transition cursor-pointer"
+                    >
+                      Record Maturity / Renewal
+                    </button>
                   )}
                 </div>
-
-                {fdr.status === 'ACTIVE' && (
-                  <button
-                    onClick={() => {
-                      setActiveFdrForMaturity(fdr);
-                      setMaturityForm({ actual_net_value: fdr.expected_net_maturity_value, action: 'CLOSE', notes: 'Maturity proceeds received.' });
-                      setModalType('record_maturity');
-                    }}
-                    className="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-xl text-xs font-bold transition cursor-pointer"
-                  >
-                    Record Maturity / Renewal
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -888,7 +1031,7 @@ export default function ReserveManagementPage() {
           <div className="flex justify-between items-center bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
             <div>
               <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Deposit Pension Scheme (DPS) Portfolio</h3>
-              <p className="text-xs text-gray-500">Track monthly periodic installments, paid progress, and upcoming due dates.</p>
+              <p className="text-xs text-gray-500">Manage monthly DPS accounts, pay installments with instant ledger updates, edit or delete schemes.</p>
             </div>
             <button
               onClick={() => setModalType('create_dps')}
@@ -899,93 +1042,134 @@ export default function ReserveManagementPage() {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {dpsAccounts.map(dps => (
-              <div key={dps.id} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
-                <div className="flex justify-between items-start border-b border-gray-100 pb-3">
-                  <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase">{dps.bank_name}</span>
-                    <h4 className="font-extrabold text-sm text-gray-900">{dps.account_title}</h4>
-                    <span className="font-mono text-xs text-gray-500 font-semibold block mt-0.5">Acc: {dps.dps_account_number}</span>
+          {dpsAccounts.length === 0 ? (
+            <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center space-y-3">
+              <PiggyBank className="h-10 w-10 text-gray-300 mx-auto" />
+              <h4 className="font-extrabold text-sm text-gray-800">No Active DPS Schemes</h4>
+              <p className="text-xs text-gray-500 max-w-md mx-auto">
+                No corporate DPS savings accounts are currently created. Click below to start a new DPS scheme.
+              </p>
+              <button
+                onClick={() => setModalType('create_dps')}
+                className="inline-flex items-center space-x-1.5 bg-[#9B1C22] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer mt-2"
+              >
+                <Plus className="h-4 w-4" />
+                <span>Create First DPS</span>
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {dpsAccounts.map(dps => (
+                <div key={dps.id} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
+                  <div className="flex justify-between items-start border-b border-gray-100 pb-3">
+                    <div>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase">{dps.bank_name}</span>
+                      <h4 className="font-extrabold text-sm text-gray-900">{dps.account_title}</h4>
+                      <span className="font-mono text-xs text-gray-500 font-semibold block mt-0.5">Acc: {dps.dps_account_number}</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="bg-gray-100 text-gray-800 text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">
+                        {dps.status}
+                      </span>
+                      <button
+                        onClick={() => {
+                          setEditingDps(dps);
+                          setModalType('edit_dps');
+                        }}
+                        className="p-1 text-gray-400 hover:text-gray-700 cursor-pointer"
+                        title="Edit DPS"
+                      >
+                        <Edit2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteDps(dps.id)}
+                        className="p-1 text-gray-400 hover:text-rose-600 cursor-pointer"
+                        title="Delete DPS"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
-                  <span className="bg-blue-100 text-blue-800 text-[10px] font-extrabold px-2.5 py-1 rounded-md uppercase">
-                    {dps.status}
-                  </span>
-                </div>
 
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-gray-500">Installment Progress</span>
-                    <span className="font-bold text-gray-900">{dps.paid_installments} of {dps.total_installments} Paid</span>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-gray-500">Installment Progress</span>
+                      <span className="font-bold text-gray-900">{dps.paid_installments} of {dps.total_installments} Paid</span>
+                    </div>
+                    <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[#9B1C22] rounded-full"
+                        style={{ width: `${(dps.paid_installments / dps.total_installments) * 100}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#9B1C22] rounded-full"
-                      style={{ width: `${(dps.paid_installments / dps.total_installments) * 100}%` }}
-                    />
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Monthly Amount</span>
-                    <span className="font-extrabold text-gray-900">{dps.currency === 'BDT' ? '৳' : '$'}{dps.installment_amount.toLocaleString()}</span>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Monthly Amount</span>
+                      <span className="font-extrabold text-gray-900">{dps.currency === 'BDT' ? '৳' : '$'}{dps.installment_amount.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Total Deposited</span>
+                      <span className="font-extrabold text-gray-900">{dps.currency === 'BDT' ? '৳' : '$'}{dps.total_deposited_amount.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Next Installment Due</span>
+                      <span className="font-extrabold text-[#9B1C22]">{dps.next_installment_date}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 font-semibold block">Maturity Date</span>
+                      <span className="font-medium text-gray-700">{dps.maturity_date}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Total Deposited</span>
-                    <span className="font-extrabold text-emerald-700">{dps.currency === 'BDT' ? '৳' : '$'}{dps.total_deposited_amount.toLocaleString()}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Next Installment Due</span>
-                    <span className="font-extrabold text-[#9B1C22]">{dps.next_installment_date}</span>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Maturity Date</span>
-                    <span className="font-medium text-gray-700">{dps.maturity_date}</span>
-                  </div>
-                </div>
 
-                {/* Installments table snippet */}
-                <div className="border-t border-gray-100 pt-3">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Installment Schedule Snippet</span>
-                  <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs">
-                    {dpsInstallments.filter(i => i.dps_account_id === dps.id).map(inst => (
-                      <div key={inst.id} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 border border-gray-100">
-                        <span className="font-semibold text-gray-700"># Inst {inst.installment_number} ({inst.due_date})</span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-gray-900">{dps.currency === 'BDT' ? '৳' : '$'}{inst.amount.toLocaleString()}</span>
-                          {inst.status === 'PAID' ? (
-                            <span className="bg-emerald-100 text-emerald-800 text-[9px] font-extrabold px-1.5 py-0.2 rounded">PAID</span>
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setActiveDpsForPay(inst);
-                                setDpsPayForm({ transaction_reference: `TXN-DPS-${Date.now().toString().slice(-6)}`, paid_from_account: 'Company Emergency Reserve' });
-                                setModalType('pay_dps');
-                              }}
-                              className="bg-[#9B1C22] text-white text-[9px] font-bold px-2 py-0.5 rounded cursor-pointer hover:bg-[#7d1219]"
-                            >
-                              Pay Now
-                            </button>
-                          )}
+                  {/* Installment Schedule */}
+                  <div className="border-t border-gray-100 pt-3">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Installment Schedule</span>
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1 text-xs">
+                      {dpsInstallments.filter(i => i.dps_account_id === dps.id).map(inst => (
+                        <div key={inst.id} className="flex justify-between items-center p-2 rounded-lg bg-gray-50 border border-gray-100">
+                          <span className="font-semibold text-gray-700"># Inst {inst.installment_number} ({inst.due_date})</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-gray-900">{dps.currency === 'BDT' ? '৳' : '$'}{inst.amount.toLocaleString()}</span>
+                            {inst.status === 'PAID' ? (
+                              <span className="bg-gray-200 text-gray-800 text-[9px] font-extrabold px-1.5 py-0.2 rounded flex items-center gap-1">
+                                <CheckCircle2 className="h-3 w-3 text-emerald-600" /> PAID
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => {
+                                  setActiveDpsForPay(inst);
+                                  setDpsPayForm({
+                                    transaction_reference: `TXN-DPS-${Date.now().toString().slice(-6)}`,
+                                    paid_from_account: 'Company Emergency Reserve'
+                                  });
+                                  setModalType('pay_dps');
+                                }}
+                                className="bg-[#9B1C22] text-white text-[9px] font-bold px-2 py-0.5 rounded cursor-pointer hover:bg-[#7d1219] shadow-xs"
+                              >
+                                Pay Now
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
-      {/* TAB 5: WITHDRAWAL REQUESTS & APPROVALS */}
+      {/* TAB 5: WITHDRAWALS */}
       {activeTab === 'withdrawals' && (
         <div className="space-y-6">
           <div className="flex justify-between items-center bg-white border border-gray-200 rounded-2xl p-6 shadow-xs">
             <div>
               <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Reserve Withdrawal Requests & Approvals</h3>
-              <p className="text-xs text-gray-500">Formal approval workflow before reducing company reserve cash balance.</p>
+              <p className="text-xs text-gray-500">Formal multi-step approval before releasing emergency reserve funds.</p>
             </div>
             <button
               onClick={() => setModalType('request_withdrawal')}
@@ -1010,40 +1194,48 @@ export default function ReserveManagementPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-gray-700">
-                  {withdrawalRequests.map(wth => (
-                    <tr key={wth.id}>
-                      <td className="py-3 px-2 font-mono text-gray-500">{wth.request_date}</td>
-                      <td className="py-3 px-2 font-bold text-gray-800">{wth.requested_by}</td>
-                      <td className="py-3 px-2">
-                        <span className="font-bold text-gray-900 block">{wth.purpose}</span>
-                        <span className="text-[10px] text-gray-400 block">{wth.detailed_reason}</span>
-                      </td>
-                      <td className="py-3 px-2 text-right font-extrabold text-rose-700 text-sm">
-                        {wth.currency === 'BDT' ? '৳' : '$'}{wth.requested_amount.toLocaleString()}
-                      </td>
-                      <td className="py-3 px-2 text-center">
-                        <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded uppercase ${
-                          wth.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
-                          wth.status === 'REJECTED' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-                        }`}>
-                          {wth.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-right">
-                        {wth.status === 'SUBMITTED' && currentUser?.role_name === 'Super Admin' && (
-                          <button
-                            onClick={() => {
-                              setReviewWithdrawalItem(wth);
-                              setModalType('review_withdrawal');
-                            }}
-                            className="bg-[#9B1C22] text-white px-2.5 py-1 rounded text-xs font-bold cursor-pointer hover:bg-[#7d1219]"
-                          >
-                            Review & Decide
-                          </button>
-                        )}
+                  {withdrawalRequests.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="text-center py-8 text-gray-400">
+                        No withdrawal requests recorded.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    withdrawalRequests.map(wth => (
+                      <tr key={wth.id}>
+                        <td className="py-3 px-2 font-mono text-gray-500">{wth.request_date}</td>
+                        <td className="py-3 px-2 font-bold text-gray-800">{wth.requested_by}</td>
+                        <td className="py-3 px-2">
+                          <span className="font-bold text-gray-900 block">{wth.purpose}</span>
+                          <span className="text-[10px] text-gray-400 block">{wth.detailed_reason}</span>
+                        </td>
+                        <td className="py-3 px-2 text-right font-extrabold text-rose-700 text-sm">
+                          {wth.currency === 'BDT' ? '৳' : '$'}{wth.requested_amount.toLocaleString()}
+                        </td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={`text-[9px] font-extrabold px-2 py-0.5 rounded uppercase ${
+                            wth.status === 'APPROVED' ? 'bg-gray-100 text-gray-900 font-bold' :
+                            wth.status === 'REJECTED' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {wth.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-2 text-right">
+                          {wth.status === 'SUBMITTED' && currentUser?.role_name === 'Super Admin' && (
+                            <button
+                              onClick={() => {
+                                setReviewWithdrawalItem(wth);
+                                setModalType('review_withdrawal');
+                              }}
+                              className="bg-[#9B1C22] text-white px-2.5 py-1 rounded text-xs font-bold cursor-pointer hover:bg-[#7d1219]"
+                            >
+                              Review & Decide
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -1051,14 +1243,14 @@ export default function ReserveManagementPage() {
         </div>
       )}
 
-      {/* TAB 8: RESERVE SETTINGS & POLICY */}
+      {/* TAB 7: POLICY SETTINGS */}
       {activeTab === 'settings' && (
         <div className="space-y-6">
           <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
             <div className="flex justify-between items-center border-b border-gray-100 pb-3">
               <div>
-                <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Configurable Reserve Allocation Policy</h3>
-                <p className="text-xs text-gray-500">Super Admin setting for company emergency allocation rate and target buffers.</p>
+                <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Configurable Reserve Policy</h3>
+                <p className="text-xs text-gray-500">Super Admin configuration for default payment allocation percentage and target safety buffers.</p>
               </div>
               <button
                 onClick={handleUpdateSettings}
@@ -1080,7 +1272,6 @@ export default function ReserveManagementPage() {
                   onChange={(e) => setSettingsForm({ ...settingsForm, reserve_percentage: parseFloat(e.target.value) || 0 })}
                   className="w-full rounded-xl border border-gray-200 p-2.5 font-extrabold text-gray-900 text-sm"
                 />
-                <span className="text-[10px] text-gray-400 block">Default 20% of every received client payment.</span>
               </div>
 
               <div className="space-y-1">
@@ -1114,47 +1305,30 @@ export default function ReserveManagementPage() {
               />
             </div>
           </div>
-
-          {/* History log */}
-          <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
-            <h4 className="font-extrabold text-xs text-gray-400 uppercase tracking-wider">Policy Change Audit Trail</h4>
-            <div className="space-y-2 text-xs">
-              {settingsHistory.map(h => (
-                <div key={h.id} className="p-3 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center">
-                  <div>
-                    <span className="font-extrabold text-gray-800 block">
-                      Changed from {h.previous_percentage}% to {h.new_percentage}%
-                    </span>
-                    <span className="text-[10px] text-gray-500 block">Reason: {h.reason}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-semibold text-gray-700 block">{h.changed_by}</span>
-                    <span className="text-[10px] text-gray-400 block">{h.effective_date}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       )}
 
-      {/* TAB 9: AUDIT LOGS */}
+      {/* TAB 8: AUDIT LOGS */}
       {activeTab === 'audit_logs' && (
         <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 shadow-xs">
           <h3 className="font-extrabold text-sm text-gray-900 uppercase tracking-wider">Immutable Financial Audit Logs</h3>
           <div className="space-y-2 text-xs">
-            {auditLogs.map(a => (
-              <div key={a.id} className="p-3 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center">
-                <div>
-                  <span className="font-bold text-gray-800 block">{a.action} ({a.module})</span>
-                  <span className="text-[10px] font-mono text-gray-500 block">ID: {a.record_id}</span>
+            {auditLogs.length === 0 ? (
+              <p className="text-center py-6 text-gray-400">No audit logs recorded yet.</p>
+            ) : (
+              auditLogs.map(a => (
+                <div key={a.id} className="p-3 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center">
+                  <div>
+                    <span className="font-bold text-gray-800 block">{a.action} ({a.module})</span>
+                    <span className="text-[10px] font-mono text-gray-500 block">ID: {a.record_id}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-semibold text-gray-700 block">{a.user_role}</span>
+                    <span className="text-[10px] text-gray-400 block">{a.timestamp}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="font-semibold text-gray-700 block">{a.user_role}</span>
-                  <span className="text-[10px] text-gray-400 block">{a.timestamp}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -1213,6 +1387,39 @@ export default function ReserveManagementPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
               <button onClick={handleCreateManualDeposit} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Deposit Now</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Edit Ledger Entry */}
+      {modalType === 'edit_ledger' && editingLedger && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
+            <h3 className="font-extrabold text-sm text-gray-900 uppercase">Edit Reserve Ledger Entry</h3>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Amount</label>
+                <input
+                  type="number"
+                  value={editingLedger.amount}
+                  onChange={(e) => setEditingLedger({ ...editingLedger, amount: parseFloat(e.target.value) || 0 })}
+                  className="w-full border rounded-xl p-2 font-extrabold text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Reason / Notes</label>
+                <input
+                  type="text"
+                  value={editingLedger.reason || ''}
+                  onChange={(e) => setEditingLedger({ ...editingLedger, reason: e.target.value })}
+                  className="w-full border rounded-xl p-2 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
+              <button onClick={handleUpdateLedger} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Save Changes</button>
             </div>
           </div>
         </div>
@@ -1281,6 +1488,167 @@ export default function ReserveManagementPage() {
             <div className="flex justify-end gap-2 pt-2">
               <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
               <button onClick={handleCreateFdr} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Create FDR Asset</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Edit FDR */}
+      {modalType === 'edit_fdr' && editingFdr && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-xl">
+            <h3 className="font-extrabold text-sm text-gray-900 uppercase">Edit FDR Account Details</h3>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="col-span-2">
+                <label className="font-semibold text-gray-600 block mb-1">Bank Name</label>
+                <input
+                  type="text"
+                  value={editingFdr.bank_name}
+                  onChange={(e) => setEditingFdr({ ...editingFdr, bank_name: e.target.value })}
+                  className="w-full border rounded-xl p-2 font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Principal Amount</label>
+                <input
+                  type="number"
+                  value={editingFdr.principal_amount}
+                  onChange={(e) => setEditingFdr({ ...editingFdr, principal_amount: parseFloat(e.target.value) || 0 })}
+                  className="w-full border rounded-xl p-2 font-extrabold text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Interest Rate (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={editingFdr.interest_rate}
+                  onChange={(e) => setEditingFdr({ ...editingFdr, interest_rate: parseFloat(e.target.value) || 0 })}
+                  className="w-full border rounded-xl p-2 font-bold"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
+              <button onClick={handleUpdateFdr} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Save FDR Updates</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Create DPS */}
+      {modalType === 'create_dps' && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-xl">
+            <h3 className="font-extrabold text-sm text-gray-900 uppercase">Start New Corporate DPS</h3>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="col-span-2">
+                <label className="font-semibold text-gray-600 block mb-1">Bank Name</label>
+                <input
+                  type="text"
+                  value={dpsForm.bank_name}
+                  onChange={(e) => setDpsForm({ ...dpsForm, bank_name: e.target.value })}
+                  className="w-full border rounded-xl p-2 font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Monthly Installment</label>
+                <input
+                  type="number"
+                  value={dpsForm.installment_amount}
+                  onChange={(e) => setDpsForm({ ...dpsForm, installment_amount: parseFloat(e.target.value) || 0 })}
+                  className="w-full border rounded-xl p-2 font-extrabold text-gray-900"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Total Installments (Months)</label>
+                <input
+                  type="number"
+                  value={dpsForm.total_installments}
+                  onChange={(e) => setDpsForm({ ...dpsForm, total_installments: parseInt(e.target.value) || 36 })}
+                  className="w-full border rounded-xl p-2 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
+              <button onClick={handleCreateDps} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Start DPS Scheme</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Edit DPS */}
+      {modalType === 'edit_dps' && editingDps && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full space-y-4 shadow-xl">
+            <h3 className="font-extrabold text-sm text-gray-900 uppercase">Edit DPS Account Details</h3>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="col-span-2">
+                <label className="font-semibold text-gray-600 block mb-1">Bank Name</label>
+                <input
+                  type="text"
+                  value={editingDps.bank_name}
+                  onChange={(e) => setEditingDps({ ...editingDps, bank_name: e.target.value })}
+                  className="w-full border rounded-xl p-2 font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Monthly Installment Amount</label>
+                <input
+                  type="number"
+                  value={editingDps.installment_amount}
+                  onChange={(e) => setEditingDps({ ...editingDps, installment_amount: parseFloat(e.target.value) || 0 })}
+                  className="w-full border rounded-xl p-2 font-extrabold text-gray-900"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
+              <button onClick={handleUpdateDps} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Save DPS Updates</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Pay DPS Installment */}
+      {modalType === 'pay_dps' && activeDpsForPay && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full space-y-4 shadow-xl">
+            <h3 className="font-extrabold text-sm text-gray-900 uppercase">Pay DPS Installment</h3>
+            <div className="p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs space-y-1">
+              <p><strong>Installment Number:</strong> #{activeDpsForPay.installment_number}</p>
+              <p><strong>Due Date:</strong> {activeDpsForPay.due_date}</p>
+              <p><strong>Amount:</strong> <strong className="text-gray-900 font-extrabold">৳{activeDpsForPay.amount.toLocaleString()}</strong></p>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Transaction Reference / Receipt No</label>
+                <input
+                  type="text"
+                  value={dpsPayForm.transaction_reference}
+                  onChange={(e) => setDpsPayForm({ ...dpsPayForm, transaction_reference: e.target.value })}
+                  className="w-full border rounded-xl p-2 font-mono font-bold"
+                />
+              </div>
+              <div>
+                <label className="font-semibold text-gray-600 block mb-1">Payment Account Source</label>
+                <input
+                  type="text"
+                  value={dpsPayForm.paid_from_account}
+                  onChange={(e) => setDpsPayForm({ ...dpsPayForm, paid_from_account: e.target.value })}
+                  className="w-full border rounded-xl p-2 font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button onClick={() => setModalType(null)} className="px-4 py-2 border rounded-xl text-xs font-bold">Cancel</button>
+              <button onClick={handleDpsPaySubmit} disabled={formSaving} className="px-4 py-2 bg-[#9B1C22] text-white rounded-xl text-xs font-bold">Confirm Payment</button>
             </div>
           </div>
         </div>

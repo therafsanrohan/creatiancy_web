@@ -838,141 +838,10 @@ const MOCK_RESERVE_SETTINGS_HISTORY: ReserveSettingsHistory[] = [
   }
 ];
 
-const MOCK_RESERVE_LEDGER: ReserveLedgerEntry[] = [
-  {
-    id: 'res-tx-001',
-    entity_id: 'ent-1',
-    currency: 'BDT',
-    transaction_type: 'OPENING_BALANCE',
-    amount: 1500000.00,
-    source: 'BANK_TRANSFER',
-    deposit_date: '2026-01-01',
-    reason: 'Initial company reserve allocation for FY2026',
-    status: 'COMPLETED',
-    created_by: 'Rafsan Rohan',
-    created_at: '2026-01-01T10:00:00Z'
-  },
-  {
-    id: 'res-tx-002',
-    entity_id: 'ent-1',
-    currency: 'BDT',
-    transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
-    amount: 50000.00,
-    source: 'CLIENT_PAYMENT',
-    payment_id: 'pay-178473000',
-    invoice_id: 'inv-178472900',
-    client_id: 'cli-1',
-    deposit_date: '2026-07-15',
-    reason: '20% Automatic reserve allocation from client payment',
-    status: 'COMPLETED',
-    created_by: 'SYSTEM',
-    created_at: '2026-07-15T14:30:00Z'
-  },
-  {
-    id: 'res-tx-003',
-    entity_id: 'ent-1',
-    currency: 'BDT',
-    transaction_type: 'TRANSFER_TO_FDR',
-    amount: 500000.00,
-    source: 'SYSTEM',
-    destination_account: 'fdr-101 (Eastern Bank FDR)',
-    deposit_date: '2026-05-10',
-    reason: 'Transferred reserve cash into 12-month 8.5% FDR asset',
-    status: 'COMPLETED',
-    created_by: 'Finance Executive',
-    approved_by: 'Rafsan Rohan',
-    created_at: '2026-05-10T11:00:00Z'
-  },
-  {
-    id: 'res-tx-004',
-    entity_id: 'ent-2',
-    currency: 'USD',
-    transaction_type: 'OPENING_BALANCE',
-    amount: 25000.00,
-    source: 'BANK_TRANSFER',
-    deposit_date: '2026-01-01',
-    reason: 'Initial USD Reserve account opening for Creatiancy LLC',
-    status: 'COMPLETED',
-    created_by: 'Rafsan Rohan',
-    created_at: '2026-01-01T10:00:00Z'
-  }
-];
-
-const MOCK_FDR_ACCOUNTS: FdrAccount[] = [
-  {
-    id: 'fdr-101',
-    entity_id: 'ent-1',
-    bank_name: 'Eastern Bank PLC',
-    branch_name: 'Gulshan Branch',
-    account_title: 'Creatiancy Limited Reserve FDR',
-    fdr_reference_number: 'EBL-FDR-2026-8841',
-    principal_amount: 500000.00,
-    currency: 'BDT',
-    interest_rate: 8.50,
-    rate_type: 'SIMPLE',
-    start_date: '2026-05-10',
-    maturity_date: '2027-05-10',
-    tenure_months: 12,
-    expected_gross_return: 42500.00,
-    expected_tax_deduction: 4250.00,
-    expected_bank_charges: 500.00,
-    expected_net_maturity_value: 537750.00,
-    auto_renewal: true,
-    renewal_instruction: 'Renew principal + interest automatically for 12 months',
-    nominee_name: 'Board of Directors',
-    lien_status: false,
-    linked_bank_account: 'bnk-1',
-    funding_source: 'Company Emergency Reserve',
-    status: 'ACTIVE',
-    notes: 'Primary 12-month fixed deposit for reserve interest yield.',
-    created_by: 'Finance Executive',
-    created_at: '2026-05-10T11:00:00Z'
-  }
-];
-
-const MOCK_DPS_ACCOUNTS: DpsAccount[] = [
-  {
-    id: 'dps-201',
-    entity_id: 'ent-1',
-    bank_name: 'BRAC Bank PLC',
-    branch_name: 'Banani Branch',
-    account_title: 'Creatiancy Corporate DPS',
-    dps_account_number: 'BRAC-DPS-2026-9912',
-    currency: 'BDT',
-    installment_amount: 25000.00,
-    payment_frequency: 'MONTHLY',
-    start_date: '2026-01-10',
-    next_installment_date: '2026-08-10',
-    maturity_date: '2029-01-10',
-    total_installments: 36,
-    paid_installments: 7,
-    remaining_installments: 29,
-    total_deposited_amount: 175000.00,
-    expected_interest_amount: 85000.00,
-    expected_maturity_value: 985000.00,
-    late_payment_charge: 0.00,
-    missed_installments_count: 0,
-    grace_period_days: 5,
-    auto_debit: true,
-    linked_bank_account: 'bnk-1',
-    funding_source: 'Company Emergency Reserve',
-    status: 'ACTIVE',
-    notes: 'Monthly corporate DPS investment scheme.',
-    created_by: 'Finance Executive',
-    created_at: '2026-01-10T09:00:00Z'
-  }
-];
-
-const MOCK_DPS_INSTALLMENTS: DpsInstallment[] = [
-  { id: 'inst-1', dps_account_id: 'dps-201', installment_number: 1, due_date: '2026-01-10', amount: 25000, status: 'PAID', paid_date: '2026-01-10', transaction_reference: 'TXN-DPS-001', late_fee: 0, created_at: '2026-01-10T09:00:00Z' },
-  { id: 'inst-2', dps_account_id: 'dps-201', installment_number: 2, due_date: '2026-02-10', amount: 25000, status: 'PAID', paid_date: '2026-02-10', transaction_reference: 'TXN-DPS-002', late_fee: 0, created_at: '2026-02-10T09:00:00Z' },
-  { id: 'inst-3', dps_account_id: 'dps-201', installment_number: 3, due_date: '2026-03-10', amount: 25000, status: 'PAID', paid_date: '2026-03-10', transaction_reference: 'TXN-DPS-003', late_fee: 0, created_at: '2026-03-10T09:00:00Z' },
-  { id: 'inst-4', dps_account_id: 'dps-201', installment_number: 4, due_date: '2026-04-10', amount: 25000, status: 'PAID', paid_date: '2026-04-10', transaction_reference: 'TXN-DPS-004', late_fee: 0, created_at: '2026-04-10T09:00:00Z' },
-  { id: 'inst-5', dps_account_id: 'dps-201', installment_number: 5, due_date: '2026-05-10', amount: 25000, status: 'PAID', paid_date: '2026-05-10', transaction_reference: 'TXN-DPS-005', late_fee: 0, created_at: '2026-05-10T09:00:00Z' },
-  { id: 'inst-6', dps_account_id: 'dps-201', installment_number: 6, due_date: '2026-06-10', amount: 25000, status: 'PAID', paid_date: '2026-06-10', transaction_reference: 'TXN-DPS-006', late_fee: 0, created_at: '2026-06-10T09:00:00Z' },
-  { id: 'inst-7', dps_account_id: 'dps-201', installment_number: 7, due_date: '2026-07-10', amount: 25000, status: 'PAID', paid_date: '2026-07-10', transaction_reference: 'TXN-DPS-007', late_fee: 0, created_at: '2026-07-10T09:00:00Z' },
-  { id: 'inst-8', dps_account_id: 'dps-201', installment_number: 8, due_date: '2026-08-10', amount: 25000, status: 'PENDING', late_fee: 0, created_at: '2026-07-10T09:00:00Z' }
-];
+const MOCK_RESERVE_LEDGER: ReserveLedgerEntry[] = [];
+const MOCK_FDR_ACCOUNTS: FdrAccount[] = [];
+const MOCK_DPS_ACCOUNTS: DpsAccount[] = [];
+const MOCK_DPS_INSTALLMENTS: DpsInstallment[] = [];
 
 const MOCK_WITHDRAWAL_REQUESTS: ReserveWithdrawalRequest[] = [];
 const MOCK_SAVINGS_DOCUMENTS: SavingsDocument[] = [];
@@ -2441,6 +2310,22 @@ export const db = {
     return fdr;
   },
 
+  deleteFdrAccount: async (id: string, user: Profile): Promise<void> => {
+    const list = localStore.fdrAccounts;
+    const fdr = list.find(f => f.id === id);
+    localStore.fdrAccounts = list.filter(f => f.id !== id);
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'DELETE_FDR_ACCOUNT',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: fdr,
+      new_value: null
+    });
+  },
+
   // DPS Management Actions
   getDpsAccounts: async (): Promise<DpsAccount[]> => {
     return localStore.dpsAccounts;
@@ -2554,6 +2439,83 @@ export const db = {
     });
 
     return inst;
+  },
+
+  updateDpsAccount: async (id: string, updates: Partial<DpsAccount>, user: Profile): Promise<DpsAccount> => {
+    const list = localStore.dpsAccounts;
+    const idx = list.findIndex(d => d.id === id);
+    if (idx === -1) throw new Error('DPS account not found');
+
+    const prev = list[idx];
+    const updated = { ...prev, ...updates };
+    list[idx] = updated;
+    localStore.dpsAccounts = list;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'UPDATE_DPS_ACCOUNT',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: prev,
+      new_value: updated
+    });
+    return updated;
+  },
+
+  deleteDpsAccount: async (id: string, user: Profile): Promise<void> => {
+    const list = localStore.dpsAccounts;
+    const dps = list.find(d => d.id === id);
+    localStore.dpsAccounts = list.filter(d => d.id !== id);
+    localStore.dpsInstallments = localStore.dpsInstallments.filter(i => i.dps_account_id !== id);
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'DELETE_DPS_ACCOUNT',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: dps,
+      new_value: null
+    });
+  },
+
+  updateReserveLedgerEntry: async (id: string, updates: Partial<ReserveLedgerEntry>, user: Profile): Promise<ReserveLedgerEntry> => {
+    const list = localStore.reserveLedger;
+    const idx = list.findIndex(l => l.id === id);
+    if (idx === -1) throw new Error('Ledger entry not found');
+
+    const prev = list[idx];
+    const updated = { ...prev, ...updates };
+    list[idx] = updated;
+    localStore.reserveLedger = list;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'UPDATE_RESERVE_LEDGER_ENTRY',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: prev,
+      new_value: updated
+    });
+    return updated;
+  },
+
+  deleteReserveLedgerEntry: async (id: string, user: Profile): Promise<void> => {
+    const list = localStore.reserveLedger;
+    const entry = list.find(l => l.id === id);
+    localStore.reserveLedger = list.filter(l => l.id !== id);
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'DELETE_RESERVE_LEDGER_ENTRY',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: entry,
+      new_value: null
+    });
   },
 
   // Reserve Withdrawal Requests & Approvals
