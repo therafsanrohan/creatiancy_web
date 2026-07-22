@@ -741,7 +741,7 @@ export const isDemoMode = !isSupabaseConfigured;
 
 // Workspace default entity and seed configurations
 const MOCK_PROFILES: Profile[] = [
-  { id: 'usr-1', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', username: 'rafsan', role_name: 'Super Admin' }
+  { id: '88888888-8888-4888-8888-888888888888', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', username: 'rafsan', role_name: 'Super Admin' }
 ];
 
 const MOCK_ENTITIES: BusinessEntity[] = [
@@ -831,7 +831,7 @@ const MOCK_RESERVE_SETTINGS: ReserveSettings = {
   target_value: 6.00,
   target_fixed_bdt: 5000000.00,
   target_fixed_usd: 50000.00,
-  updated_by: 'usr-1',
+  updated_by: '88888888-8888-4888-8888-888888888888',
   updated_at: '2026-07-01T00:00:00Z'
 };
 
@@ -908,19 +908,19 @@ const MOCK_TAX_CONFIGURATIONS: TaxConfiguration[] = [
     version_number: 1,
     change_summary: 'Initial seed tax configuration for FY 2026-2027 per NBR guidelines (25% banking compliant, 27.5% standard, 0.60% turnover minimum tax above 50L BDT).',
     source_reference: 'Income Tax Act 2023, Section 163 & Finance Act 2026',
-    created_by: 'usr-1',
+    created_by: '88888888-8888-4888-8888-888888888888',
     created_at: '2026-07-01T00:00:00Z',
-    approved_by: 'usr-1',
+    approved_by: '88888888-8888-4888-8888-888888888888',
     approved_at: '2026-07-01T00:00:00Z',
     published_at: '2026-07-01T00:00:00Z'
   }
 ];
 
 const MOCK_TAX_SERVICE_CATEGORIES: TaxServiceCategory[] = [
-  { id: 'cat-1', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'CREATIVE_AGENCY', category_name: 'Creative Agency Services', description: 'Advertising, design, branding, and media services', tds_rate: 0.04, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
-  { id: 'cat-2', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'PROFESSIONAL_SERVICE', category_name: 'Professional Services', description: 'Consulting, advisory, and professional fees', tds_rate: 0.075, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
-  { id: 'cat-3', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'TECHNICAL_SERVICE', category_name: 'Technical & IT Services', description: 'Software engineering, maintenance, and IT consulting', tds_rate: 0.10, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
-  { id: 'cat-4', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'NO_TDS', category_name: 'Exempt / No TDS', description: 'Zero source tax deducted at source', tds_rate: 0.0, is_custom_rate_allowed: false, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' }
+  { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'CREATIVE_AGENCY', category_name: 'Creative Agency Services', description: 'Advertising, design, branding, and media services', tds_rate: 0.04, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'PROFESSIONAL_SERVICE', category_name: 'Professional Services', description: 'Consulting, advisory, and professional fees', tds_rate: 0.075, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'TECHNICAL_SERVICE', category_name: 'Technical & IT Services', description: 'Software engineering, maintenance, and IT consulting', tds_rate: 0.10, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'NO_TDS', category_name: 'Exempt / No TDS', description: 'Zero source tax deducted at source', tds_rate: 0.0, is_custom_rate_allowed: false, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' }
 ];
 
 const MOCK_TAX_CALCULATIONS: TaxCalculation[] = [];
@@ -956,7 +956,7 @@ const MOCK_VAT_CONFIGURATIONS: VatConfiguration[] = [
     version_number: 1,
     change_summary: 'Configured standard Bangladesh VAT Act 2012 / Rules 2019 service category classifications.',
     source_reference: 'NBR Value Added Tax and Supplementary Duty Act 2012',
-    created_by: 'usr-1',
+    created_by: '88888888-8888-4888-8888-888888888888',
     created_at: '2026-07-01T00:00:00Z',
     published_at: '2026-07-01T00:00:00Z'
   }
