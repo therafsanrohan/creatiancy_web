@@ -465,25 +465,25 @@ export default function InvoiceDetailsPage() {
               <h3 className="font-bold text-sm text-gray-400 uppercase tracking-wider">Line Items breakdown</h3>
               
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full text-left text-xs border-collapse table-fixed">
                   <thead>
-                    <tr className="border-b border-gray-100 text-gray-400 font-bold">
-                      <th className="py-2 pr-2">Service description</th>
-                      <th className="py-2 text-right">Quantity</th>
-                      <th className="py-2 text-right">Rate</th>
-                      <th className="py-2 text-right">Amount</th>
+                    <tr className="border-b border-gray-100 text-gray-400 font-bold uppercase tracking-wider text-[10px]">
+                      <th className="py-2.5 w-[46%] pr-3">Service description</th>
+                      <th className="py-2.5 text-right w-[16%] px-2">Quantity</th>
+                      <th className="py-2.5 text-right w-[19%] px-2">Rate</th>
+                      <th className="py-2.5 text-right w-[19%] pl-2">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
                     {items.map((itm) => (
                       <tr key={itm.id}>
-                        <td className="py-3 pr-2">
-                          <span className="font-semibold block">{itm.service_name}</span>
-                          {itm.description && <span className="text-[10px] text-gray-400 leading-normal block">{itm.description}</span>}
+                        <td className="py-3.5 pr-3 break-words">
+                          <span className="font-semibold text-gray-800 block text-xs">{itm.service_name}</span>
+                          {itm.description && <span className="text-[10px] text-gray-400 leading-normal block mt-0.5 whitespace-pre-line">{itm.description}</span>}
                         </td>
-                        <td className="py-3 text-right text-gray-650">{itm.quantity} {itm.unit}</td>
-                        <td className="py-3 text-right text-gray-650">{formatCurrency(itm.rate, invoice.currency)}</td>
-                        <td className="py-3 text-right font-semibold">{formatCurrency(itm.quantity * itm.rate, invoice.currency)}</td>
+                        <td className="py-3.5 text-right text-gray-650 whitespace-nowrap px-2">{itm.quantity} {itm.unit}</td>
+                        <td className="py-3.5 text-right text-gray-650 whitespace-nowrap px-2">{formatCurrency(itm.rate, invoice.currency)}</td>
+                        <td className="py-3.5 text-right font-bold text-gray-800 whitespace-nowrap pl-2">{formatCurrency(itm.quantity * itm.rate, invoice.currency)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -493,7 +493,7 @@ export default function InvoiceDetailsPage() {
 
             {/* Calculations Panel */}
             <div className="flex justify-end pt-6 border-t border-gray-100">
-              <div className="w-64 space-y-2.5 text-xs text-gray-600">
+              <div className="w-72 space-y-2.5 text-xs text-gray-600">
                 <div className="flex justify-between">
                   <span className="text-gray-400 font-semibold">Subtotal:</span>
                   <span className="font-bold">{formatCurrency(totals.subtotal, invoice.currency)}</span>
@@ -506,10 +506,17 @@ export default function InvoiceDetailsPage() {
                   </div>
                 )}
 
-                {invoice.currency === 'BDT' && invoice.vat_rate > 0 && (
-                  <div className="flex justify-between text-gray-450">
-                    <span className="font-semibold">VAT ({invoice.vat_rate}% Included):</span>
+                {invoice.currency === 'BDT' && invoice.vat_rate > 0 ? (
+                  <div className="flex justify-between text-gray-500">
+                    <span className="font-semibold">
+                      VAT ({invoice.vat_rate}% {invoice.vat_inclusive ? 'Included' : 'Exclusive'}):
+                    </span>
                     <span className="font-bold">{formatCurrency(totals.vatAmount, invoice.currency)}</span>
+                  </div>
+                ) : invoice.currency === 'BDT' && (
+                  <div className="flex justify-between text-gray-400">
+                    <span className="font-semibold">VAT Status:</span>
+                    <span className="font-bold text-emerald-700">Not Applied (0% Exempt)</span>
                   </div>
                 )}
 

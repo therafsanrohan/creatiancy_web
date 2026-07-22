@@ -144,11 +144,12 @@ export default function InvoicePreviewPage() {
         // @ts-ignore
         const html2pdf = (await import('html2pdf.js')).default;
         const opt: any = {
-          margin:       [5, 5, 5, 5],
+          margin:       [8, 8, 12, 8],
           filename:     `Invoice_${invoice.invoice_number || 'Draft'}.pdf`,
           image:        { type: 'jpeg', quality: 0.98 },
           html2canvas:  { scale: 2, useCORS: true, allowTaint: true, logging: false },
-          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
         };
         await html2pdf().set(opt).from(element).save();
       } catch (err) {
@@ -318,25 +319,25 @@ export default function InvoicePreviewPage() {
 
           {/* Items table */}
           <div className="py-8">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse table-fixed">
               <thead>
                 <tr className="border-b border-gray-200 text-gray-400 font-bold uppercase tracking-wider text-[9px]">
-                  <th className="py-2.5">Service Lines Description</th>
-                  <th className="py-2.5 text-right">Quantity</th>
-                  <th className="py-2.5 text-right">Rate</th>
-                  <th className="py-2.5 text-right">Amount</th>
+                  <th className="py-2.5 w-[46%] pr-3">Service Lines Description</th>
+                  <th className="py-2.5 text-right w-[16%] px-2">Quantity</th>
+                  <th className="py-2.5 text-right w-[19%] px-2">Rate</th>
+                  <th className="py-2.5 text-right w-[19%] pl-2">Amount</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-gray-700">
                 {items.map((itm) => (
-                  <tr key={itm.id} className="align-top">
-                    <td className="py-4">
+                  <tr key={itm.id} className="align-top avoid-break">
+                    <td className="py-3.5 pr-3 break-words">
                       <span className="font-bold text-gray-800 block text-xs">{itm.service_name}</span>
-                      {itm.description && <span className="text-[10px] text-gray-400 leading-normal block mt-0.5">{itm.description}</span>}
+                      {itm.description && <span className="text-[10px] text-gray-400 leading-normal block mt-0.5 whitespace-pre-line">{itm.description}</span>}
                     </td>
-                    <td className="py-4 text-right">{itm.quantity} {itm.unit}</td>
-                    <td className="py-4 text-right">{formatCurrency(itm.rate, invoice.currency)}</td>
-                    <td className="py-4 text-right font-bold text-gray-800">{formatCurrency(itm.quantity * itm.rate, invoice.currency)}</td>
+                    <td className="py-3.5 text-right whitespace-nowrap px-2 font-medium">{itm.quantity} {itm.unit}</td>
+                    <td className="py-3.5 text-right whitespace-nowrap px-2 font-medium">{formatCurrency(itm.rate, invoice.currency)}</td>
+                    <td className="py-3.5 text-right font-bold text-gray-800 whitespace-nowrap pl-2">{formatCurrency(itm.quantity * itm.rate, invoice.currency)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -345,10 +346,10 @@ export default function InvoicePreviewPage() {
         </div>
 
         {/* Document Bottom */}
-        <div className="space-y-6 pt-4 border-t border-gray-150">
+        <div className="space-y-6 pt-4 border-t border-gray-150 avoid-break">
           {/* Totals Section (Right Aligned) */}
-          <div className="flex justify-end">
-            <div className="w-full sm:w-72 space-y-2 text-xs text-gray-700 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+          <div className="flex justify-end avoid-break">
+            <div className="w-full sm:w-80 space-y-2 text-xs text-gray-700 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
               <div className="flex justify-between">
                 <span className="text-gray-500 font-semibold">Subtotal:</span>
                 <span className="font-bold">{formatCurrency(totals.subtotal, invoice.currency)}</span>
@@ -361,12 +362,17 @@ export default function InvoicePreviewPage() {
                 </div>
               )}
 
-              {isBdt && invoice.vat_rate > 0 && (
+              {isBdt && invoice.vat_rate > 0 ? (
                 <div className="flex justify-between text-gray-500">
                   <span className="font-semibold">
                     VAT ({invoice.vat_rate}% {invoice.vat_inclusive ? 'Included' : 'Exclusive'}):
                   </span>
                   <span className="font-bold">{formatCurrency(totals.vatAmount, invoice.currency)}</span>
+                </div>
+              ) : isBdt && (
+                <div className="flex justify-between text-gray-400">
+                  <span className="font-semibold">VAT Status:</span>
+                  <span className="font-bold text-emerald-700">Not Applied (0% Exempt)</span>
                 </div>
               )}
 

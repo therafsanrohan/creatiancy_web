@@ -709,28 +709,97 @@ export default function EditInvoicePage() {
 
             {currency === 'BDT' ? (
               <div className="space-y-3">
-                <span className="block text-xs font-semibold uppercase tracking-wider text-gray-400">VAT (Value Added Tax)</span>
-                <div className="flex gap-3 items-center">
-                  <div className="flex items-center space-x-1.5">
-                    <input
-                      type="number"
-                      step="any"
-                      value={vatRate}
-                      onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
-                      className="block w-16 rounded-lg border border-gray-200 bg-white py-2 px-2 text-xs text-[#1E1E1E]"
-                    />
-                    <span className="text-xs font-semibold text-gray-500">%</span>
-                  </div>
-                  <label className="flex items-center space-x-1.5 text-xs cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={vatInclusive}
-                      onChange={(e) => setVatInclusive(e.target.checked)}
-                      className="accent-[#9B1C22] h-4 w-4"
-                    />
-                    <span className="font-semibold text-gray-650">Inclusive in Rates</span>
-                  </label>
+                <span className="block text-xs font-semibold uppercase tracking-wider text-gray-400">VAT (Value Added Tax) Mode</span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {/* Option 1: VAT Exclusive */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (vatRate === 0) setVatRate(15);
+                      setVatInclusive(false);
+                    }}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      vatRate > 0 && !vatInclusive
+                        ? 'border-[#9B1C22] bg-red-50/50 text-[#9B1C22] font-bold shadow-xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">VAT Exclusive</span>
+                      {vatRate > 0 && !vatInclusive && <span className="text-[9px] bg-[#9B1C22] text-white px-1.5 py-0.2 rounded font-extrabold">ACTIVE</span>}
+                    </div>
+                    <span className="text-[10px] text-gray-500 font-normal block mt-1">Add on top (+{vatRate > 0 ? vatRate : 15}%)</span>
+                  </button>
+
+                  {/* Option 2: VAT Inclusive */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (vatRate === 0) setVatRate(15);
+                      setVatInclusive(true);
+                    }}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      vatRate > 0 && vatInclusive
+                        ? 'border-[#9B1C22] bg-red-50/50 text-[#9B1C22] font-bold shadow-xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">VAT Inclusive</span>
+                      {vatRate > 0 && vatInclusive && <span className="text-[9px] bg-[#9B1C22] text-white px-1.5 py-0.2 rounded font-extrabold">ACTIVE</span>}
+                    </div>
+                    <span className="text-[10px] text-gray-500 font-normal block mt-1">Included in item rates</span>
+                  </button>
+
+                  {/* Option 3: VAT Not Applied */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVatRate(0);
+                      setVatInclusive(false);
+                    }}
+                    className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                      vatRate === 0
+                        ? 'border-emerald-600 bg-emerald-50/60 text-emerald-800 font-bold shadow-xs'
+                        : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs">VAT Not Applied</span>
+                      {vatRate === 0 && <span className="text-[9px] bg-emerald-600 text-white px-1.5 py-0.2 rounded font-extrabold">EXEMPT</span>}
+                    </div>
+                    <span className="text-[10px] text-gray-500 font-normal block mt-1">0% / Exempt / Zero-Rated</span>
+                  </button>
                 </div>
+
+                {/* VAT Rate Input or Exempt Badge */}
+                {vatRate > 0 ? (
+                  <div className="flex items-center justify-between bg-gray-50/80 p-3 rounded-xl border border-gray-150 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-700">VAT Rate:</span>
+                      <input
+                        id="vat_rate_edit"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={vatRate}
+                        onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
+                        className="w-16 rounded-lg border border-gray-200 bg-white py-1 px-2 font-bold text-gray-900 text-center"
+                      />
+                      <span className="font-bold text-gray-600">%</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-gray-500 text-[10px]">Calculated VAT: </span>
+                      <span className="font-extrabold text-[#9B1C22]">{formatCurrency(totals.vatAmount, 'BDT')}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/60 text-xs text-emerald-900 flex items-center justify-between">
+                    <span>VAT Status: <strong className="font-extrabold">VAT Not Applied (0% Exempt)</strong></span>
+                    <span className="text-emerald-700 font-bold">৳0.00 VAT</span>
+                  </div>
+                )}
               </div>
             ) : null}
           </div>

@@ -86,16 +86,16 @@
 
 @media print {
   @page {
-    size: auto;
-    margin: 0;
+    size: A4 portrait;
+    margin: 10mm;
   }
 
   html, body {
     background: #FFFFFF !important;
     margin: 0 !important;
     padding: 0 !important;
-    width: 210mm !important;
-    height: 100% !important;
+    width: 100% !important;
+    height: auto !important;
   }
 
   body * {
@@ -112,13 +112,14 @@
   }
 
   #print-area {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 210mm !important;
-    min-height: 297mm !important;
-    margin: 0 !important;
-    padding: 12mm !important;
+    position: relative !important;
+    left: auto !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 210mm !important;
+    min-height: auto !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
     box-sizing: border-box;
     background: #FFFFFF !important;
     color: #1E1E1E !important;
@@ -126,8 +127,17 @@
     border: none !important;
   }
 
-  tr {
-    page-break-inside: avoid;
+  tr, .avoid-break, .avoid-page-break {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tbody {
+    display: table-row-group !important;
   }
 
   .no-print {
