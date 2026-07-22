@@ -663,27 +663,27 @@ export default function InvoiceDetailsPage() {
             </h3>
             
             <form onSubmit={handleRecordPaymentSubmit} className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
                 <div>
-                  <label className="block font-semibold text-gray-550 mb-1">Payment Date *</label>
+                  <label className="block font-semibold text-gray-700 mb-1.5">Payment Date *</label>
                   <input
                     type="date"
                     required
                     value={payDate}
                     onChange={(e) => setPayDate(e.target.value)}
-                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
+                    className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 px-3 text-xs text-[#1E1E1E] focus:outline-none focus:border-[#9B1C22]"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-555 mb-1">Payment Amount ({invoice.currency}) *</label>
+                  <label className="block font-semibold text-gray-700 mb-1.5">Payment Amount ({invoice.currency}) *</label>
                   <input
                     type="number"
                     step="any"
                     required
                     value={payAmount}
                     onChange={(e) => setPayAmount(parseFloat(e.target.value) || 0)}
-                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none font-bold"
+                    className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 px-3 text-xs text-[#1E1E1E] focus:outline-none font-bold focus:border-[#9B1C22]"
                   />
                 </div>
               </div>
