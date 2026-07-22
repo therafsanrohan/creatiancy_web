@@ -1997,6 +1997,29 @@ export const db = {
     if (idx === -1) throw new Error('Invoice not found');
 
     const originalStatus = list[idx].status;
+  rejectInvoice: async (id: string, reason?: string): Promise<Invoice> => {
+    if (isSupabaseConfigured && supabase) {
+      const existing = localStore.invoices.find(i => i.id === id);
+      const existingNote = existing?.internal_note || '';
+      const updatedNote = reason?.trim() 
+        ? (existingNote ? `${existingNote}\n[Rejection Reason]: ${reason.trim()}` : `[Rejection Reason]: ${reason.trim()}`)
+        : existingNote;
+
+      const { error } = await supabase
+        .from('invoices')
+        .update({
+          status: 'rejected',
+          internal_note: updatedNote || null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      if (error) throw new Error(`Cloud invoice rejection failed: ${error.message}`);
+    }
+
+    const list = localStore.invoices;
+    const idx = list.findIndex(i => i.id === id);
+    if (idx === -1) throw new Error('Invoice not found');
+    const originalStatus = list[idx].status;
     list[idx].status = 'rejected';
     if (reason && reason.trim()) {
       const existingNote = list[idx].internal_note || '';
@@ -2007,8 +2030,8 @@ export const db = {
     const user = await db.getCurrentUser();
     const inv = list[idx];
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
       title: `Invoice Rejected: ${inv.project_name}`,
       message: `Invoice for ${inv.project_name} was rejected during review.${reason ? ` Reason: ${reason}` : ''}`,
       category: 'approval_required',
@@ -2016,11 +2039,18 @@ export const db = {
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user.id, 'reject_invoice', 'invoices', id, { status: originalStatus }, { status: 'rejected', reason });
+    db.logAudit(user?.id || 'system', 'reject_invoice', 'invoices', id, { status: originalStatus }, { status: 'rejected', reason });
     return list[idx];
   },
 
   deleteInvoice: async (id: string): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('invoice_items').delete().eq('invoice_id', id);
+      await supabase.from('invoice_snapshots').delete().eq('invoice_id', id);
+      const { error } = await supabase.from('invoices').delete().eq('id', id);
+      if (error) throw new Error(`Cloud invoice delete failed: ${error.message}`);
+    }
+
     const list = localStore.invoices;
     const idx = list.findIndex(i => i.id === id);
     if (idx === -1) throw new Error('Invoice not found');
@@ -2034,7 +2064,7 @@ export const db = {
     localStore.items = localStore.items.filter(itm => itm.invoice_id !== id);
 
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'delete_invoice', 'invoices', id, inv, null);
+    db.logAudit(user?.id || 'system', 'delete_invoice', 'invoices', id, inv, null);
   },
 
   approveInvoice: async (id: string): Promise<Invoice> => {
@@ -2052,12 +2082,24 @@ export const db = {
     const year = parseInt(invoice.issue_date.split('-')[0]) || new Date().getFullYear();
     const entityPrefix = entity.entity_code;
 
-    // Get sequence count
-    const sequenceKey = `${entityPrefix}_${year}`;
-    const currentSeq = Number(localStorage.getItem(`billing_seq_${sequenceKey}`) || '0') + 1;
-    localStorage.setItem(`billing_seq_${sequenceKey}`, currentSeq.toString());
+    // Get sequence count from cloud first
+    let nextSeq = 1;
+    if (isSupabaseConfigured && supabase) {
+      const { count, error: countErr } = await supabase
+        .from('invoices')
+        .select('*', { count: 'exact', head: true })
+        .eq('entity_id', invoice.entity_id)
+        .not('invoice_number', 'is', null);
+      if (!countErr && count !== null) {
+        nextSeq = count + 1;
+      }
+    } else {
+      const sequenceKey = `${entityPrefix}_${year}`;
+      nextSeq = Number(localStorage.getItem(`billing_seq_${sequenceKey}`) || '0') + 1;
+      localStorage.setItem(`billing_seq_${sequenceKey}`, nextSeq.toString());
+    }
 
-    const serialStr = currentSeq.toString().padStart(4, '0');
+    const serialStr = nextSeq.toString().padStart(4, '0');
     const invoiceNumber = `${entityPrefix}-${invoice.currency}-${year}-${serialStr}`;
 
     // 2. Compute static calculations
@@ -2075,7 +2117,6 @@ export const db = {
     });
 
     // 3. Store static snapshot
-    const snapshotsList = localStore.snapshots;
     const newSnapshot: InvoiceSnapshot = {
       invoice_id: id,
       entity_snapshot: entity,
@@ -2089,19 +2130,46 @@ export const db = {
         amount_due: totals.totalPayable
       }
     };
+
+    if (isSupabaseConfigured && supabase) {
+      const { error: invErr } = await supabase
+        .from('invoices')
+        .update({
+          status: 'approved',
+          invoice_number: invoiceNumber,
+          approved_by: user?.id || 'system',
+          approved_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      if (invErr) throw new Error(`Cloud invoice approval failed: ${invErr.message}`);
+
+      const { error: snapErr } = await supabase
+        .from('invoice_snapshots')
+        .insert({
+          invoice_id: newSnapshot.invoice_id,
+          entity_snapshot: newSnapshot.entity_snapshot,
+          bank_snapshot: newSnapshot.bank_snapshot,
+          client_snapshot: newSnapshot.client_snapshot,
+          totals_snapshot: newSnapshot.totals_snapshot
+        });
+      if (snapErr) console.warn('Cloud snapshot insert warning:', snapErr);
+    }
+
+    const snapshotsList = localStore.snapshots;
     snapshotsList.push(newSnapshot);
     localStore.snapshots = snapshotsList;
 
     // 4. Update Invoice Status
     invoice.status = 'approved';
     invoice.invoice_number = invoiceNumber;
-    invoice.approved_by = user.id;
+    invoice.approved_by = user?.id || 'system';
     invoice.approved_at = new Date().toISOString();
     localStore.invoices = invoicesList;
 
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
       title: `Invoice Approved: ${invoiceNumber}`,
       message: `Invoice ${invoiceNumber} for ${invoice.project_name} has been approved and sequence locked.`,
       category: 'invoice_approved',
@@ -2109,11 +2177,19 @@ export const db = {
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user.id, 'approve_invoice', 'invoices', id, null, { status: 'approved', number: invoiceNumber });
+    db.logAudit(user?.id || 'system', 'approve_invoice', 'invoices', id, null, { status: 'approved', number: invoiceNumber });
     return invoice;
   },
 
   voidInvoice: async (id: string): Promise<Invoice> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('invoices')
+        .update({ status: 'void', updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw new Error(`Cloud void invoice failed: ${error.message}`);
+    }
+
     const list = localStore.invoices;
     const idx = list.findIndex(i => i.id === id);
     if (idx === -1) throw new Error('Invoice not found');
@@ -2123,7 +2199,7 @@ export const db = {
     localStore.invoices = list;
 
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'void_invoice', 'invoices', id, { status: originalStatus }, { status: 'void' });
+    db.logAudit(user?.id || 'system', 'void_invoice', 'invoices', id, { status: originalStatus }, { status: 'void' });
     return list[idx];
   },
 
@@ -2243,11 +2319,23 @@ export const db = {
     const year = new Date(payment.payment_date).getFullYear();
     const receiptPrefix = entity.receipt_prefix;
 
-    const sequenceKey = `rec_${receiptPrefix}_${year}`;
-    const currentSeq = Number(localStorage.getItem(`billing_seq_${sequenceKey}`) || '0') + 1;
-    localStorage.setItem(`billing_seq_${sequenceKey}`, currentSeq.toString());
+    // Get sequence count from cloud first
+    let nextSeq = 1;
+    if (isSupabaseConfigured && supabase) {
+      const { count, error: countErr } = await supabase
+        .from('invoice_payments')
+        .select('*', { count: 'exact', head: true })
+        .not('receipt_number', 'is', null);
+      if (!countErr && count !== null) {
+        nextSeq = count + 1;
+      }
+    } else {
+      const sequenceKey = `rec_${receiptPrefix}_${year}`;
+      nextSeq = Number(localStorage.getItem(`billing_seq_${sequenceKey}`) || '0') + 1;
+      localStorage.setItem(`billing_seq_${sequenceKey}`, nextSeq.toString());
+    }
 
-    const serialStr = currentSeq.toString().padStart(4, '0');
+    const serialStr = nextSeq.toString().padStart(4, '0');
     const receiptNumber = `${receiptPrefix}-${year}-${serialStr}`;
 
     const newPayment: Payment = {
@@ -2256,38 +2344,83 @@ export const db = {
       receipt_number: receiptNumber,
       created_at: new Date().toISOString()
     };
+
+    const totals = calculateTotals({
+      items: localStore.items.filter(itm => itm.invoice_id === invoice.id),
+      discountType: invoice.discount_type,
+      discountValue: invoice.discount_value,
+      vatRate: invoice.vat_rate,
+      vatInclusive: invoice.vat_inclusive,
+      payments: [...list.filter(p => p.invoice_id === invoice.id), newPayment]
+    });
+
+    const reserveSettings = localStore.reserveSettings;
+    const reservePct = reserveSettings ? reserveSettings.reserve_percentage : 20.00;
+    const allocatedReserveAmount = Math.round((newPayment.amount * (reservePct / 100)) * 100) / 100;
+
+    if (isSupabaseConfigured && supabase) {
+      const { error: payErr } = await supabase.from('invoice_payments').insert(newPayment);
+      if (payErr) throw new Error(`Cloud payment record failed: ${payErr.message}`);
+
+      // Update invoice status
+      const { error: invErr } = await supabase
+        .from('invoices')
+        .update({
+          status: totals.amountDue === 0 ? 'paid' : 'partially_paid',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', payment.invoice_id);
+      if (invErr) console.warn('Cloud invoice status update warning:', invErr);
+
+      // Update snapshot totals
+      const { error: snapErr } = await supabase
+        .from('invoice_snapshots')
+        .update({ totals_snapshot: {
+          subtotal: totals.subtotal,
+          discount_amount: totals.discountAmount,
+          total_payable: totals.totalPayable,
+          amount_paid: totals.amountPaid,
+          amount_due: totals.amountDue
+        }})
+        .eq('invoice_id', payment.invoice_id);
+      if (snapErr) console.warn('Cloud snapshot update warning:', snapErr);
+
+      // Save automatic reserve transaction
+      if (allocatedReserveAmount > 0) {
+        const reserveTxn: ReserveLedgerEntry = {
+          id: generateUUID(),
+          entity_id: invoice.entity_id || 'ent-1',
+          currency: newPayment.currency,
+          transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
+          amount: allocatedReserveAmount,
+          source: 'CLIENT_PAYMENT',
+          payment_id: newPayment.id,
+          invoice_id: invoice.id,
+          client_id: invoice.client_id,
+          deposit_date: newPayment.payment_date,
+          reason: `${reservePct}% Automatic emergency reserve allocation from payment (Receipt #${newPayment.receipt_number})`,
+          status: 'COMPLETED',
+          created_by: 'SYSTEM',
+          created_at: new Date().toISOString()
+        };
+        const { error: resErr } = await supabase.from('reserve_ledger').insert(reserveTxn);
+        if (resErr) console.warn('Cloud reserve ledger allocation warning:', resErr);
+      }
+    }
+
     list.push(newPayment);
     localStore.payments = list;
 
-    // Update invoice total paid state
+    // Update invoice total paid state locally
     const invoices = localStore.invoices;
     const invIdx = invoices.findIndex(i => i.id === payment.invoice_id);
     if (invIdx !== -1) {
-      const inv = invoices[invIdx];
-      
-      // Calculate new totals including this payment
-      const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
-      const invoicePayments = list.filter(p => p.invoice_id === inv.id);
-      const totals = calculateTotals({
-        items,
-        discountType: inv.discount_type,
-        discountValue: inv.discount_value,
-        vatRate: inv.vat_rate,
-        vatInclusive: inv.vat_inclusive,
-        payments: invoicePayments
-      });
-
-      // Update invoice status based on remaining balance
-      if (totals.amountDue === 0) {
-        inv.status = 'paid';
-      } else {
-        inv.status = 'partially_paid';
-      }
+      invoices[invIdx].status = totals.amountDue === 0 ? 'paid' : 'partially_paid';
       localStore.invoices = invoices;
 
-      // Update snapshot totals
+      // Update snapshot totals locally
       const snapshots = localStore.snapshots;
-      const snapIdx = snapshots.findIndex(s => s.invoice_id === inv.id);
+      const snapIdx = snapshots.findIndex(s => s.invoice_id === invoice.id);
       if (snapIdx !== -1) {
         snapshots[snapIdx].totals_snapshot.amount_paid = totals.amountPaid;
         snapshots[snapIdx].totals_snapshot.amount_due = totals.amountDue;
@@ -2295,11 +2428,7 @@ export const db = {
       }
     }
 
-    // AUTOMATIC RESERVE ALLOCATION (20% by default or as configured)
-    const reserveSettings = localStore.reserveSettings;
-    const reservePct = reserveSettings ? reserveSettings.reserve_percentage : 20.00;
-    const allocatedReserveAmount = Math.round((newPayment.amount * (reservePct / 100)) * 100) / 100;
-
+    // AUTOMATIC RESERVE ALLOCATION LOCALLY
     const reserveLedgerList = localStore.reserveLedger;
     const existingAllocation = reserveLedgerList.find(r => r.payment_id === newPayment.id);
     if (!existingAllocation && allocatedReserveAmount > 0) {
@@ -2323,8 +2452,8 @@ export const db = {
       localStore.reserveLedger = reserveLedgerList;
 
       await db.logFinancialAudit({
-        user_id: user.id,
-        user_role: user.role_name,
+        user_id: user?.id || 'system',
+        user_role: user?.role_name || 'Super Admin',
         action: 'AUTOMATIC_RESERVE_ALLOCATION',
         module: 'RESERVE_SAVINGS',
         record_id: reserveTxn.id,
@@ -2334,21 +2463,28 @@ export const db = {
     }
 
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
       title: `Payment Recorded: ${newPayment.currency} ${newPayment.amount.toLocaleString()}`,
-      message: `Payment received for ${invoice.invoice_number || invoice.id} via ${newPayment.payment_method} (Receipt #${newPayment.receipt_number}). 20% allocated to Emergency Reserve.`,
+      message: `Payment received for ${invoice.invoice_number || invoice.id} via ${newPayment.payment_method} (Receipt #${newPayment.receipt_number}). ${reservePct}% allocated to Emergency Reserve.`,
       category: 'payment_recorded',
       target_roles: ['Super Admin', 'Finance Admin', 'Client Service'],
       link_url: `/billing/invoices/${invoice.id}`
     });
 
-    db.logAudit(user.id, 'record_payment', 'payments', newPayment.id, null, newPayment);
+    db.logAudit(user?.id || 'system', 'record_payment', 'payments', newPayment.id, null, newPayment);
     return newPayment;
   },
 
   // Reserve Settings Actions
   getReserveSettings: async (): Promise<ReserveSettings> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('reserve_settings').select('*').limit(1).maybeSingle();
+      if (!error && data) {
+        localStore.reserveSettings = data;
+        return data;
+      }
+    }
     return localStore.reserveSettings;
   },
 
@@ -2360,11 +2496,16 @@ export const db = {
       updated_by: user.id,
       updated_at: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('reserve_settings').upsert({ id: updated.id || 'default-setting', ...updated });
+      if (error) throw new Error(`Failed to update reserve settings: ${error.message}`);
+    }
+    
     localStore.reserveSettings = updated;
 
     if (updates.reserve_percentage !== undefined && updates.reserve_percentage !== prev.reserve_percentage) {
-      const historyList = localStore.reserveSettingsHistory;
-      historyList.unshift({
+      const historyEntry = {
         id: `rsh-${Date.now()}`,
         previous_percentage: prev.reserve_percentage,
         new_percentage: updates.reserve_percentage,
@@ -2372,7 +2513,15 @@ export const db = {
         effective_date: new Date().toISOString().split('T')[0],
         reason: reason || 'Updated reserve allocation policy',
         created_at: new Date().toISOString()
-      });
+      };
+      
+      if (isSupabaseConfigured && supabase) {
+        const { error: histErr } = await supabase.from('reserve_settings_history').insert(historyEntry);
+        if (histErr) console.warn('Failed to save reserve history to cloud:', histErr);
+      }
+      
+      const historyList = localStore.reserveSettingsHistory;
+      historyList.unshift(historyEntry);
       localStore.reserveSettingsHistory = historyList;
 
       await db.logFinancialAudit({
@@ -2389,11 +2538,25 @@ export const db = {
   },
 
   getReserveSettingsHistory: async (): Promise<ReserveSettingsHistory[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('reserve_settings_history').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        localStore.reserveSettingsHistory = data;
+        return data;
+      }
+    }
     return localStore.reserveSettingsHistory;
   },
 
   // Reserve Ledger Actions
   getReserveLedger: async (): Promise<ReserveLedgerEntry[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('reserve_ledger').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        localStore.reserveLedger = data;
+        return data;
+      }
+    }
     return localStore.reserveLedger;
   },
 
@@ -2401,9 +2564,15 @@ export const db = {
     const list = localStore.reserveLedger;
     const newEntry: ReserveLedgerEntry = {
       ...entry,
-      id: `res-tx-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('reserve_ledger').insert(newEntry);
+      if (error) throw new Error(`Failed to add reserve ledger entry: ${error.message}`);
+    }
+    
     list.unshift(newEntry);
     localStore.reserveLedger = list;
 
@@ -2421,6 +2590,13 @@ export const db = {
 
   // FDR Management Actions
   getFdrAccounts: async (): Promise<FdrAccount[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('fdr_accounts').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        localStore.fdrAccounts = data;
+        return data;
+      }
+    }
     return localStore.fdrAccounts;
   },
 
@@ -2428,9 +2604,15 @@ export const db = {
     const list = localStore.fdrAccounts;
     const newFdr: FdrAccount = {
       ...fdr,
-      id: `fdr-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('fdr_accounts').insert(newFdr);
+      if (error) throw new Error(`Failed to create FDR account: ${error.message}`);
+    }
+    
     list.unshift(newFdr);
     localStore.fdrAccounts = list;
 
@@ -2468,6 +2650,12 @@ export const db = {
 
     const prev = list[idx];
     const updated = { ...prev, ...updates };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('fdr_accounts').update(updates).eq('id', id);
+      if (error) throw new Error(`Failed to update FDR account: ${error.message}`);
+    }
+    
     list[idx] = updated;
     localStore.fdrAccounts = list;
 
@@ -2492,6 +2680,16 @@ export const db = {
     fdr.actual_maturity_value = actualNetValue;
     fdr.status = action === 'RENEW' ? 'RENEWED' : 'CLOSED';
     fdr.notes = renewalNotes ? `${fdr.notes || ''} | Maturity notes: ${renewalNotes}` : fdr.notes;
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('fdr_accounts').update({
+        actual_maturity_value: fdr.actual_maturity_value,
+        status: fdr.status,
+        notes: fdr.notes
+      }).eq('id', id);
+      if (error) throw new Error(`Failed to record FDR maturity: ${error.message}`);
+    }
+    
     list[idx] = fdr;
     localStore.fdrAccounts = list;
 
@@ -2525,6 +2723,12 @@ export const db = {
   deleteFdrAccount: async (id: string, user: Profile): Promise<void> => {
     const list = localStore.fdrAccounts;
     const fdr = list.find(f => f.id === id);
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('fdr_accounts').delete().eq('id', id);
+      if (error) throw new Error(`Failed to delete FDR account: ${error.message}`);
+    }
+    
     localStore.fdrAccounts = list.filter(f => f.id !== id);
 
     await db.logFinancialAudit({
@@ -2540,10 +2744,32 @@ export const db = {
 
   // DPS Management Actions
   getDpsAccounts: async (): Promise<DpsAccount[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('dps_accounts').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        localStore.dpsAccounts = data;
+        return data;
+      }
+    }
     return localStore.dpsAccounts;
   },
 
   getDpsInstallments: async (dpsId?: string): Promise<DpsInstallment[]> => {
+    if (isSupabaseConfigured && supabase) {
+      let query = supabase.from('dps_installments').select('*').order('installment_number', { ascending: true });
+      if (dpsId) query = query.eq('dps_account_id', dpsId);
+      const { data, error } = await query;
+      if (!error && data) {
+        if (dpsId) {
+          const others = localStore.dpsInstallments.filter(i => i.dps_account_id !== dpsId);
+          localStore.dpsInstallments = [...others, ...data];
+        } else {
+          localStore.dpsInstallments = data;
+        }
+        return data;
+      }
+    }
+    
     const list = localStore.dpsInstallments;
     if (dpsId) return list.filter(i => i.dps_account_id === dpsId);
     return list;
@@ -2553,18 +2779,16 @@ export const db = {
     const list = localStore.dpsAccounts;
     const newDps: DpsAccount = {
       ...dps,
-      id: `dps-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
-    list.unshift(newDps);
-    localStore.dpsAccounts = list;
 
     // Automatically generate installment schedules
     const installments: DpsInstallment[] = [];
     let currDate = new Date(newDps.start_date);
     for (let i = 1; i <= newDps.total_installments; i++) {
       installments.push({
-        id: `inst-${Date.now()}-${i}`,
+        id: generateUUID(),
         dps_account_id: newDps.id,
         installment_number: i,
         due_date: currDate.toISOString().split('T')[0],
@@ -2578,6 +2802,17 @@ export const db = {
       // Increment next month
       currDate.setMonth(currDate.getMonth() + 1);
     }
+
+    if (isSupabaseConfigured && supabase) {
+      const { error: dpsErr } = await supabase.from('dps_accounts').insert(newDps);
+      if (dpsErr) throw new Error(`Failed to create DPS account: ${dpsErr.message}`);
+      
+      const { error: instErr } = await supabase.from('dps_installments').insert(installments);
+      if (instErr) console.warn('Cloud DPS installments insert warning:', instErr);
+    }
+    
+    list.unshift(newDps);
+    localStore.dpsAccounts = list;
 
     const allInstallments = localStore.dpsInstallments;
     allInstallments.unshift(...installments);
@@ -2607,6 +2842,18 @@ export const db = {
     inst.transaction_reference = txnRef;
     inst.paid_from_account = paidFrom;
     inst.verified_by = user.full_name;
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('dps_installments').update({
+        status: inst.status,
+        paid_date: inst.paid_date,
+        transaction_reference: inst.transaction_reference,
+        paid_from_account: inst.paid_from_account,
+        verified_by: inst.verified_by
+      }).eq('id', installmentId);
+      if (error) throw new Error(`Failed to update DPS installment: ${error.message}`);
+    }
+    
     installments[idx] = inst;
     localStore.dpsInstallments = installments;
 
@@ -2622,6 +2869,17 @@ export const db = {
       // Update next installment date
       const nextPending = installments.find(i => i.dps_account_id === dps.id && i.status === 'PENDING');
       if (nextPending) dps.next_installment_date = nextPending.due_date;
+      
+      if (isSupabaseConfigured && supabase) {
+        const { error: updDps } = await supabase.from('dps_accounts').update({
+          paid_installments: dps.paid_installments,
+          remaining_installments: dps.remaining_installments,
+          total_deposited_amount: dps.total_deposited_amount,
+          next_installment_date: dps.next_installment_date
+        }).eq('id', dps.id);
+        if (updDps) console.warn('Failed to update DPS account totals:', updDps.message);
+      }
+      
       dpsList[dpsIdx] = dps;
       localStore.dpsAccounts = dpsList;
 
@@ -2660,6 +2918,12 @@ export const db = {
 
     const prev = list[idx];
     const updated = { ...prev, ...updates };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('dps_accounts').update(updates).eq('id', id);
+      if (error) throw new Error(`Failed to update DPS account: ${error.message}`);
+    }
+    
     list[idx] = updated;
     localStore.dpsAccounts = list;
 
@@ -2678,6 +2942,13 @@ export const db = {
   deleteDpsAccount: async (id: string, user: Profile): Promise<void> => {
     const list = localStore.dpsAccounts;
     const dps = list.find(d => d.id === id);
+    
+    if (isSupabaseConfigured && supabase) {
+      await supabase.from('dps_installments').delete().eq('dps_account_id', id);
+      const { error } = await supabase.from('dps_accounts').delete().eq('id', id);
+      if (error) throw new Error(`Failed to delete DPS account: ${error.message}`);
+    }
+    
     localStore.dpsAccounts = list.filter(d => d.id !== id);
     localStore.dpsInstallments = localStore.dpsInstallments.filter(i => i.dps_account_id !== id);
 
@@ -2699,6 +2970,12 @@ export const db = {
 
     const prev = list[idx];
     const updated = { ...prev, ...updates };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('reserve_ledger').update(updates).eq('id', id);
+      if (error) throw new Error(`Failed to update reserve ledger entry: ${error.message}`);
+    }
+    
     list[idx] = updated;
     localStore.reserveLedger = list;
 
@@ -2717,6 +2994,12 @@ export const db = {
   deleteReserveLedgerEntry: async (id: string, user: Profile): Promise<void> => {
     const list = localStore.reserveLedger;
     const entry = list.find(l => l.id === id);
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('reserve_ledger').delete().eq('id', id);
+      if (error) throw new Error(`Failed to delete reserve ledger entry: ${error.message}`);
+    }
+    
     localStore.reserveLedger = list.filter(l => l.id !== id);
 
     await db.logFinancialAudit({
@@ -2732,6 +3015,13 @@ export const db = {
 
   // Reserve Withdrawal Requests & Approvals
   getWithdrawalRequests: async (): Promise<ReserveWithdrawalRequest[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('reserve_withdrawal_requests').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        localStore.withdrawalRequests = data;
+        return data;
+      }
+    }
     return localStore.withdrawalRequests;
   },
 
@@ -2739,10 +3029,16 @@ export const db = {
     const list = localStore.withdrawalRequests;
     const newReq: ReserveWithdrawalRequest = {
       ...req,
-      id: `wth-${Date.now()}`,
+      id: generateUUID(),
       status: 'SUBMITTED',
       created_at: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('reserve_withdrawal_requests').insert(newReq);
+      if (error) throw new Error(`Failed to submit withdrawal request: ${error.message}`);
+    }
+    
     list.unshift(newReq);
     localStore.withdrawalRequests = list;
 
@@ -2783,6 +3079,17 @@ export const db = {
     req.approved_by = `${user.full_name} (${user.role_name})`;
     req.approved_at = new Date().toISOString();
     req.approval_comment = comment;
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('reserve_withdrawal_requests').update({
+        status: req.status,
+        approved_by: req.approved_by,
+        approved_at: req.approved_at,
+        approval_comment: req.approval_comment
+      }).eq('id', id);
+      if (error) throw new Error(`Failed to review withdrawal request: ${error.message}`);
+    }
+    
     list[idx] = req;
     localStore.withdrawalRequests = list;
 
@@ -2819,6 +3126,13 @@ export const db = {
 
   // Document Management & Reconciliation Actions
   getSavingsDocuments: async (): Promise<SavingsDocument[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('savings_documents').select('*').order('uploaded_at', { ascending: false });
+      if (!error && data) {
+        localStore.savingsDocuments = data;
+        return data;
+      }
+    }
     return localStore.savingsDocuments;
   },
 
@@ -2826,15 +3140,28 @@ export const db = {
     const list = localStore.savingsDocuments;
     const newDoc: SavingsDocument = {
       ...doc,
-      id: `doc-${Date.now()}`,
+      id: generateUUID(),
       uploaded_at: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('savings_documents').insert(newDoc);
+      if (error) throw new Error(`Failed to upload savings document: ${error.message}`);
+    }
+    
     list.unshift(newDoc);
     localStore.savingsDocuments = list;
     return newDoc;
   },
 
   getFinancialReconciliations: async (): Promise<FinancialReconciliation[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('financial_reconciliations').select('*').order('created_at', { ascending: false });
+      if (!error && data) {
+        localStore.financialReconciliations = data;
+        return data;
+      }
+    }
     return localStore.financialReconciliations;
   },
 
@@ -2842,9 +3169,15 @@ export const db = {
     const list = localStore.financialReconciliations;
     const newRecon: FinancialReconciliation = {
       ...recon,
-      id: `recon-${Date.now()}`,
+      id: generateUUID(),
       created_at: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('financial_reconciliations').insert(newRecon);
+      if (error) throw new Error(`Failed to create reconciliation: ${error.message}`);
+    }
+    
     list.unshift(newRecon);
     localStore.financialReconciliations = list;
 
@@ -2863,6 +3196,13 @@ export const db = {
 
   // Financial Audit Logs
   getFinancialAuditLogs: async (): Promise<FinancialAuditLog[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('financial_audit_logs').select('*').order('timestamp', { ascending: false });
+      if (!error && data) {
+        localStore.financialAuditLogs = data;
+        return data;
+      }
+    }
     return localStore.financialAuditLogs;
   },
 
@@ -2870,9 +3210,15 @@ export const db = {
     const list = localStore.financialAuditLogs;
     const newLog: FinancialAuditLog = {
       ...log,
-      id: `fin-audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: generateUUID(),
       timestamp: new Date().toISOString()
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('financial_audit_logs').insert(newLog);
+      if (error) console.warn('Cloud financial audit log warning:', error);
+    }
+    
     list.unshift(newLog);
     localStore.financialAuditLogs = list;
     return newLog;
@@ -3033,6 +3379,20 @@ export const db = {
 
   // Client Service Rate Memory Engine
   getClientServiceRates: async (clientId?: string): Promise<ClientServiceRate[]> => {
+    if (isSupabaseConfigured && supabase) {
+      let query = supabase.from('client_service_rates').select('*');
+      if (clientId) query = query.eq('client_id', clientId);
+      const { data, error } = await query;
+      if (!error && data) {
+        if (clientId) {
+          const others = localStore.clientServiceRates.filter(r => r.client_id !== clientId);
+          localStore.clientServiceRates = [...others, ...data];
+        } else {
+          localStore.clientServiceRates = data;
+        }
+        return data;
+      }
+    }
     const list = localStore.clientServiceRates;
     if (!clientId) return list;
     return list.filter(r => r.client_id === clientId);
@@ -3054,10 +3414,16 @@ export const db = {
         usd_rate: rate.usd_rate,
         updated_at: now
       };
+      
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.from('client_service_rates').update(saved).eq('id', saved.id);
+        if (error) console.warn('Cloud CSR update warning:', error);
+      }
+      
       list[existingIdx] = saved;
     } else {
       saved = {
-        id: `csr-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        id: rate.id || generateUUID(),
         client_id: rate.client_id,
         service_name: rate.service_name.trim(),
         unit_price: rate.unit_price,
@@ -3067,6 +3433,12 @@ export const db = {
         usd_rate: rate.usd_rate,
         updated_at: now
       };
+      
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.from('client_service_rates').insert(saved);
+        if (error) console.warn('Cloud CSR insert warning:', error);
+      }
+      
       list.push(saved);
     }
     localStore.clientServiceRates = list;
@@ -3074,12 +3446,28 @@ export const db = {
   },
 
   deleteClientServiceRate: async (id: string): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('client_service_rates').delete().eq('id', id);
+      if (error) throw new Error(`Failed to delete client service rate: ${error.message}`);
+    }
     const list = localStore.clientServiceRates.filter(r => r.id !== id);
     localStore.clientServiceRates = list;
   },
 
   // Dynamic Role-Based System Notifications & 48-Hour Purge Engine
   getSystemNotifications: async (userRole?: string, userId?: string): Promise<SystemNotification[]> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.from('system_notifications').select('*').order('timestamp', { ascending: false });
+      if (!error && data) {
+        localStore.systemNotifications = data;
+        if (!userRole) return data;
+        return data.filter(n => 
+          n.target_roles.includes('all') || 
+          n.target_roles.includes(userRole) ||
+          (userId && n.read_by.includes(userId))
+        );
+      }
+    }
     const list = localStore.systemNotifications;
     if (!userRole) return list;
     return list.filter(n => 
@@ -3093,10 +3481,16 @@ export const db = {
     const list = localStore.systemNotifications;
     const newNotif: SystemNotification = {
       ...notif,
-      id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: generateUUID(),
       timestamp: new Date().toISOString(),
       read_by: []
     };
+    
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('system_notifications').insert(newNotif);
+      if (error) console.warn('Cloud notification insert warning:', error);
+    }
+    
     list.unshift(newNotif);
     localStore.systemNotifications = list;
     return newNotif;
@@ -3108,12 +3502,22 @@ export const db = {
     if (idx !== -1) {
       if (!list[idx].read_by.includes(userId)) {
         list[idx].read_by.push(userId);
+        
+        if (isSupabaseConfigured && supabase) {
+          const { error } = await supabase.from('system_notifications').update({ read_by: list[idx].read_by }).eq('id', notifId);
+          if (error) console.warn('Cloud notification read warning:', error);
+        }
+        
         localStore.systemNotifications = list;
       }
     }
   },
 
   deleteNotification: async (notifId: string): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('system_notifications').delete().eq('id', notifId);
+      if (error) console.warn('Cloud notification delete warning:', error);
+    }
     const list = localStore.systemNotifications.filter(n => n.id !== notifId);
     localStore.systemNotifications = list;
   },
