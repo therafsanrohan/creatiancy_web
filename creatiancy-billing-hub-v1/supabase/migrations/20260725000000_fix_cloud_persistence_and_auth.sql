@@ -45,7 +45,7 @@ BEGIN
   END IF;
 END $$;
 
--- 3. ENSURE RLS HELPER FUNCTION FOR ROLE AUTHORIZATION
+-- 3. ENSURE RLS HELPER FUNCTION & PROFILES POLICIES
 CREATE OR REPLACE FUNCTION is_finance_authorized()
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -56,6 +56,13 @@ BEGIN
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- RLS Policies for Profiles
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
+CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id OR auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
 -- 4. GRANT TABLE PERMISSIONS TO AUTHENTICATED USERS
 GRANT USAGE ON SCHEMA public TO authenticated;

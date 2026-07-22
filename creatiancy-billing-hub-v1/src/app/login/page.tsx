@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { db, localStore } from '@/lib/db';
+import { db } from '@/lib/db';
 import { authService } from '@/lib/services/authService';
 import { Eye, EyeOff, Lock, Mail, Terminal } from 'lucide-react';
 
@@ -13,6 +13,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Check if user is already logged in
+  useEffect(() => {
+    authService.getCurrentUser().then(user => {
+      if (user) {
+        window.location.href = '/billing';
+      }
+    }).catch(() => {});
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,11 +52,11 @@ export default function LoginPage() {
         throw new Error('Invalid email or password. Please check your credentials.');
       }
 
-      // Log user in
+      // Set user session and navigate
       await db.setCurrentUser(user);
-      router.push('/billing');
+      window.location.href = '/billing';
     } catch (err: any) {
-      setError(err.message || 'Authentication failed');
+      setError(err.message || 'Authentication failed. Please verify your email and password.');
       setLoading(false);
     }
   };
@@ -59,52 +68,37 @@ export default function LoginPage() {
       const profiles = await db.getProfiles();
       const user = profiles.find(p => p.role_name === roleName);
       if (user) {
-        setEmail(user.email);
-        setPassword('password123');
         await db.setCurrentUser(user);
-        
-        // Wait a brief moment for transition effect
-        setTimeout(() => {
-          router.push('/billing');
-        }, 500);
+        window.location.href = '/billing';
+      } else {
+        throw new Error(`Profile for ${roleName} not found`);
       }
     } catch (err: any) {
-      setError('Quick login failed');
+      setError(err.message || 'Quick access login failed');
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#FBFDF9] p-6">
-      <div className="w-full max-w-md space-y-8 rounded-2xl border border-gray-100 bg-[#FBFDF9] p-8 shadow-xl">
-        
-        {/* Brand Header */}
+    <div className="flex min-h-screen items-center justify-center bg-[#FBFDF9] px-4 py-12 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-8 shadow-xl border border-gray-100">
         <div className="text-center">
-          <div className="mx-auto flex justify-center">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logos/Creatiancy logo.svg"
-              alt="Creatiancy Logo"
-              className="h-8 w-auto object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
-            />
-          </div>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+          <h1 className="text-3xl font-extrabold tracking-wider text-[#9B1C22]">creatiancy.</h1>
+          <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-gray-500">
             Billing • Secure Authentication Portal
           </p>
         </div>
 
-        {/* Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          {error && (
-            <div className="rounded-lg bg-red-50 p-4 text-sm text-[#9B1C22]">
-              {error}
-            </div>
-          )}
+        {error && (
+          <div className="rounded-lg bg-rose-50 border border-rose-200 p-3.5 text-xs text-rose-700 font-medium leading-relaxed">
+            {error}
+          </div>
+        )}
 
+        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           <div className="space-y-4 rounded-md">
             <div>
-              <label htmlFor="email-address" className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+              <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
                 Email Address or Username
               </label>
               <div className="relative">
@@ -112,7 +106,7 @@ export default function LoginPage() {
                   <Mail className="h-4 w-4" />
                 </span>
                 <input
-                  id="email-address"
+                  id="email"
                   name="email"
                   type="text"
                   autoComplete="username"
@@ -120,7 +114,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm text-[#1E1E1E] placeholder-gray-400 focus:border-[#9B1C22] focus:outline-none focus:ring-1 focus:ring-[#9B1C22]"
-                  placeholder="name@creatiancy.com or username"
+                  placeholder="name@creatiancy.com"
                 />
               </div>
             </div>
