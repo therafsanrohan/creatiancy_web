@@ -62,7 +62,7 @@ export default function LoginPage() {
       const user = profiles.find(p => p.role_name === roleName);
       if (user) {
         setEmail(user.email);
-        setPassword('password123'); // Fictional password
+        setPassword('password123');
         await db.setCurrentUser(user);
         
         // Wait a brief moment for transition effect

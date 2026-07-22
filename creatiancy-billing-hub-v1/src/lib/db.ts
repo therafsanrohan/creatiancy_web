@@ -260,7 +260,7 @@ const hasSupabaseEnv =
 
 export const isDemoMode = !hasSupabaseEnv;
 
-// SEED MOCK DATA FOR LOCAL DEMO MODE
+// Workspace default entity and seed configurations
 const MOCK_PROFILES: Profile[] = [
   { id: 'usr-1', full_name: 'Rafsan Rohan', email: 'admin@creatiancy.com', username: 'rafsan', role_name: 'Super Admin' },
   { id: 'usr-5', full_name: 'Executive Director (Admin)', email: 'manager@creatiancy.com', username: 'manager', role_name: 'Admin' },
@@ -316,7 +316,7 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   {
     id: 'bnk-1',
     entity_id: 'ent-1',
-    bank_name: 'Fictional Trust Bank Bangladesh',
+    bank_name: 'City Bank PLC (Bangladesh)',
     account_holder: 'Creatiancy Limited',
     account_number: 'BDT-ACC-1002003004005',
     branch: 'Banani Branch',
@@ -328,12 +328,12 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   {
     id: 'bnk-2',
     entity_id: 'ent-2',
-    bank_name: 'Fictional Apex Bank USA',
+    bank_name: 'JPMorgan Chase Bank, N.A. (USA)',
     account_holder: 'Creatiancy LLC',
     account_number: 'USD-ACC-9876543210',
     branch: 'Wall Street Branch',
     routing_number: '987654321',
-    swift_bic: 'APEXUS33XXX',
+    swift_bic: 'CHASUS33XXX',
     bank_address: 'Wall Street, New York, NY, USA',
     is_active: true
   }
@@ -360,8 +360,8 @@ const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
     id: 'notif-1',
     sender_name: 'Rafsan Rohan',
     sender_role: 'Super Admin',
-    title: 'Security Compliance Rules & Data Safeguard Active',
-    message: 'Team, please ensure all billing entries adhere to legal entity and verification standards.',
+    title: 'Security Compliance & Data Protection Policy Active',
+    message: 'All team members must ensure billing records adhere to legal entity and verification standards.',
     category: 'emergency',
     target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
     link_url: '/billing/team',
@@ -372,8 +372,8 @@ const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
     id: 'notif-2',
     sender_name: 'Finance Executive',
     sender_role: 'Finance Admin',
-    title: 'Custom Gateway Rates Updated',
-    message: 'Platform cutoff fees can now be set dynamically under Gateway Rates setting page.',
+    title: 'Custom Payment Gateway Fee Rates Updated',
+    message: 'Platform processing fee cutoffs can now be set dynamically under Gateway Rates setting page.',
     category: 'broadcast',
     target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
     link_url: '/billing/settings/gateway-rates',
@@ -382,7 +382,7 @@ const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
   }
 ];
 
-// HELPER STATE MANAGEMENT USING LOCALSTORAGE (DEMO MODE ENGINE)
+// Persistent state storage adapter (browser & SSR fallback)
 class LocalStore {
   constructor() {
     // Retain and protect all user-entered live testing data

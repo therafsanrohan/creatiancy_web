@@ -960,7 +960,7 @@ export default function NewInvoicePage() {
                   <div>
                     <span className="font-bold text-gray-400 uppercase block">BILL TO:</span>
                     <p className="font-bold text-gray-800 mt-0.5">
-                      {activeClient ? (activeClient.company_name || activeClient.contact_person) : 'Fictional Client'}
+                      {activeClient ? (activeClient.company_name || activeClient.contact_person) : 'Client Name'}
                     </p>
                     <p className="text-gray-500 block truncate mt-0.5">{activeClient?.billing_email || 'accounting@client.com'}</p>
                     <p className="text-gray-500 block truncate mt-0.5">{activeClient?.billing_address || 'Address Line'}</p>

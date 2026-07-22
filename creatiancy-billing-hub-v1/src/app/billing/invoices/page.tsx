@@ -36,7 +36,7 @@ export default function InvoiceListPage() {
 
   const getClientName = (clientId: string) => {
     const c = clients.find(cl => cl.id === clientId);
-    return c ? (c.company_name || c.contact_person) : 'Fictional Client';
+    return c ? (c.company_name || c.contact_person) : 'Client';
   };
 
   const getInvoiceTotal = (inv: Invoice) => {

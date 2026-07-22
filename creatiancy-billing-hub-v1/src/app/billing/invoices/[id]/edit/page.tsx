@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { db, BillingClient, Profile, BusinessEntity, InvoiceItem, Invoice, localStore } from '@/lib/db';
+import { db, BillingClient, Profile, BusinessEntity, InvoiceItem, Invoice, ClientServiceRate, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
-import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Megaphone, Sparkles, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormItem {
@@ -51,6 +51,17 @@ export default function EditInvoicePage() {
   const [paymentInstructions, setPaymentInstructions] = useState('');
   const [termsConditions, setTermsConditions] = useState('');
   const [internalNote, setInternalNote] = useState('');
+
+  // Paid Media & Exchange Rate states
+  const [usdExchangeRate, setUsdExchangeRate] = useState<number>(125.50);
+  const [clientRates, setClientRates] = useState<ClientServiceRate[]>([]);
+  
+  // Paid Media Modal Drawer states
+  const [showPaidMediaModal, setShowPaidMediaModal] = useState(false);
+  const [mediaPlatform, setMediaPlatform] = useState('Meta Ads (FB/Instagram)');
+  const [mediaUsdBudget, setMediaUsdBudget] = useState(1000);
+  const [mediaUsdRate, setMediaUsdRate] = useState(125.50);
+  const [mediaFeePercent, setMediaFeePercent] = useState(10);
 
   // Items list
   const [items, setItems] = useState<FormItem[]>([
