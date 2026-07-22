@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { db, localStore } from '@/lib/db';
+import { authService } from '@/lib/services/authService';
 import { Eye, EyeOff, Lock, Mail, Terminal } from 'lucide-react';
 
 export default function LoginPage() {
@@ -19,30 +20,27 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Find matching profile by email or username in mock list
-      const profiles = await db.getProfiles();
       const loginId = email.trim().toLowerCase();
-      
-      let user = profiles.find(p => 
-        p.email.toLowerCase() === loginId || 
-        (p.username && p.username.toLowerCase() === loginId)
-      );
-      
-      // Fallback alias resolution for superadmin and admin logins across desktop and mobile devices
+
+      // 1. Authenticate with Supabase Auth or Local fallback
+      let user = await authService.loginWithEmail(loginId, password);
+
+      // 2. Fallback alias resolution for demo quick aliases
       if (!user) {
+        const profiles = await db.getProfiles();
         if (loginId === 'superadmin' || loginId === 'superadmin@creatiancy.com') {
-          user = profiles.find(p => p.role_name === 'Super Admin');
+          user = profiles.find(p => p.role_name === 'Super Admin') || null;
         } else if (loginId === 'admin' || loginId === 'admin@creatiancy.com' || loginId === 'rafsan') {
-          user = profiles.find(p => p.role_name === 'Super Admin' || p.role_name === 'Admin');
+          user = profiles.find(p => p.role_name === 'Super Admin' || p.role_name === 'Admin') || null;
         } else if (loginId === 'manager' || loginId === 'manager@creatiancy.com') {
-          user = profiles.find(p => p.role_name === 'Admin');
+          user = profiles.find(p => p.role_name === 'Admin') || null;
         } else if (loginId === 'finance' || loginId === 'finance@creatiancy.com') {
-          user = profiles.find(p => p.role_name === 'Finance Admin');
+          user = profiles.find(p => p.role_name === 'Finance Admin') || null;
         }
       }
 
       if (!user) {
-        throw new Error('Invalid email or username. Please check your credentials or select a quick access role below.');
+        throw new Error('Invalid email or password. Please check your credentials.');
       }
 
       // Log user in

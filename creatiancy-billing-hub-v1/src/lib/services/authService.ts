@@ -16,6 +16,17 @@ export const authService = {
           localStore.currentUser = profileData;
           return profileData;
         }
+
+        // Construct fallback profile from auth user metadata if trigger hasn't executed
+        const authProfile: Profile = {
+          id: authData.user.id,
+          full_name: authData.user.user_metadata?.full_name || authData.user.email?.split('@')[0] || 'Admin',
+          email: authData.user.email || '',
+          role_name: (authData.user.user_metadata?.role_name as any) || 'Super Admin',
+          created_at: authData.user.created_at
+        };
+        localStore.currentUser = authProfile;
+        return authProfile;
       }
     }
     return localStore.currentUser;
@@ -49,10 +60,21 @@ export const authService = {
           localStore.currentUser = profile;
           return profile;
         }
+        // Create profile row if it doesn't exist yet
+        const authProfile: Profile = {
+          id: data.user.id,
+          full_name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'User',
+          email: data.user.email || email,
+          role_name: (data.user.user_metadata?.role_name as any) || 'Super Admin',
+          created_at: data.user.created_at
+        };
+        await supabase.from('profiles').upsert(authProfile);
+        localStore.currentUser = authProfile;
+        return authProfile;
       }
     }
 
-    // Fallback profile lookup
+    // Fallback profile lookup for local development
     const profiles = localStore.profiles;
     const found = profiles.find(p => p.email.toLowerCase() === email.toLowerCase());
     if (found) {
