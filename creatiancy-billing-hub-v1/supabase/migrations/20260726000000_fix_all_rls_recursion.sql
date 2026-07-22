@@ -1,4 +1,25 @@
--- Master Migration: Fix All RLS Policy Recursion across All Tables
+-- Master Migration: Fix All RLS Policy Recursion & Ensure Expenses Table
+
+-- 0. ENSURE EXPENSES TABLE EXISTS
+CREATE TABLE IF NOT EXISTS expenses (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    entity_id UUID REFERENCES business_entities(id),
+    category TEXT NOT NULL,
+    description TEXT NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL CHECK (amount >= 0),
+    currency TEXT NOT NULL CHECK (currency IN ('BDT', 'USD')),
+    expense_date DATE NOT NULL,
+    vendor TEXT NOT NULL,
+    invoice_ref TEXT,
+    recorded_by UUID REFERENCES profiles(id),
+    vendor_bin TEXT,
+    mushak_6_3_number TEXT,
+    input_vat_amount NUMERIC(12, 2) DEFAULT 0.00,
+    input_credit_status TEXT DEFAULT 'ELIGIBLE_INPUT_CREDIT',
+    verification_status TEXT DEFAULT 'PENDING',
+    tax_period TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
 -- 1. SECURITY DEFINER HELPER FUNCTIONS (Bypasses RLS to avoid recursion)
 CREATE OR REPLACE FUNCTION public.is_admin_user()
@@ -116,14 +137,7 @@ DROP POLICY IF EXISTS "Finance authorized can manage receipts" ON money_receipts
 CREATE POLICY "Authenticated users can read receipts" ON money_receipts FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Finance authorized can manage receipts" ON money_receipts FOR ALL USING (public.is_finance_authorized());
 
--- 11. EMAIL LOGS POLICIES
-DROP POLICY IF EXISTS "Authenticated users can read email logs" ON invoice_email_logs;
-DROP POLICY IF EXISTS "Authorized team members can create email logs" ON invoice_email_logs;
-
-CREATE POLICY "Authenticated users can read email logs" ON invoice_email_logs FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Authenticated users can create email logs" ON invoice_email_logs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
--- 12. AUDIT LOGS POLICIES
+-- 11. AUDIT LOGS POLICIES
 DROP POLICY IF EXISTS "Super Admins can read audit logs" ON billing_audit_logs;
 DROP POLICY IF EXISTS "Admins can read audit logs" ON billing_audit_logs;
 DROP POLICY IF EXISTS "Authenticated users can insert audit logs" ON billing_audit_logs;
@@ -131,62 +145,10 @@ DROP POLICY IF EXISTS "Authenticated users can insert audit logs" ON billing_aud
 CREATE POLICY "Admins can read audit logs" ON billing_audit_logs FOR SELECT USING (public.is_admin_user());
 CREATE POLICY "Authenticated users can insert audit logs" ON billing_audit_logs FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- 13. SETTINGS POLICIES
-DROP POLICY IF EXISTS "Authenticated users can read settings" ON billing_settings;
-DROP POLICY IF EXISTS "Super Admins can update settings" ON billing_settings;
-DROP POLICY IF EXISTS "Admins can update settings" ON billing_settings;
-
-CREATE POLICY "Authenticated users can read settings" ON billing_settings FOR SELECT USING (auth.role() = 'authenticated');
-CREATE POLICY "Admins can update settings" ON billing_settings FOR ALL USING (public.is_admin_user());
-
--- 14. EXPENSES POLICIES
+-- 12. EXPENSES POLICIES
 ALTER TABLE IF EXISTS expenses ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Authenticated users can read expenses" ON expenses;
 DROP POLICY IF EXISTS "Team members can manage expenses" ON expenses;
 
 CREATE POLICY "Authenticated users can read expenses" ON expenses FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Team members can manage expenses" ON expenses FOR ALL USING (public.is_team_member());
-
--- 15. RESERVE & SAVINGS POLICIES
-DROP POLICY IF EXISTS "Confidential read on reserve_settings" ON reserve_settings;
-DROP POLICY IF EXISTS "Authorized edit on reserve_settings" ON reserve_settings;
-DROP POLICY IF EXISTS "Confidential read on reserve_ledger" ON reserve_ledger;
-DROP POLICY IF EXISTS "Authorized write on reserve_ledger" ON reserve_ledger;
-DROP POLICY IF EXISTS "Confidential read on fdr_accounts" ON fdr_accounts;
-DROP POLICY IF EXISTS "Authorized write on fdr_accounts" ON fdr_accounts;
-DROP POLICY IF EXISTS "Confidential read on dps_accounts" ON dps_accounts;
-DROP POLICY IF EXISTS "Authorized write on dps_accounts" ON dps_accounts;
-DROP POLICY IF EXISTS "Confidential read on dps_installments" ON dps_installments;
-DROP POLICY IF EXISTS "Authorized write on dps_installments" ON dps_installments;
-DROP POLICY IF EXISTS "Confidential read on withdrawal_requests" ON reserve_withdrawal_requests;
-DROP POLICY IF EXISTS "Authorized write on withdrawal_requests" ON reserve_withdrawal_requests;
-DROP POLICY IF EXISTS "Finance read on reserve_settings" ON reserve_settings;
-DROP POLICY IF EXISTS "Finance write on reserve_settings" ON reserve_settings;
-DROP POLICY IF EXISTS "Finance read on reserve_ledger" ON reserve_ledger;
-DROP POLICY IF EXISTS "Finance write on reserve_ledger" ON reserve_ledger;
-DROP POLICY IF EXISTS "Finance read on fdr_accounts" ON fdr_accounts;
-DROP POLICY IF EXISTS "Finance write on fdr_accounts" ON fdr_accounts;
-DROP POLICY IF EXISTS "Finance read on dps_accounts" ON dps_accounts;
-DROP POLICY IF EXISTS "Finance write on dps_accounts" ON dps_accounts;
-DROP POLICY IF EXISTS "Finance read on dps_installments" ON dps_installments;
-DROP POLICY IF EXISTS "Finance write on dps_installments" ON dps_installments;
-DROP POLICY IF EXISTS "Finance read on withdrawal_requests" ON reserve_withdrawal_requests;
-DROP POLICY IF EXISTS "Finance write on withdrawal_requests" ON reserve_withdrawal_requests;
-
-CREATE POLICY "Finance read on reserve_settings" ON reserve_settings FOR SELECT USING (public.is_finance_authorized());
-CREATE POLICY "Finance write on reserve_settings" ON reserve_settings FOR ALL USING (public.is_finance_authorized());
-
-CREATE POLICY "Finance read on reserve_ledger" ON reserve_ledger FOR SELECT USING (public.is_finance_authorized());
-CREATE POLICY "Finance write on reserve_ledger" ON reserve_ledger FOR ALL USING (public.is_finance_authorized());
-
-CREATE POLICY "Finance read on fdr_accounts" ON fdr_accounts FOR SELECT USING (public.is_finance_authorized());
-CREATE POLICY "Finance write on fdr_accounts" ON fdr_accounts FOR ALL USING (public.is_finance_authorized());
-
-CREATE POLICY "Finance read on dps_accounts" ON dps_accounts FOR SELECT USING (public.is_finance_authorized());
-CREATE POLICY "Finance write on dps_accounts" ON dps_accounts FOR ALL USING (public.is_finance_authorized());
-
-CREATE POLICY "Finance read on dps_installments" ON dps_installments FOR SELECT USING (public.is_finance_authorized());
-CREATE POLICY "Finance write on dps_installments" ON dps_installments FOR ALL USING (public.is_finance_authorized());
-
-CREATE POLICY "Finance read on withdrawal_requests" ON reserve_withdrawal_requests FOR SELECT USING (public.is_finance_authorized());
-CREATE POLICY "Finance write on withdrawal_requests" ON reserve_withdrawal_requests FOR ALL USING (public.is_finance_authorized());
