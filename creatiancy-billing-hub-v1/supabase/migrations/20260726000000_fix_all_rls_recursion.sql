@@ -21,6 +21,32 @@ CREATE TABLE IF NOT EXISTS expenses (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Ensure username column exists on profiles table
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;
+
+-- Update handle_new_user trigger function to safely extract username
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, full_name, email, role_name, username, created_at, updated_at)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    new.email,
+    COALESCE(new.raw_user_meta_data->>'role_name', 'Super Admin'),
+    COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1)),
+    now(),
+    now()
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name,
+    email = EXCLUDED.email,
+    username = COALESCE(EXCLUDED.username, profiles.username),
+    updated_at = now();
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- 1. SECURITY DEFINER HELPER FUNCTIONS (Bypasses RLS to avoid recursion)
 CREATE OR REPLACE FUNCTION public.is_admin_user()
 RETURNS BOOLEAN AS $$
