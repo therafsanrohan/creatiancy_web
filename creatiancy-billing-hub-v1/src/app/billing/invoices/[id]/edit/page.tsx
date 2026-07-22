@@ -173,8 +173,8 @@ export default function EditInvoicePage() {
           return;
         }
 
-        // Safety lock: if not draft or pending_approval, redirect
-        if (inv.status !== 'draft' && inv.status !== 'pending_approval') {
+        // Safety lock: if not draft, pending_approval, or rejected, redirect
+        if (inv.status !== 'draft' && inv.status !== 'pending_approval' && inv.status !== 'rejected') {
           router.push(`/billing/invoices/${id}`);
           return;
         }

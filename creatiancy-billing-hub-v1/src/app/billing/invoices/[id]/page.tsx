@@ -23,7 +23,9 @@ import {
   Loader2,
   Percent,
   ArrowDownRight,
-  MessageCircle
+  MessageCircle,
+  X,
+  Trash2
 } from 'lucide-react';
 
 export default function InvoiceDetailsPage() {
@@ -172,6 +174,7 @@ export default function InvoiceDetailsPage() {
       case 'partially_paid': return 'bg-cyan-100 text-cyan-800';
       case 'overdue': return 'bg-red-100 text-red-800';
       case 'void': return 'bg-gray-200 text-gray-500 line-through';
+      case 'rejected': return 'bg-rose-100 text-rose-800 border border-rose-200';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -182,11 +185,37 @@ export default function InvoiceDetailsPage() {
     try {
       const updated = await db.approveInvoice(id);
       setInvoice({ ...updated });
-      // Reload page to refresh snapshots
       window.location.reload();
     } catch (err: any) {
       showNotif('Approval Failed', err.message || 'Approval failed.', 'error');
     } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    const reason = prompt('Please enter rejection reason (optional):');
+    if (reason === null) return;
+    setActionLoading(true);
+    try {
+      const updated = await db.rejectInvoice(id, reason);
+      setInvoice({ ...updated });
+      window.location.reload();
+    } catch (err: any) {
+      showNotif('Rejection Failed', err.message || 'Rejection failed.', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this draft/rejected invoice? This action cannot be undone.')) return;
+    setActionLoading(true);
+    try {
+      await db.deleteInvoice(id);
+      router.push('/billing/invoices');
+    } catch (err: any) {
+      showNotif('Delete Failed', err.message || 'Delete failed.', 'error');
       setActionLoading(false);
     }
   };
@@ -332,12 +361,14 @@ export default function InvoiceDetailsPage() {
   const isPM = currentUser.role_name === 'Project Manager';
   const isViewer = false;
 
-  const canApprove = (isSuperAdmin || isFinanceAdmin) && (invoice.status === 'pending_approval' || invoice.status === 'draft');
-  const canVoid = (isSuperAdmin || isFinanceAdmin) && invoice.status !== 'void' && invoice.status !== 'draft';
-  const canEdit = invoice.status === 'draft' || invoice.status === 'pending_approval';
-  const canRecordPay = (isSuperAdmin || isFinanceAdmin) && invoice.status !== 'paid' && invoice.status !== 'void' && invoice.status !== 'draft';
-  const canSubmit = invoice.status === 'draft' && !isViewer;
-  const canEmail = invoice.status !== 'draft' && invoice.status !== 'void' && !isViewer && !isPM;
+  const canApprove = (isSuperAdmin || isFinanceAdmin) && invoice.status === 'pending_approval';
+  const canReject = (isSuperAdmin || isFinanceAdmin) && invoice.status === 'pending_approval';
+  const canVoid = (isSuperAdmin || isFinanceAdmin) && invoice.status !== 'void' && invoice.status !== 'draft' && invoice.status !== 'rejected';
+  const canEdit = invoice.status === 'draft' || invoice.status === 'pending_approval' || invoice.status === 'rejected';
+  const canRecordPay = (isSuperAdmin || isFinanceAdmin) && invoice.status !== 'paid' && invoice.status !== 'void' && invoice.status !== 'draft' && invoice.status !== 'rejected';
+  const canSubmit = (invoice.status === 'draft' || invoice.status === 'rejected') && !isViewer;
+  const canDelete = (invoice.status === 'draft' || invoice.status === 'rejected') && !isViewer;
+  const canEmail = invoice.status !== 'draft' && invoice.status !== 'rejected' && invoice.status !== 'void' && !isViewer && !isPM;
 
   return (
     <div className="space-y-6">
@@ -378,6 +409,27 @@ export default function InvoiceDetailsPage() {
           </Link>
         )}
       </div>
+
+      {/* Rejection Alert Banner */}
+      {invoice.status === 'rejected' && (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs no-print shadow-xs">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-extrabold text-rose-900 block text-sm">Invoice Draft Rejected</span>
+              <p className="text-rose-700 mt-0.5">
+                This invoice draft was rejected during management review. You can edit the draft details and resubmit it for review.
+              </p>
+            </div>
+          </div>
+          <Link
+            href={`/billing/invoices/${id}/edit`}
+            className="bg-rose-600 text-white font-bold text-xs px-4 py-2 rounded-xl hover:bg-rose-700 transition shrink-0 shadow-xs"
+          >
+            Edit & Resubmit
+          </Link>
+        </div>
+      )}
 
       {/* Content Split: Details left, Actions column right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -566,7 +618,19 @@ export default function InvoiceDetailsPage() {
                 </button>
               )}
 
-              {/* Submit for Approval */}
+              {/* Reject Invoice Button */}
+              {canReject && (
+                <button
+                  onClick={handleReject}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center space-x-2 rounded-xl bg-rose-600 py-3 text-xs font-bold text-white hover:bg-rose-700 shadow-sm transition disabled:opacity-50 cursor-pointer"
+                >
+                  {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                  <span>Reject Invoice</span>
+                </button>
+              )}
+
+              {/* Submit / Resubmit for Approval */}
               {canSubmit && (
                 <button
                   onClick={handleSubmitApproval}
@@ -574,7 +638,7 @@ export default function InvoiceDetailsPage() {
                   className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#9B1C22] py-3 text-xs font-bold text-white hover:bg-[#9B1C22]/90 shadow-md transition disabled:opacity-50 cursor-pointer"
                 >
                   {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
-                  <span>Submit for Approval</span>
+                  <span>{invoice.status === 'rejected' ? 'Resubmit for Review' : 'Submit for Approval'}</span>
                 </button>
               )}
 
@@ -590,7 +654,7 @@ export default function InvoiceDetailsPage() {
               )}
 
               {/* Direct A4 Print and Browser Preview */}
-              {invoice.status !== 'draft' && (
+              {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
                 <Link
                   href={`/billing/invoices/${id}/preview`}
                   className="w-full flex items-center justify-center space-x-2 rounded-xl border border-gray-200 bg-white py-3 text-xs font-bold hover:bg-gray-50 text-center transition"
@@ -612,7 +676,7 @@ export default function InvoiceDetailsPage() {
               )}
 
               {/* Send via WhatsApp (Routes to preview with query param) */}
-              {invoice.status !== 'draft' && (
+              {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
                 <Link
                   href={`/billing/invoices/${id}/preview?whatsapp=true`}
                   className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#25D366] py-3 text-xs font-bold text-white hover:bg-[#128C7E] shadow-sm transition"
@@ -633,6 +697,18 @@ export default function InvoiceDetailsPage() {
                 >
                   <CreditCard className="h-4 w-4" />
                   <span>Record Cash/Wire Payment</span>
+                </button>
+              )}
+
+              {/* Delete Draft/Rejected Trigger */}
+              {canDelete && (
+                <button
+                  onClick={handleDelete}
+                  disabled={actionLoading}
+                  className="w-full flex items-center justify-center space-x-2 rounded-xl border border-red-200 bg-red-50/50 text-red-600 hover:bg-red-100/80 py-3 text-xs font-bold transition disabled:opacity-50 cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Delete Draft Invoice</span>
                 </button>
               )}
 

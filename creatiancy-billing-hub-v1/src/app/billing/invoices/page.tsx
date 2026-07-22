@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { db, Invoice, BillingClient, Profile, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
-import { Plus, Search, Eye, AlertCircle } from 'lucide-react';
+import { Plus, Search, Eye, AlertCircle, Trash2 } from 'lucide-react';
 
 export default function InvoiceListPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -52,6 +52,18 @@ export default function InvoiceListPage() {
     return totals.totalPayable;
   };
 
+  const handleDeleteInvoice = async (inv: Invoice, e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!confirm(`Are you sure you want to delete draft invoice "${inv.project_name}"? This action cannot be undone.`)) return;
+    try {
+      await db.deleteInvoice(inv.id);
+      setInvoices(prev => prev.filter(i => i.id !== inv.id));
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete invoice');
+    }
+  };
+
   const getStatusBadgeColor = (status: Invoice['status']) => {
     switch (status) {
       case 'draft': return 'bg-gray-100 text-gray-800';
@@ -62,6 +74,7 @@ export default function InvoiceListPage() {
       case 'partially_paid': return 'bg-cyan-100 text-cyan-800';
       case 'overdue': return 'bg-red-100 text-red-800';
       case 'void': return 'bg-gray-200 text-gray-500 line-through';
+      case 'rejected': return 'bg-rose-100 text-rose-800 border border-rose-200';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -135,6 +148,7 @@ export default function InvoiceListPage() {
           <option value="all">All Statuses</option>
           <option value="draft">Draft</option>
           <option value="pending_approval">Pending Approval</option>
+          <option value="rejected">Rejected</option>
           <option value="approved">Approved</option>
           <option value="sent">Sent</option>
           <option value="partially_paid">Partially Paid</option>
@@ -177,7 +191,7 @@ export default function InvoiceListPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {filteredInvoices.map((inv) => {
-                    const isOverdue = new Date(inv.due_date) < new Date() && inv.status !== 'paid' && inv.status !== 'void' && inv.status !== 'draft';
+                    const isOverdue = new Date(inv.due_date) < new Date() && inv.status !== 'paid' && inv.status !== 'void' && inv.status !== 'draft' && inv.status !== 'rejected';
                     return (
                       <tr key={inv.id} className={`hover:bg-gray-50/40 transition ${isOverdue ? 'bg-red-50/5' : ''}`}>
                         <td className="p-4 font-bold">
@@ -208,10 +222,21 @@ export default function InvoiceListPage() {
                         </td>
                         <td className="p-4 text-right font-extrabold text-gray-800">{formatCurrency(getInvoiceTotal(inv), inv.currency)}</td>
                         <td className="p-4 text-center">
-                          <Link href={`/billing/invoices/${inv.id}`} className="inline-flex items-center space-x-1 text-xs font-semibold text-[#9B1C22] hover:underline">
-                            <Eye className="h-3.5 w-3.5" />
-                            <span>Details</span>
-                          </Link>
+                          <div className="flex items-center justify-center gap-2">
+                            <Link href={`/billing/invoices/${inv.id}`} className="inline-flex items-center space-x-1 text-xs font-semibold text-[#9B1C22] hover:underline">
+                              <Eye className="h-3.5 w-3.5" />
+                              <span>Details</span>
+                            </Link>
+                            {(inv.status === 'draft' || inv.status === 'rejected') && (
+                              <button
+                                onClick={(e) => handleDeleteInvoice(inv, e)}
+                                className="text-gray-400 hover:text-red-600 transition p-1 cursor-pointer"
+                                title="Delete Draft Invoice"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -224,7 +249,7 @@ export default function InvoiceListPage() {
           {/* ── Mobile Card View (< md) ── */}
           <div className="md:hidden space-y-3">
             {filteredInvoices.map((inv) => {
-              const isOverdue = new Date(inv.due_date) < new Date() && inv.status !== 'paid' && inv.status !== 'void' && inv.status !== 'draft';
+              const isOverdue = new Date(inv.due_date) < new Date() && inv.status !== 'paid' && inv.status !== 'void' && inv.status !== 'draft' && inv.status !== 'rejected';
               return (
                 <div key={inv.id} className={`bg-white border rounded-2xl p-4 shadow-sm ${isOverdue ? 'border-red-200 bg-red-50/10' : 'border-gray-100'}`}>
                   <div className="flex justify-between items-start mb-3">
@@ -261,13 +286,24 @@ export default function InvoiceListPage() {
                       </span>
                     </div>
                   </div>
-                  <Link
-                    href={`/billing/invoices/${inv.id}`}
-                    className="flex items-center justify-center space-x-1.5 w-full text-xs font-semibold text-[#9B1C22] bg-[#9B1C22]/5 hover:bg-[#9B1C22]/10 py-2 rounded-xl transition border border-[#9B1C22]/10"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    <span>View Invoice Details</span>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/billing/invoices/${inv.id}`}
+                      className="flex-1 flex items-center justify-center space-x-1.5 text-xs font-semibold text-[#9B1C22] bg-[#9B1C22]/5 hover:bg-[#9B1C22]/10 py-2 rounded-xl transition border border-[#9B1C22]/10"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      <span>View Invoice Details</span>
+                    </Link>
+                    {(inv.status === 'draft' || inv.status === 'rejected') && (
+                      <button
+                        onClick={(e) => handleDeleteInvoice(inv, e)}
+                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition border border-gray-100 cursor-pointer"
+                        title="Delete Draft Invoice"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

@@ -172,7 +172,7 @@ export interface Invoice {
   usd_rate?: number;
   entity_id: string;
   invoice_number: string | null;
-  status: 'draft' | 'pending_approval' | 'approved' | 'sent' | 'viewed' | 'partially_paid' | 'paid' | 'overdue' | 'void';
+  status: 'draft' | 'pending_approval' | 'approved' | 'sent' | 'viewed' | 'partially_paid' | 'paid' | 'overdue' | 'void' | 'rejected';
   issue_date: string;
   payment_terms: string;
   due_date: string;
@@ -1437,8 +1437,8 @@ export const db = {
     if (idx === -1) throw new Error('Invoice not found');
 
     const original = invoicesList[idx];
-    if (original.status !== 'draft' && original.status !== 'pending_approval') {
-      throw new Error('Only draft or pending_approval invoices can be edited');
+    if (original.status !== 'draft' && original.status !== 'pending_approval' && original.status !== 'rejected') {
+      throw new Error('Only draft, pending_approval, or rejected invoices can be edited');
     }
 
     const updatedInvoice = {
@@ -1488,6 +1488,8 @@ export const db = {
     const list = localStore.invoices;
     const idx = list.findIndex(i => i.id === id);
     if (idx === -1) throw new Error('Invoice not found');
+
+    const prevStatus = list[idx].status;
     list[idx].status = 'pending_approval';
     localStore.invoices = list;
 
@@ -1503,8 +1505,54 @@ export const db = {
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user.id, 'submit_approval', 'invoices', id, { status: 'draft' }, { status: 'pending_approval' });
+    db.logAudit(user.id, 'submit_approval', 'invoices', id, { status: prevStatus }, { status: 'pending_approval' });
     return list[idx];
+  },
+
+  rejectInvoice: async (id: string, reason?: string): Promise<Invoice> => {
+    const list = localStore.invoices;
+    const idx = list.findIndex(i => i.id === id);
+    if (idx === -1) throw new Error('Invoice not found');
+
+    const originalStatus = list[idx].status;
+    list[idx].status = 'rejected';
+    if (reason && reason.trim()) {
+      const existingNote = list[idx].internal_note || '';
+      list[idx].internal_note = existingNote ? `${existingNote}\n[Rejection Reason]: ${reason.trim()}` : `[Rejection Reason]: ${reason.trim()}`;
+    }
+    localStore.invoices = list;
+
+    const user = await db.getCurrentUser();
+    const inv = list[idx];
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `Invoice Rejected: ${inv.project_name}`,
+      message: `Invoice for ${inv.project_name} was rejected during review.${reason ? ` Reason: ${reason}` : ''}`,
+      category: 'approval_required',
+      target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+      link_url: `/billing/invoices/${id}`
+    });
+
+    db.logAudit(user.id, 'reject_invoice', 'invoices', id, { status: originalStatus }, { status: 'rejected', reason });
+    return list[idx];
+  },
+
+  deleteInvoice: async (id: string): Promise<void> => {
+    const list = localStore.invoices;
+    const idx = list.findIndex(i => i.id === id);
+    if (idx === -1) throw new Error('Invoice not found');
+
+    const inv = list[idx];
+    if (inv.status !== 'draft' && inv.status !== 'rejected') {
+      throw new Error('Only draft or rejected invoices can be deleted');
+    }
+
+    localStore.invoices = list.filter(i => i.id !== id);
+    localStore.items = localStore.items.filter(itm => itm.invoice_id !== id);
+
+    const user = await db.getCurrentUser();
+    db.logAudit(user.id, 'delete_invoice', 'invoices', id, inv, null);
   },
 
   approveInvoice: async (id: string): Promise<Invoice> => {
