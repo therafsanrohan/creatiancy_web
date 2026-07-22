@@ -1530,7 +1530,7 @@ export const db = {
     list.push(newProfile);
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'create_team_account', 'users', newProfile.id, null, { full_name: newProfile.full_name, email: newProfile.email, username: newProfile.username, role: newProfile.role_name });
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'create_team_account', 'users', newProfile.id, null, { full_name: newProfile.full_name, email: newProfile.email, username: newProfile.username, role: newProfile.role_name });
     return newProfile;
   },
 
@@ -1551,7 +1551,7 @@ export const db = {
     list[idx].role_name = newRole;
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'change_user_role', 'users', userId, { role: oldRole }, { role: newRole });
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'change_user_role', 'users', userId, { role: oldRole }, { role: newRole });
     return list[idx];
   },
 
@@ -1568,7 +1568,7 @@ export const db = {
     const list = localStore.profiles.filter(p => p.id !== userId);
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'delete_team_account', 'users', userId, null, { deleted: true });
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'delete_team_account', 'users', userId, null, { deleted: true });
   },
 
   updateProfileCredentials: async (
@@ -1609,7 +1609,7 @@ export const db = {
     
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'update_user_credentials', 'users', userId, 
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'update_user_credentials', 'users', userId, 
       { email: previous.email, username: previous.username }, 
       { email: list[idx].email, username: list[idx].username, passChanged: !!data.password_hash }
     );
@@ -1673,7 +1673,7 @@ export const db = {
     }
 
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'update_entity', 'entities', id, null, updates);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'update_entity', 'entities', id, null, updates);
     return localStore.entities.find(e => e.id === id) || (updates as BusinessEntity);
   },
 
@@ -1711,7 +1711,7 @@ export const db = {
     }
 
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'update_bank', 'bank_accounts', id, null, updates);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'update_bank', 'bank_accounts', id, null, updates);
     return localStore.bankAccounts.find(b => b.id === id) || (updates as BankAccount);
   },
 
@@ -1763,7 +1763,7 @@ export const db = {
       link_url: `/billing/clients/${newClient.id}`
     });
 
-    db.logAudit(user?.id || 'system', 'create_client', 'clients', newClient.id, null, newClient);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'create_client', 'clients', newClient.id, null, newClient);
     return newClient;
   },
 
@@ -1785,7 +1785,7 @@ export const db = {
     }
 
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'update_client', 'clients', id, null, updates);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'update_client', 'clients', id, null, updates);
     return localStore.clients.find(c => c.id === id) || (updates as BillingClient);
   },
 
@@ -1861,7 +1861,7 @@ export const db = {
       secure_token: generateUUID(),
       invoice_number: null,
       status: 'draft',
-      created_by: user?.id || 'system',
+      created_by: user?.id || '00000000-0000-4000-8000-000000000000',
       approved_by: null,
       approved_at: null,
       pdf_file_url: null,
@@ -1909,7 +1909,7 @@ export const db = {
       link_url: `/billing/invoices/${newInvoice.id}`
     });
 
-    db.logAudit(user?.id || 'system', 'create_invoice', 'invoices', newInvoice.id, null, newInvoice);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'create_invoice', 'invoices', newInvoice.id, null, newInvoice);
     return newInvoice;
   },
 
@@ -2037,7 +2037,7 @@ export const db = {
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user?.id || 'system', 'reject_invoice', 'invoices', id, { status: originalStatus }, { status: 'rejected', reason });
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'reject_invoice', 'invoices', id, { status: originalStatus }, { status: 'rejected', reason });
     return list[idx];
   },
 
@@ -2062,7 +2062,7 @@ export const db = {
     localStore.items = localStore.items.filter(itm => itm.invoice_id !== id);
 
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'delete_invoice', 'invoices', id, inv, null);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'delete_invoice', 'invoices', id, inv, null);
   },
 
   approveInvoice: async (id: string): Promise<Invoice> => {
@@ -2135,7 +2135,7 @@ export const db = {
         .update({
           status: 'approved',
           invoice_number: invoiceNumber,
-          approved_by: user?.id || 'system',
+          approved_by: user?.id || '00000000-0000-4000-8000-000000000000',
           approved_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -2161,7 +2161,7 @@ export const db = {
     // 4. Update Invoice Status
     invoice.status = 'approved';
     invoice.invoice_number = invoiceNumber;
-    invoice.approved_by = user?.id || 'system';
+    invoice.approved_by = user?.id || '00000000-0000-4000-8000-000000000000';
     invoice.approved_at = new Date().toISOString();
     localStore.invoices = invoicesList;
 
@@ -2175,7 +2175,7 @@ export const db = {
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user?.id || 'system', 'approve_invoice', 'invoices', id, null, { status: 'approved', number: invoiceNumber });
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'approve_invoice', 'invoices', id, null, { status: 'approved', number: invoiceNumber });
     return invoice;
   },
 
@@ -2197,7 +2197,7 @@ export const db = {
     localStore.invoices = list;
 
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || 'system', 'void_invoice', 'invoices', id, { status: originalStatus }, { status: 'void' });
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'void_invoice', 'invoices', id, { status: originalStatus }, { status: 'void' });
     return list[idx];
   },
 
@@ -2450,7 +2450,7 @@ export const db = {
       localStore.reserveLedger = reserveLedgerList;
 
       await db.logFinancialAudit({
-        user_id: user?.id || 'system',
+        user_id: user?.id || '00000000-0000-4000-8000-000000000000',
         user_role: user?.role_name || 'Super Admin',
         action: 'AUTOMATIC_RESERVE_ALLOCATION',
         module: 'RESERVE_SAVINGS',
@@ -2470,7 +2470,7 @@ export const db = {
       link_url: `/billing/invoices/${invoice.id}`
     });
 
-    db.logAudit(user?.id || 'system', 'record_payment', 'payments', newPayment.id, null, newPayment);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'record_payment', 'payments', newPayment.id, null, newPayment);
     return newPayment;
   },
 
@@ -2496,7 +2496,7 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('reserve_settings').upsert({ ...updated, id: updated.id || 'default-setting' });
+      const { error } = await supabase.from('reserve_settings').upsert({ ...updated, id: updated.id || '11111111-0000-4000-8000-000000000000' });
       if (error) throw new Error(`Failed to update reserve settings: ${error.message}`);
     }
     
