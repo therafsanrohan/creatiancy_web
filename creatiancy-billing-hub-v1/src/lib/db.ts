@@ -1996,12 +1996,6 @@ export const db = {
   },
 
   rejectInvoice: async (id: string, reason?: string): Promise<Invoice> => {
-    const list = localStore.invoices;
-    const idx = list.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
-
-    const originalStatus = list[idx].status;
-  rejectInvoice: async (id: string, reason?: string): Promise<Invoice> => {
     if (isSupabaseConfigured && supabase) {
       const existing = localStore.invoices.find(i => i.id === id);
       const existingNote = existing?.internal_note || '';
@@ -2502,7 +2496,7 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('reserve_settings').upsert({ id: updated.id || 'default-setting', ...updated });
+      const { error } = await supabase.from('reserve_settings').upsert({ ...updated, id: updated.id || 'default-setting' });
       if (error) throw new Error(`Failed to update reserve settings: ${error.message}`);
     }
     
