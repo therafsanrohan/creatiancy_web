@@ -1591,10 +1591,21 @@ export const db = {
     if (data.email !== undefined) list[idx].email = data.email;
     if (data.username !== undefined) list[idx].username = data.username;
     if (data.password_hash !== undefined) list[idx].password_hash = data.password_hash;
+
+    if (isSupabaseConfigured && supabase) {
+      const updates: any = {};
+      if (data.full_name !== undefined) updates.full_name = data.full_name;
+      if (data.email !== undefined) updates.email = data.email;
+      if (data.username !== undefined) updates.username = data.username;
+      updates.updated_at = new Date().toISOString();
+
+      const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
+      if (error) throw new Error(`Cloud credentials update failed: ${error.message}`);
+    }
     
     localStore.profiles = list;
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_user_credentials', 'users', userId, 
+    db.logAudit(user?.id || 'system', 'update_user_credentials', 'users', userId, 
       { email: previous.email, username: previous.username }, 
       { email: list[idx].email, username: list[idx].username, passChanged: !!data.password_hash }
     );
