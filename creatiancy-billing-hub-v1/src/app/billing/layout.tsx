@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { db, isDemoMode, Profile } from '@/lib/db';
+import { authService } from '@/lib/services/authService';
 import Link from 'next/link';
 import {
   LayoutDashboard,
@@ -71,13 +72,8 @@ export default function BillingLayout({
     setSidebarOpen(false);
     setUserMenuOpen(false);
     setRoleDropdownOpen(false);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('billing_hub_current_user');
-    }
-    router.push('/login');
-    if (typeof window !== 'undefined') {
-      window.location.href = '/login';
-    }
+    await authService.logout();
+    window.location.href = '/login';
   };
 
   if (!currentUser) {

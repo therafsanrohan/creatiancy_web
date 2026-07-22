@@ -106,5 +106,18 @@ export const authService = {
       return found;
     }
     return null;
+  },
+
+  logout: async (): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn('SignOut warning:', e);
+      }
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('billing_hub_current_user');
+    }
   }
 };
