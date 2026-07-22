@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { db, BillingClient, Profile, BusinessEntity, InvoiceItem, Invoice, ClientServiceRate, localStore } from '@/lib/db';
-import { calculateTotals, formatCurrency } from '@/lib/calculations';
-import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Sparkles, Megaphone, X } from 'lucide-react';
+import { calculateTotals, formatCurrency, fetchLiveMarketUsdRate } from '@/lib/calculations';
+import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Sparkles, Megaphone, X, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormItem {
@@ -13,6 +13,7 @@ interface FormItem {
   quantity: number;
   unit: string;
   rate: number;
+  is_paid_media?: boolean;
 }
 
 export default function NewInvoicePage() {
@@ -42,9 +43,10 @@ export default function NewInvoicePage() {
   const [discountType, setDiscountType] = useState<'none' | 'fixed' | 'percentage'>('none');
   const [discountValue, setDiscountValue] = useState(0);
   
-  // VAT states
+  // VAT states (Default to Exclusive per user request)
   const [vatRate, setVatRate] = useState(15);
-  const [vatInclusive, setVatInclusive] = useState(true);
+  const [vatInclusive, setVatInclusive] = useState(false);
+  const [roundTotal, setRoundTotal] = useState(false);
 
   // Notes
   const [clientNote, setClientNote] = useState('Thank you for your business.');
@@ -52,7 +54,7 @@ export default function NewInvoicePage() {
   const [termsConditions, setTermsConditions] = useState('Standard payment terms apply. Interest of 1.5% per month will be charged on late invoices.');
   const [internalNote, setInternalNote] = useState('');
 
-  // Paid Media & Exchange Rate states
+  // Paid Media & Live Exchange Rate states
   const [usdExchangeRate, setUsdExchangeRate] = useState<number>(125.50);
   const [clientRates, setClientRates] = useState<ClientServiceRate[]>([]);
   
@@ -91,6 +93,11 @@ export default function NewInvoicePage() {
         
         const profs = await db.getProfiles();
         setManagers(profs);
+
+        // Fetch live market USD exchange rate
+        const liveUsdRate = await fetchLiveMarketUsdRate();
+        setUsdExchangeRate(liveUsdRate);
+        setMediaUsdRate(liveUsdRate);
 
         if (preSelectedClientId) {
           setSelectedClientId(preSelectedClientId);
@@ -158,7 +165,8 @@ export default function NewInvoicePage() {
         description: preset.is_paid_media ? `Paid media buying budget converted @ ৳${preset.usd_rate || usdExchangeRate}/USD` : `Agreed pricing rate for ${activeClient?.company_name || 'Client'}`,
         quantity: 1,
         unit: preset.unit || 'pcs',
-        rate: preset.unit_price
+        rate: preset.unit_price,
+        is_paid_media: preset.is_paid_media
       }]);
     } else {
       setItems([...items, {
@@ -166,7 +174,8 @@ export default function NewInvoicePage() {
         description: preset.is_paid_media ? `Paid media buying budget converted @ ৳${preset.usd_rate || usdExchangeRate}/USD` : `Agreed pricing rate for ${activeClient?.company_name || 'Client'}`,
         quantity: 1,
         unit: preset.unit || 'pcs',
-        rate: preset.unit_price
+        rate: preset.unit_price,
+        is_paid_media: preset.is_paid_media
       }]);
     }
   };
@@ -179,10 +188,11 @@ export default function NewInvoicePage() {
 
     const mediaItem: FormItem = {
       service_name: `${mediaPlatform} Media Buying ($${mediaUsdBudget.toLocaleString()} @ ৳${mediaUsdRate}/USD)`,
-      description: `Ad Media Spend Budget: $${mediaUsdBudget.toLocaleString()} USD converted at manual rate ৳${mediaUsdRate} BDT/USD`,
+      description: `Ad Media Spend Budget: $${mediaUsdBudget.toLocaleString()} USD converted at live market rate ৳${mediaUsdRate} BDT/USD`,
       quantity: 1,
       unit: 'Budget',
-      rate: currency === 'USD' ? mediaUsdBudget : budgetBdt
+      rate: currency === 'USD' ? mediaUsdBudget : budgetBdt,
+      is_paid_media: true
     };
 
     const newItemsList = [...items];
@@ -261,11 +271,12 @@ export default function NewInvoicePage() {
 
   // Totals calculations
   const totals = calculateTotals({
-    items: items.map(i => ({ quantity: i.quantity, rate: i.rate })),
+    items: items.map(i => ({ quantity: i.quantity, rate: i.rate, is_paid_media: i.is_paid_media, service_name: i.service_name })),
     discountType,
     discountValue,
     vatRate: currency === 'BDT' ? vatRate : 0,
-    vatInclusive
+    vatInclusive,
+    roundTotal
   });
 
   const handleSave = async (status: 'draft' | 'pending_approval') => {
@@ -843,6 +854,20 @@ export default function NewInvoicePage() {
                 VAT breakdown is skipped for USD invoices from Creatiancy LLC.
               </div>
             )}
+          </div>
+
+          {/* Option: Round Total Amount (Remove Decimals) */}
+          <div className="flex items-center space-x-2 pt-3 border-t border-gray-50">
+            <input
+              id="round_total_checkbox"
+              type="checkbox"
+              checked={roundTotal}
+              onChange={(e) => setRoundTotal(e.target.checked)}
+              className="accent-[#9B1C22] h-4 w-4 rounded border-gray-300 cursor-pointer"
+            />
+            <label htmlFor="round_total_checkbox" className="text-xs font-bold text-gray-700 cursor-pointer">
+              Round Total Payable Amount (Remove decimals / Round to nearest integer)
+            </label>
           </div>
 
           {/* Section 6: Notes & Payment Terms */}

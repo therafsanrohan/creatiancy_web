@@ -19,6 +19,8 @@ export function fromCents(cents: number): number {
 export interface LineItem {
   quantity: number;
   rate: number;
+  is_paid_media?: boolean;
+  service_name?: string;
 }
 
 export interface CalculateTotalsInput {
@@ -27,16 +29,37 @@ export interface CalculateTotalsInput {
   discountValue: number;
   vatRate: number;
   vatInclusive: boolean;
+  roundTotal?: boolean;
   payments?: { amount: number }[];
 }
 
 export interface BillingTotals {
   subtotal: number;
+  discountableSubtotal: number;
+  mediaBuyingSubtotal: number;
   discountAmount: number;
-  vatAmount: number; // For detailed breakdown when inclusive
+  vatAmount: number;
   totalPayable: number;
   amountPaid: number;
   amountDue: number;
+}
+
+/**
+ * Fetch live market BDT/USD exchange rate with fallback
+ */
+export async function fetchLiveMarketUsdRate(): Promise<number> {
+  try {
+    const res = await fetch('https://open.er-api.com/v6/latest/USD', { next: { revalidate: 3600 } });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.rates && typeof data.rates.BDT === 'number') {
+        return parseFloat(data.rates.BDT.toFixed(2));
+      }
+    }
+  } catch (e) {
+    console.warn('Live USD rate fetch failed, defaulting to 125.50 BDT:', e);
+  }
+  return 125.50;
 }
 
 export function calculateTotals(input: CalculateTotalsInput): BillingTotals {
@@ -44,32 +67,44 @@ export function calculateTotals(input: CalculateTotalsInput): BillingTotals {
     items,
     discountType,
     discountValue,
+    roundTotal = false,
     payments = []
   } = input;
 
-  // 1. Calculate line item totals safely in cents
+  // 1. Separate discountable subtotal (services) vs non-discountable subtotal (media buying)
+  let discountableSubtotalCents = 0;
+  let mediaBuyingSubtotalCents = 0;
   let subtotalCents = 0;
+
   for (const item of items) {
     const qty = Math.max(0, item.quantity);
     const rate = Math.max(0, item.rate);
     const lineTotalCents = Math.round(qty * rate * 100);
     subtotalCents += lineTotalCents;
+
+    const isMediaBuying = item.is_paid_media === true ||
+      (item.service_name && (item.service_name.includes('Media Buying') || item.service_name.includes('Media Spend') || item.service_name.includes('Ad Budget')));
+
+    if (isMediaBuying) {
+      mediaBuyingSubtotalCents += lineTotalCents;
+    } else {
+      discountableSubtotalCents += lineTotalCents;
+    }
   }
 
-  // 2. Calculate discount safely in cents
+  // 2. Calculate discount safely ONLY on discountable subtotal (Media Buying excluded from discounts)
   let discountCents = 0;
   if (discountType === 'fixed') {
-    discountCents = Math.min(subtotalCents, toCents(Math.max(0, discountValue)));
+    discountCents = Math.min(discountableSubtotalCents, toCents(Math.max(0, discountValue)));
   } else if (discountType === 'percentage') {
     const percentage = Math.min(100, Math.max(0, discountValue));
-    // Multiply by percentage and divide by 100
-    discountCents = Math.round((subtotalCents * percentage) / 100);
+    discountCents = Math.round((discountableSubtotalCents * percentage) / 100);
   }
 
-  // 3. Calculate discounted subtotal in cents
+  // 3. Calculate discounted total subtotal in cents
   const discountedSubtotalCents = Math.max(0, subtotalCents - discountCents);
 
-  // 4. Calculate VAT amount & Total Payable
+  // 4. Calculate VAT amount & Total Payable (Exclusive VAT default)
   let vatCents = 0;
   let totalPayableCents = discountedSubtotalCents;
 
@@ -81,23 +116,30 @@ export function calculateTotals(input: CalculateTotalsInput): BillingTotals {
       vatCents = Math.round(discountedSubtotalCents - preTaxCents);
       totalPayableCents = discountedSubtotalCents;
     } else {
-      // VAT excluded (added on top)
+      // VAT excluded (added on top) - Default standard
       vatCents = Math.round((discountedSubtotalCents * input.vatRate) / 100);
       totalPayableCents = discountedSubtotalCents + vatCents;
     }
   }
 
-  // 5. Calculate payments safely in cents
+  // 5. Optional Fraction Rounding (Remove Decimals / Round Total)
+  if (roundTotal) {
+    totalPayableCents = Math.round(totalPayableCents / 100) * 100;
+  }
+
+  // 6. Calculate payments safely in cents
   let paymentsCents = 0;
   for (const p of payments) {
     paymentsCents += toCents(Math.max(0, p.amount));
   }
 
-  // 6. Calculate amount due safely in cents
+  // 7. Calculate amount due safely in cents
   const amountDueCents = Math.max(0, totalPayableCents - paymentsCents);
 
   return {
     subtotal: fromCents(subtotalCents),
+    discountableSubtotal: fromCents(discountableSubtotalCents),
+    mediaBuyingSubtotal: fromCents(mediaBuyingSubtotalCents),
     discountAmount: fromCents(discountCents),
     vatAmount: fromCents(vatCents),
     totalPayable: fromCents(totalPayableCents),

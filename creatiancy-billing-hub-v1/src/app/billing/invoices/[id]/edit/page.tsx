@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { db, BillingClient, Profile, BusinessEntity, InvoiceItem, Invoice, ClientServiceRate, localStore } from '@/lib/db';
-import { calculateTotals, formatCurrency } from '@/lib/calculations';
-import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Megaphone, Sparkles, X } from 'lucide-react';
+import { calculateTotals, formatCurrency, fetchLiveMarketUsdRate } from '@/lib/calculations';
+import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Megaphone, Sparkles, X, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 interface FormItem {
@@ -13,6 +13,7 @@ interface FormItem {
   quantity: number;
   unit: string;
   rate: number;
+  is_paid_media?: boolean;
 }
 
 export default function EditInvoicePage() {
@@ -42,9 +43,10 @@ export default function EditInvoicePage() {
   const [discountType, setDiscountType] = useState<'none' | 'fixed' | 'percentage'>('none');
   const [discountValue, setDiscountValue] = useState(0);
   
-  // VAT states
+  // VAT states (Default to Exclusive per user request)
   const [vatRate, setVatRate] = useState(15);
-  const [vatInclusive, setVatInclusive] = useState(true);
+  const [vatInclusive, setVatInclusive] = useState(false);
+  const [roundTotal, setRoundTotal] = useState(false);
 
   // Notes
   const [clientNote, setClientNote] = useState('');
@@ -94,10 +96,11 @@ export default function EditInvoicePage() {
 
     const mediaItem: FormItem = {
       service_name: `${mediaPlatform} Media Buying ($${mediaUsdBudget.toLocaleString()} @ ৳${mediaUsdRate}/USD)`,
-      description: `Ad Media Spend Budget: $${mediaUsdBudget.toLocaleString()} USD converted at manual rate ৳${mediaUsdRate} BDT/USD`,
+      description: `Ad Media Spend Budget: $${mediaUsdBudget.toLocaleString()} USD converted at live market rate ৳${mediaUsdRate} BDT/USD`,
       quantity: 1,
       unit: 'Budget',
-      rate: currency === 'USD' ? mediaUsdBudget : budgetBdt
+      rate: currency === 'USD' ? mediaUsdBudget : budgetBdt,
+      is_paid_media: true
     };
 
     const newItemsList = [...items];
@@ -159,6 +162,11 @@ export default function EditInvoicePage() {
         const profs = await db.getProfiles();
         setManagers(profs);
 
+        // Fetch live market USD exchange rate
+        const liveUsdRate = await fetchLiveMarketUsdRate();
+        setUsdExchangeRate(liveUsdRate);
+        setMediaUsdRate(liveUsdRate);
+
         const inv = await db.getInvoiceById(id);
         if (!inv) {
           router.push('/billing/invoices');
@@ -198,7 +206,8 @@ export default function EditInvoicePage() {
             description: itm.description || '',
             quantity: itm.quantity,
             unit: itm.unit,
-            rate: itm.rate
+            rate: itm.rate,
+            is_paid_media: itm.is_paid_media
           })));
         }
       } catch (err) {
@@ -255,11 +264,12 @@ export default function EditInvoicePage() {
 
   // Totals calculations
   const totals = calculateTotals({
-    items: items.map(i => ({ quantity: i.quantity, rate: i.rate })),
+    items: items.map(i => ({ quantity: i.quantity, rate: i.rate, is_paid_media: i.is_paid_media, service_name: i.service_name })),
     discountType,
     discountValue,
     vatRate: currency === 'BDT' ? vatRate : 0,
-    vatInclusive
+    vatInclusive,
+    roundTotal
   });
 
   const handleSave = async (status: 'draft' | 'pending_approval') => {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  db, Invoice, Payment, InvoiceItem, TaxPayment, BusinessEntity, Profile, Expense,
+  db, Invoice, Payment, InvoiceItem, TaxPayment, BusinessEntity, Profile, Expense, BillingClient,
   TaxConfiguration, TaxServiceCategory, TaxCalculation, TaxAuditLog
 } from '@/lib/db';
 import { calculateTotals, formatCurrency, calculateBangladeshCorporateTax, BdCorporateTaxResult } from '@/lib/calculations';
@@ -10,10 +10,34 @@ import NotificationModal from '@/components/NotificationModal';
 import {
   Calculator, TrendingUp, DollarSign, CheckCircle, Plus,
   Receipt, AlertCircle, Loader2, Calendar, Download, Pencil, Globe,
-  Scale, ShieldCheck, ArrowRight, Info, X, Settings, History, Lock, RefreshCw, Send, HelpCircle
+  Scale, ShieldCheck, ArrowRight, Info, X, Settings, History, Lock, Send, HelpCircle, FileText
 } from 'lucide-react';
 
 type TabView = 'calculator' | 'configurations' | 'audit_logs' | 'challan_ledger';
+
+function StatCard({ label, amount, sub, color, icon: Icon, badge }: {
+  label: string; amount: string; sub?: string; color: string; icon: React.ElementType;
+  badge?: { text: string; type: 'warn' | 'ok' | 'info' };
+}) {
+  return (
+    <div className="rounded-2xl border border-gray-100 p-5 bg-white shadow-2xs flex flex-col gap-3">
+      <div className="flex items-start justify-between">
+        <div className={`p-2.5 rounded-xl ${color}`}><Icon className="h-5 w-5 text-white" /></div>
+        {badge && (
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border
+            ${badge.type === 'warn' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+              badge.type === 'ok' ? 'bg-green-50 text-green-700 border-green-200' :
+              'bg-blue-50 text-blue-700 border-blue-200'}`}>{badge.text}</span>
+        )}
+      </div>
+      <div>
+        <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">{label}</p>
+        <p className="text-2xl font-extrabold text-gray-900 mt-0.5">{amount}</p>
+        {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+      </div>
+    </div>
+  );
+}
 
 export default function TaxLedgerPage() {
   const [activeTab, setActiveTab] = useState<TabView>('calculator');
@@ -30,11 +54,13 @@ export default function TaxLedgerPage() {
   const [activeConfig, setActiveConfig] = useState<TaxConfiguration | null>(null);
   const [serviceCategories, setServiceCategories] = useState<TaxServiceCategory[]>([]);
   const [auditLogs, setAuditLogs] = useState<TaxAuditLog[]>([]);
+  const [clients, setClients] = useState<BillingClient[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Financial Year Selection
   const [financialYear, setFinancialYear] = useState<string>('2026-2027');
   const financialYears = ['2026-2027', '2025-2026', '2024-2025'];
+  const [breakdownYear, setBreakdownYear] = useState(new Date().getFullYear());
 
   // Tax Calculator State Inputs
   const [grossReceipts, setGrossReceipts] = useState<number>(0);
@@ -70,7 +96,7 @@ export default function TaxLedgerPage() {
   // Record Payment Modal state
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [formEntityId, setFormEntityId] = useState('');
-  const [formTaxType, setFormTaxType] = useState<'VAT' | 'Corporate Tax'>('Corporate Tax');
+  const [formTaxType, setFormTaxType] = useState<'VAT' | 'Corporate Tax'>('VAT');
   const [formAmount, setFormAmount] = useState('');
   const [formDate, setFormDate] = useState(new Date().toISOString().slice(0, 10));
   const [formChallan, setFormChallan] = useState('');
@@ -88,7 +114,7 @@ export default function TaxLedgerPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [user, invs, pays, exps, ents, taxPays, cfgs, logs] = await Promise.all([
+        const [user, invs, pays, exps, ents, taxPays, cfgs, logs, cls] = await Promise.all([
           db.getCurrentUser(),
           db.getInvoices(),
           db.getPayments(),
@@ -96,7 +122,8 @@ export default function TaxLedgerPage() {
           db.getEntities(),
           db.getTaxPayments(),
           db.getTaxConfigurations(),
-          db.getTaxAuditLogs()
+          db.getTaxAuditLogs(),
+          db.getClients()
         ]);
 
         setCurrentUser(user);
@@ -107,6 +134,7 @@ export default function TaxLedgerPage() {
         setTaxPayments(taxPays);
         setTaxConfigs(cfgs);
         setAuditLogs(logs);
+        setClients(cls);
 
         const currentActive = cfgs.find(c => c.financial_year === financialYear && c.status === 'ACTIVE') || cfgs[0] || null;
         setActiveConfig(currentActive);
@@ -156,7 +184,25 @@ export default function TaxLedgerPage() {
     loadData();
   }, [financialYear]);
 
-  // Compute Income Tax Liability using decimal-safe calculation engine
+  // Calculate live overall VAT Accruals & Payment tracking
+  const calculateTotalAccruedVAT = () => {
+    let accruedVat = 0;
+    const validInvoices = invoices.filter(inv =>
+      inv.currency === 'BDT' && ['paid', 'partially_paid', 'sent', 'approved', 'overdue'].includes(inv.status)
+    );
+    for (const inv of validInvoices) {
+      const items = allItems.filter(i => i.invoice_id === inv.id);
+      const pays = allPayments.filter(p => p.invoice_id === inv.id);
+      const t = calculateTotals({ items: items.map(i => ({ quantity: i.quantity, rate: i.rate })), discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: pays });
+      accruedVat += t.vatAmount;
+    }
+    return accruedVat;
+  };
+
+  const totalAccruedVAT = calculateTotalAccruedVAT();
+  const totalVATPaid = taxPayments.filter(tp => tp.tax_type === 'VAT').reduce((s, tp) => s + tp.amount, 0);
+  const vatBalance = totalAccruedVAT - totalVATPaid;
+
   const bankRate = activeConfig ? activeConfig.bank_compliant_tax_rate : 0.25;
   const stdRate = activeConfig ? activeConfig.standard_tax_rate : 0.275;
   const turnThreshold = activeConfig ? activeConfig.turnover_threshold : 5000000;
@@ -177,6 +223,36 @@ export default function TaxLedgerPage() {
     manualTaxAdjustment,
     manualOverrideTax: activeOverrideVal
   });
+
+  const totalCorpTaxPaid = taxPayments.filter(tp => tp.tax_type === 'Corporate Tax').reduce((s, tp) => s + tp.amount, 0);
+  const taxBalance = taxResult.finalTaxPayable - totalCorpTaxPaid;
+
+  // Monthly breakdown
+  const monthlyBreakdown = Array.from({ length: 12 }, (_, m) => {
+    const monthName = new Date(breakdownYear, m, 1).toLocaleString('default', { month: 'long' });
+    const monthInvoices = invoices.filter(inv => {
+      const d = new Date(inv.issue_date);
+      return inv.currency === 'BDT' && d.getFullYear() === breakdownYear && d.getMonth() === m && ['paid', 'partially_paid', 'sent', 'approved', 'overdue'].includes(inv.status);
+    });
+
+    let rev = 0;
+    let vat = 0;
+    for (const inv of monthInvoices) {
+      const items = allItems.filter(i => i.invoice_id === inv.id);
+      const pays = allPayments.filter(p => p.invoice_id === inv.id);
+      const t = calculateTotals({ items: items.map(i => ({ quantity: i.quantity, rate: i.rate })), discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: pays });
+      rev += t.totalPayable;
+      vat += t.vatAmount;
+    }
+    return { month: monthName, revenue: rev, vatAccrued: vat };
+  });
+
+  // Client Direct-Paid VAT Invoices (where vat_rate <= 0)
+  const clientDirectVatInvoices = invoices.filter(inv =>
+    inv.currency === 'BDT' &&
+    ['paid', 'partially_paid', 'sent', 'approved', 'overdue'].includes(inv.status) &&
+    (inv.vat_rate <= 0 || !inv.vat_rate)
+  );
 
   // Handle Saving New / Updated Tax Configuration
   const handleSaveConfiguration = async () => {
@@ -336,14 +412,14 @@ export default function TaxLedgerPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-extrabold text-gray-900 flex items-center gap-2">
                 <Calculator className="h-5.5 w-5.5 text-[#9B1C22]" />
-                Bangladesh Corporate Income Tax Module
+                Tax &amp; VAT Smart Tracker Dashboard
               </h1>
               <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full">
                 Creatiancy Limited (Private Ltd)
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Financial-year tax engine per NBR Bangladesh Income Tax Act 2023 (Section 163).
+              Live accruals, exchequer payments, and NBR income tax calculation engine (Income Tax Act 2023).
             </p>
           </div>
 
@@ -391,24 +467,30 @@ export default function TaxLedgerPage() {
         </div>
 
         {/* View Tabs */}
-        <div className="flex items-center gap-2 mt-5 border-t border-gray-100 pt-3">
+        <div className="flex items-center gap-2 mt-5 border-t border-gray-100 pt-3 overflow-x-auto">
           <button
             onClick={() => setActiveTab('calculator')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${activeTab === 'calculator' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${activeTab === 'calculator' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
           >
-            Income Tax Calculator &amp; Ledger
+            Smart Tracker &amp; Tax Calculator
+          </button>
+          <button
+            onClick={() => setActiveTab('challan_ledger')}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${activeTab === 'challan_ledger' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
+          >
+            Exchequer Challan Ledger ({taxPayments.length})
           </button>
           <button
             onClick={() => setActiveTab('configurations')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${activeTab === 'configurations' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${activeTab === 'configurations' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
           >
             Tax Rate Configurations ({taxConfigs.length})
           </button>
           <button
             onClick={() => setActiveTab('audit_logs')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${activeTab === 'audit_logs' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${activeTab === 'audit_logs' ? 'bg-[#9B1C22] text-white shadow-2xs' : 'text-gray-500 hover:bg-gray-100'}`}
           >
-            Audit Trail &amp; Override History ({auditLogs.length})
+            Audit Trail &amp; Overrides ({auditLogs.length})
           </button>
         </div>
       </div>
@@ -416,16 +498,81 @@ export default function TaxLedgerPage() {
       {/* Main Content Area */}
       <div className="flex-1 p-4 sm:p-6 space-y-6">
 
-        {/* Legal Disclaimer Banner */}
-        <div className="flex items-start gap-3 bg-amber-50/80 border border-amber-200 rounded-2xl px-5 py-4 text-xs text-amber-900">
-          <Info className="h-4 w-4 mt-0.5 text-amber-600 shrink-0" />
-          <div className="leading-relaxed">
-            <strong>Official Legal &amp; Compliance Notice:</strong> This calculator provides an estimated corporate income tax calculation based on the tax configuration selected for Financial Year <strong>{financialYear}</strong>. Final taxable income, tax classification, disallowed adjustments, certified TDS credits, and payable amounts must be reviewed by an authorized accountant or tax professional before submission to the National Board of Revenue (NBR).
+        {/* Smart KPI Dashboard Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="BDT Gross Revenue" amount={formatCurrency(grossReceipts, 'BDT')} sub="Active BDT invoices" color="bg-gray-700" icon={DollarSign} />
+          <StatCard label="Accrued VAT (15.0%)" amount={formatCurrency(totalAccruedVAT, 'BDT')} sub={`Paid: ${formatCurrency(totalVATPaid, 'BDT')}`} color="bg-amber-500" icon={TrendingUp} badge={{ text: vatBalance <= 0 ? 'PAID' : 'DUE', type: vatBalance <= 0 ? 'ok' : 'warn' }} />
+          <StatCard label="Effective Corp. Tax" amount={formatCurrency(taxResult.finalTaxPayable, 'BDT')} sub={`Paid: ${formatCurrency(totalCorpTaxPaid, 'BDT')}`} color="bg-[#9B1C22]" icon={Calculator} badge={{ text: taxBalance <= 0 ? 'PAID' : 'DUE', type: taxBalance <= 0 ? 'ok' : 'warn' }} />
+          <StatCard label="Total Net Tax Liability" amount={formatCurrency(Math.max(0, vatBalance) + Math.max(0, taxBalance), 'BDT')} sub="VAT + Corp Tax Net Due" color="bg-purple-600" icon={Receipt} />
+        </div>
+
+        {/* VAT & Corporate Tax Payment Status Tracker Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* VAT Status */}
+          <div className="rounded-2xl border border-gray-100 p-5 bg-white shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                <Receipt className="h-4 w-4 text-amber-500" />
+                Value Added Tax (VAT) Status
+              </span>
+              <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${vatBalance <= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : totalVATPaid > 0 ? 'bg-cyan-50 text-cyan-700 border-cyan-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                {vatBalance <= 0 ? 'Fully Deposited' : totalVATPaid > 0 ? 'Partially Deposited' : 'Unpaid Accrual'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+              <div className="bg-gray-50 p-2.5 rounded-xl">
+                <span className="text-[10px] text-gray-400 uppercase font-bold block">Accrued VAT</span>
+                <span className="text-sm font-extrabold text-gray-900">{formatCurrency(totalAccruedVAT, 'BDT')}</span>
+              </div>
+              <div className="bg-gray-50 p-2.5 rounded-xl">
+                <span className="text-[10px] text-gray-400 uppercase font-bold block">Paid to Govt.</span>
+                <span className="text-sm font-extrabold text-emerald-700">{formatCurrency(totalVATPaid, 'BDT')}</span>
+              </div>
+              <div className="bg-gray-50 p-2.5 rounded-xl">
+                <span className="text-[10px] text-gray-400 uppercase font-bold block">Net Payable</span>
+                <span className="text-sm font-extrabold text-[#9B1C22]">{formatCurrency(Math.max(0, vatBalance), 'BDT')}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Corp Tax Status */}
+          <div className="rounded-2xl border border-gray-100 p-5 bg-white shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-gray-500 flex items-center gap-1.5">
+                <Calculator className="h-4 w-4 text-[#9B1C22]" />
+                Corporate Income Tax Status
+              </span>
+              <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border ${taxBalance <= 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : totalCorpTaxPaid > 0 ? 'bg-cyan-50 text-cyan-700 border-cyan-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                {taxBalance <= 0 ? 'Fully Deposited' : totalCorpTaxPaid > 0 ? 'Partially Deposited' : 'Unpaid Liability'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+              <div className="bg-gray-50 p-2.5 rounded-xl">
+                <span className="text-[10px] text-gray-400 uppercase font-bold block">Effective Tax</span>
+                <span className="text-sm font-extrabold text-gray-900">{formatCurrency(taxResult.finalTaxPayable, 'BDT')}</span>
+              </div>
+              <div className="bg-gray-50 p-2.5 rounded-xl">
+                <span className="text-[10px] text-gray-400 uppercase font-bold block">Paid to Govt.</span>
+                <span className="text-sm font-extrabold text-emerald-700">{formatCurrency(totalCorpTaxPaid, 'BDT')}</span>
+              </div>
+              <div className="bg-gray-50 p-2.5 rounded-xl">
+                <span className="text-[10px] text-gray-400 uppercase font-bold block">Net Payable</span>
+                <span className="text-sm font-extrabold text-[#9B1C22]">{formatCurrency(Math.max(0, taxBalance), 'BDT')}</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {activeTab === 'calculator' && (
           <>
+            {/* Legal Disclaimer Banner */}
+            <div className="flex items-start gap-3 bg-amber-50/80 border border-amber-200 rounded-2xl px-5 py-4 text-xs text-amber-900">
+              <Info className="h-4 w-4 mt-0.5 text-amber-600 shrink-0" />
+              <div className="leading-relaxed">
+                <strong>Official Legal &amp; Compliance Notice:</strong> This calculator provides an estimated corporate income tax calculation based on the tax configuration selected for Financial Year <strong>{financialYear}</strong>. Final taxable income, tax classification, disallowed adjustments, certified TDS credits, and payable amounts must be reviewed by an authorized accountant or tax professional before submission to the National Board of Revenue (NBR).
+              </div>
+            </div>
+
             {/* Active Configuration Reference Card */}
             <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
               <div className="space-y-1">
@@ -437,9 +584,6 @@ export default function TaxLedgerPage() {
                 </div>
                 <p className="text-gray-500">
                   Banking-Compliant Rate: <strong>{(bankRate * 100).toFixed(1)}%</strong> · Standard Rate: <strong>{(stdRate * 100).toFixed(1)}%</strong> · Turnover Min Tax: <strong>{(turnRate * 100).toFixed(2)}%</strong> above <strong>৳{turnThreshold.toLocaleString()} BDT</strong>
-                </p>
-                <p className="text-gray-400 text-[11px]">
-                  Ref: {activeConfig?.source_reference || 'Income Tax Act 2023'}
                 </p>
               </div>
 
@@ -659,6 +803,46 @@ export default function TaxLedgerPage() {
                   </div>
                 </div>
 
+                {/* Section D: Monthly Revenue & Accrued VAT Breakdown Table */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden">
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <h3 className="text-sm font-extrabold text-gray-900 flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-amber-500" />
+                      Monthly Revenue &amp; VAT Breakdown ({breakdownYear})
+                    </h3>
+                    <select
+                      value={breakdownYear}
+                      onChange={(e) => setBreakdownYear(parseInt(e.target.value))}
+                      className="bg-gray-50 border border-gray-200 rounded-lg px-2.5 py-1 text-xs font-bold text-gray-800 focus:outline-none cursor-pointer"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead>
+                        <tr className="border-b border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                          <th className="py-3 px-4">Month</th>
+                          <th className="py-3 px-4 text-right">Revenue (BDT)</th>
+                          <th className="py-3 px-4 text-right">Accrued VAT (15%)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {monthlyBreakdown.map((row, idx) => (
+                          <tr key={idx} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                            <td className="py-3 px-4 font-bold text-gray-800">{row.month}</td>
+                            <td className="py-3 px-4 text-right font-semibold text-gray-900">{formatCurrency(row.revenue, 'BDT')}</td>
+                            <td className="py-3 px-4 text-right font-extrabold text-amber-600">{formatCurrency(row.vatAccrued, 'BDT')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
               </div>
 
               {/* Right Column: Final Tax Summary Card & Manual Override Panel */}
@@ -745,10 +929,90 @@ export default function TaxLedgerPage() {
                   </div>
                 </div>
 
+                {/* Direct-Paid Client VAT List */}
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs p-5 space-y-3 text-xs">
+                  <h4 className="font-extrabold text-gray-900 flex items-center gap-1.5">
+                    <FileText className="h-4 w-4 text-emerald-600" />
+                    Direct-Paid Client VAT Invoices ({clientDirectVatInvoices.length})
+                  </h4>
+                  <p className="text-gray-400 text-[11px]">
+                    Invoices where clients pay VAT directly to NBR treasury exchequer.
+                  </p>
+                  <div className="space-y-2 max-h-48 overflow-y-auto pt-1">
+                    {clientDirectVatInvoices.map(inv => (
+                      <div key={inv.id} className="p-2.5 rounded-xl bg-gray-50 flex justify-between items-center">
+                        <div>
+                          <span className="font-bold text-gray-800 block">{inv.invoice_number || 'INV-DRAFT'}</span>
+                          <span className="text-[10px] text-gray-400">{inv.project_name}</span>
+                        </div>
+                        <span className="font-extrabold text-emerald-700">{formatCurrency(inv.discount_value, 'BDT')}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
 
             </div>
           </>
+        )}
+
+        {/* Challan Ledger Tab */}
+        {activeTab === 'challan_ledger' && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-sm font-bold text-gray-900">Government Treasury Exchequer Challan Ledger</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Recorded payments submitted to Bangladesh Government Treasury Exchequer for VAT and Corporate Tax.</p>
+              </div>
+              <button
+                onClick={() => setShowRecordModal(true)}
+                className="flex items-center gap-1.5 bg-[#9B1C22] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold hover:bg-[#7d1219] shadow-sm transition cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" /> Record Challan Payment
+              </button>
+            </div>
+
+            {taxPayments.length === 0 ? (
+              <div className="py-12 text-center text-gray-400 text-xs font-semibold">
+                No exchequer payments recorded yet. Click &quot;Record Challan Payment&quot; to log a treasury deposit.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                      <th className="py-3 px-4">Payment Date</th>
+                      <th className="py-3 px-4">Tax Type</th>
+                      <th className="py-3 px-4">Business Entity</th>
+                      <th className="py-3 px-4">Challan / Treasury #</th>
+                      <th className="py-3 px-4">Period</th>
+                      <th className="py-3 px-4 text-right">Amount Paid</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {taxPayments.map(tp => {
+                      const ent = entities.find(e => e.id === tp.entity_id);
+                      return (
+                        <tr key={tp.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
+                          <td className="py-3.5 px-4 font-extrabold text-gray-900">{tp.payment_date}</td>
+                          <td className="py-3.5 px-4">
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${tp.tax_type === 'VAT' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                              {tp.tax_type}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 font-semibold text-gray-700">{ent?.legal_name || 'Creatiancy Limited'}</td>
+                          <td className="py-3.5 px-4 font-mono font-bold text-gray-800">{tp.challan_number}</td>
+                          <td className="py-3.5 px-4 text-gray-500">{tp.period_start} to {tp.period_end}</td>
+                          <td className="py-3.5 px-4 text-right font-extrabold text-emerald-700">{formatCurrency(tp.amount, 'BDT')}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         )}
 
         {/* Configurations Tab */}

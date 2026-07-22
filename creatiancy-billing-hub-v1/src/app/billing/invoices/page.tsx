@@ -66,16 +66,22 @@ export default function InvoiceListPage() {
     }
   };
 
-  const filteredInvoices = invoices.filter(inv => {
-    const clientName = getClientName(inv.client_id).toLowerCase();
-    const invoiceNum = (inv.invoice_number || '').toLowerCase();
-    const projectName = inv.project_name.toLowerCase();
-    const searchLower = search.toLowerCase();
-    const matchesSearch = clientName.includes(searchLower) || invoiceNum.includes(searchLower) || projectName.includes(searchLower);
-    const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-    const matchesCurrency = currencyFilter === 'all' || inv.currency === currencyFilter;
-    return matchesSearch && matchesStatus && matchesCurrency;
-  });
+  const filteredInvoices = invoices
+    .filter(inv => {
+      const clientName = getClientName(inv.client_id).toLowerCase();
+      const invoiceNum = (inv.invoice_number || '').toLowerCase();
+      const projectName = inv.project_name.toLowerCase();
+      const searchLower = search.toLowerCase();
+      const matchesSearch = clientName.includes(searchLower) || invoiceNum.includes(searchLower) || projectName.includes(searchLower);
+      const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+      const matchesCurrency = currencyFilter === 'all' || inv.currency === currencyFilter;
+      return matchesSearch && matchesStatus && matchesCurrency;
+    })
+    .sort((a, b) => {
+      const timeA = new Date(a.created_at || a.issue_date).getTime();
+      const timeB = new Date(b.created_at || b.issue_date).getTime();
+      return timeB - timeA;
+    });
 
   if (loading) {
     return (
