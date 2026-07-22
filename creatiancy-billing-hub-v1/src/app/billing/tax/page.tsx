@@ -296,12 +296,12 @@ export default function TaxLedgerPage() {
         {regionTab === 'BDT' ? (
           <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 text-xs text-blue-800">
             <AlertCircle className="h-4 w-4 mt-0.5 text-blue-500 shrink-0" />
-            <div><strong>Bangladesh BDT Tax Accruals:</strong> Corporate Income Tax at <strong>{localTaxRate}%</strong> is calculated on Net Taxable Cashflow Profit. Default VAT is set to <strong>{localVatRate}%</strong>. Click <em>Edit %</em> above to customize rates for BDT.</div>
+            <div><strong>Bangladesh BDT Tax Accruals:</strong> Corporate Income Tax at <strong>{localTaxRate}%</strong> is calculated on Net Taxable Cashflow Profit. Default VAT is set to <strong>{localVatRate}%</strong>.</div>
           </div>
         ) : (
           <div className="flex items-start gap-3 bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 text-xs text-purple-800">
             <Globe className="h-4 w-4 mt-0.5 text-purple-500 shrink-0" />
-            <div><strong>US Entity USD Tax Obligations:</strong> Corporate Tax at <strong>{localTaxRate}%</strong> and Sales Tax at <strong>{localVatRate}%</strong> for Creatiancy LLC (USA). Click <em>Edit %</em> above to customize rates for USD.</div>
+            <div><strong>US Entity USD Tax Obligations:</strong> Corporate Tax at <strong>{localTaxRate}%</strong> and Sales Tax at <strong>{localVatRate}%</strong> for Creatiancy LLC (USA).</div>
           </div>
         )}
 
