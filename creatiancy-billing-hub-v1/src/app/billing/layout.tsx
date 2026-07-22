@@ -21,7 +21,8 @@ import {
   Percent,
   Mail,
   Calculator,
-  Wallet
+  Wallet,
+  Landmark
 } from 'lucide-react';
 
 export default function BillingLayout({
@@ -98,6 +99,7 @@ export default function BillingLayout({
     { label: 'Receipts', href: '/billing/payments', icon: Receipt, customMatch: '/billing/receipts' },
     { label: 'Reports', href: '/billing/reports', icon: BarChart3 },
     { label: 'Tax Ledger', href: '/billing/tax', icon: Calculator, customMatch: '/billing/tax' },
+    { label: 'Reserve & Savings', href: '/billing/reserve', icon: Landmark, customMatch: '/billing/reserve' },
     { label: 'Cashflow', href: '/billing/expenses', icon: Wallet, customMatch: '/billing/expenses' },
     { label: 'Inbox', href: '/billing/inbox', icon: Mail },
     { label: 'Team', href: '/billing/team', icon: Shield },
@@ -111,6 +113,9 @@ export default function BillingLayout({
       return role === 'Super Admin' || role === 'Admin';
     }
     if (item.label === 'Tax Ledger') {
+      return role === 'Super Admin' || role === 'Admin' || role === 'Finance Admin';
+    }
+    if (item.label === 'Reserve & Savings') {
       return role === 'Super Admin' || role === 'Admin' || role === 'Finance Admin';
     }
     if (item.label === 'Cashflow') {

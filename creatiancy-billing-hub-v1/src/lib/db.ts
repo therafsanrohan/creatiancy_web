@@ -506,7 +506,6 @@ export interface VatReturn {
   reviewed_by?: string;
   approved_by?: string;
   filed_at?: string;
-  payment_reference?: string;
   created_at: string;
   updated_at: string;
 }
@@ -521,6 +520,206 @@ export interface VatAuditLog {
   reason: string;
   performed_by: string;
   performed_at: string;
+}
+
+export interface ReserveSettings {
+  id: string;
+  reserve_percentage: number;
+  target_type: 'FIXED_AMOUNT' | 'EXPENSE_MONTHS' | 'REVENUE_PERCENTAGE';
+  target_value: number;
+  target_fixed_bdt: number;
+  target_fixed_usd: number;
+  updated_by?: string;
+  updated_at: string;
+}
+
+export interface ReserveSettingsHistory {
+  id: string;
+  previous_percentage: number;
+  new_percentage: number;
+  changed_by: string;
+  effective_date: string;
+  reason: string;
+  created_at: string;
+}
+
+export type ReserveTransactionType =
+  | 'AUTOMATIC_RESERVE_ALLOCATION'
+  | 'MANUAL_DEPOSIT'
+  | 'RESERVE_ADJUSTMENT'
+  | 'RESERVE_WITHDRAWAL'
+  | 'TRANSFER_TO_FDR'
+  | 'TRANSFER_TO_DPS'
+  | 'TRANSFER_FROM_FDR'
+  | 'TRANSFER_FROM_DPS'
+  | 'INTEREST_RECEIVED'
+  | 'BANK_CHARGE'
+  | 'TAX_DEDUCTION'
+  | 'PENALTY'
+  | 'MATURITY_PROCEEDS'
+  | 'RENEWAL'
+  | 'REFUND_ADJUSTMENT'
+  | 'CURRENCY_ADJUSTMENT'
+  | 'OPENING_BALANCE';
+
+export interface ReserveLedgerEntry {
+  id: string;
+  entity_id: string;
+  currency: 'BDT' | 'USD';
+  transaction_type: ReserveTransactionType;
+  amount: number;
+  source: string;
+  payment_id?: string;
+  invoice_id?: string;
+  client_id?: string;
+  deposit_date: string;
+  withdrawal_date?: string;
+  destination_account?: string;
+  reason?: string;
+  status: 'COMPLETED' | 'PENDING' | 'CANCELLED' | 'REVERSED';
+  created_by?: string;
+  verified_by?: string;
+  approved_by?: string;
+  notes?: string;
+  created_at: string;
+}
+
+export interface FdrAccount {
+  id: string;
+  entity_id: string;
+  bank_name: string;
+  branch_name?: string;
+  account_title: string;
+  fdr_reference_number: string;
+  principal_amount: number;
+  currency: 'BDT' | 'USD';
+  interest_rate: number;
+  rate_type: 'SIMPLE' | 'COMPOUND';
+  start_date: string;
+  maturity_date: string;
+  tenure_months: number;
+  expected_gross_return: number;
+  expected_tax_deduction: number;
+  expected_bank_charges: number;
+  expected_net_maturity_value: number;
+  actual_maturity_value?: number;
+  auto_renewal: boolean;
+  renewal_instruction?: string;
+  nominee_name?: string;
+  lien_status: boolean;
+  linked_bank_account?: string;
+  funding_source: string;
+  status: 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'NEAR_MATURITY' | 'MATURED' | 'RENEWED' | 'PARTIALLY_ENCUMBERED' | 'CLOSED' | 'CANCELLED';
+  notes?: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface DpsAccount {
+  id: string;
+  entity_id: string;
+  bank_name: string;
+  branch_name?: string;
+  account_title: string;
+  dps_account_number: string;
+  currency: 'BDT' | 'USD';
+  installment_amount: number;
+  payment_frequency: 'MONTHLY' | 'QUARTERLY' | 'HALF_YEARLY' | 'YEARLY' | 'CUSTOM';
+  start_date: string;
+  next_installment_date: string;
+  maturity_date: string;
+  total_installments: number;
+  paid_installments: number;
+  remaining_installments: number;
+  total_deposited_amount: number;
+  expected_interest_amount: number;
+  expected_maturity_value: number;
+  actual_maturity_value?: number;
+  late_payment_charge: number;
+  missed_installments_count: number;
+  grace_period_days: number;
+  auto_debit: boolean;
+  linked_bank_account?: string;
+  funding_source: string;
+  status: 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'PAYMENT_DUE' | 'OVERDUE' | 'MATURED' | 'CLOSED' | 'CANCELLED';
+  notes?: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface DpsInstallment {
+  id: string;
+  dps_account_id: string;
+  installment_number: number;
+  due_date: string;
+  amount: number;
+  status: 'PENDING' | 'PAID' | 'OVERDUE' | 'SKIPPED';
+  paid_date?: string;
+  transaction_reference?: string;
+  paid_from_account?: string;
+  late_fee: number;
+  notes?: string;
+  verified_by?: string;
+  created_at: string;
+}
+
+export interface ReserveWithdrawalRequest {
+  id: string;
+  requested_amount: number;
+  currency: 'BDT' | 'USD';
+  entity_id: string;
+  purpose: string;
+  detailed_reason: string;
+  emergency_category: 'EMERGENCY_OPERATIONS' | 'TAX_SURGE' | 'CAPITAL_INVESTMENT' | 'LEGAL' | 'OTHER';
+  requested_by: string;
+  request_date: string;
+  destination_account?: string;
+  status: 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'APPROVED' | 'REJECTED' | 'PAID' | 'CANCELLED';
+  approved_by?: string;
+  approved_at?: string;
+  approval_comment?: string;
+  override_reason?: string;
+  created_at: string;
+}
+
+export interface SavingsDocument {
+  id: string;
+  document_type: 'FDR_CERTIFICATE' | 'DPS_CERTIFICATE' | 'BANK_STATEMENT' | 'DEPOSIT_SLIP' | 'WITHDRAWAL_APPROVAL' | 'TAX_CERTIFICATE' | 'MATURITY_STATEMENT';
+  document_name: string;
+  file_url: string;
+  related_fdr_id?: string;
+  related_dps_id?: string;
+  related_withdrawal_id?: string;
+  entity_id: string;
+  uploaded_by: string;
+  uploaded_at: string;
+}
+
+export interface FinancialReconciliation {
+  id: string;
+  account_type: 'RESERVE_CASH' | 'FDR' | 'DPS';
+  target_id: string;
+  statement_date: string;
+  system_balance: number;
+  statement_balance: number;
+  discrepancy_amount: number;
+  status: 'MATCHED' | 'PARTIALLY_MATCHED' | 'MISMATCHED' | 'PENDING_REVIEW';
+  notes?: string;
+  reconciled_by: string;
+  created_at: string;
+}
+
+export interface FinancialAuditLog {
+  id: string;
+  user_id: string;
+  user_role: string;
+  action: string;
+  module: string;
+  record_id: string;
+  previous_value: any;
+  new_value: any;
+  ip_address?: string;
+  timestamp: string;
 }
 
 import { supabase, isSupabaseConfigured } from './supabase';
@@ -615,6 +814,170 @@ const MOCK_EMAIL_LOGS: EmailLog[] = [];
 const MOCK_AUDIT_LOGS: AuditLog[] = [];
 const MOCK_TAX_PAYMENTS: TaxPayment[] = [];
 const MOCK_EXPENSES: Expense[] = [];
+
+const MOCK_RESERVE_SETTINGS: ReserveSettings = {
+  id: 'default-setting',
+  reserve_percentage: 20.00,
+  target_type: 'EXPENSE_MONTHS',
+  target_value: 6.00,
+  target_fixed_bdt: 5000000.00,
+  target_fixed_usd: 50000.00,
+  updated_by: 'usr-1',
+  updated_at: '2026-07-01T00:00:00Z'
+};
+
+const MOCK_RESERVE_SETTINGS_HISTORY: ReserveSettingsHistory[] = [
+  {
+    id: 'rsh-1',
+    previous_percentage: 15.00,
+    new_percentage: 20.00,
+    changed_by: 'Rafsan Rohan (Super Admin)',
+    effective_date: '2026-01-01',
+    reason: 'Updated corporate policy for higher 6-month safety buffer.',
+    created_at: '2026-01-01T00:00:00Z'
+  }
+];
+
+const MOCK_RESERVE_LEDGER: ReserveLedgerEntry[] = [
+  {
+    id: 'res-tx-001',
+    entity_id: 'ent-1',
+    currency: 'BDT',
+    transaction_type: 'OPENING_BALANCE',
+    amount: 1500000.00,
+    source: 'BANK_TRANSFER',
+    deposit_date: '2026-01-01',
+    reason: 'Initial company reserve allocation for FY2026',
+    status: 'COMPLETED',
+    created_by: 'Rafsan Rohan',
+    created_at: '2026-01-01T10:00:00Z'
+  },
+  {
+    id: 'res-tx-002',
+    entity_id: 'ent-1',
+    currency: 'BDT',
+    transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
+    amount: 50000.00,
+    source: 'CLIENT_PAYMENT',
+    payment_id: 'pay-178473000',
+    invoice_id: 'inv-178472900',
+    client_id: 'cli-1',
+    deposit_date: '2026-07-15',
+    reason: '20% Automatic reserve allocation from client payment',
+    status: 'COMPLETED',
+    created_by: 'SYSTEM',
+    created_at: '2026-07-15T14:30:00Z'
+  },
+  {
+    id: 'res-tx-003',
+    entity_id: 'ent-1',
+    currency: 'BDT',
+    transaction_type: 'TRANSFER_TO_FDR',
+    amount: 500000.00,
+    source: 'SYSTEM',
+    destination_account: 'fdr-101 (Eastern Bank FDR)',
+    deposit_date: '2026-05-10',
+    reason: 'Transferred reserve cash into 12-month 8.5% FDR asset',
+    status: 'COMPLETED',
+    created_by: 'Finance Executive',
+    approved_by: 'Rafsan Rohan',
+    created_at: '2026-05-10T11:00:00Z'
+  },
+  {
+    id: 'res-tx-004',
+    entity_id: 'ent-2',
+    currency: 'USD',
+    transaction_type: 'OPENING_BALANCE',
+    amount: 25000.00,
+    source: 'BANK_TRANSFER',
+    deposit_date: '2026-01-01',
+    reason: 'Initial USD Reserve account opening for Creatiancy LLC',
+    status: 'COMPLETED',
+    created_by: 'Rafsan Rohan',
+    created_at: '2026-01-01T10:00:00Z'
+  }
+];
+
+const MOCK_FDR_ACCOUNTS: FdrAccount[] = [
+  {
+    id: 'fdr-101',
+    entity_id: 'ent-1',
+    bank_name: 'Eastern Bank PLC',
+    branch_name: 'Gulshan Branch',
+    account_title: 'Creatiancy Limited Reserve FDR',
+    fdr_reference_number: 'EBL-FDR-2026-8841',
+    principal_amount: 500000.00,
+    currency: 'BDT',
+    interest_rate: 8.50,
+    rate_type: 'SIMPLE',
+    start_date: '2026-05-10',
+    maturity_date: '2027-05-10',
+    tenure_months: 12,
+    expected_gross_return: 42500.00,
+    expected_tax_deduction: 4250.00,
+    expected_bank_charges: 500.00,
+    expected_net_maturity_value: 537750.00,
+    auto_renewal: true,
+    renewal_instruction: 'Renew principal + interest automatically for 12 months',
+    nominee_name: 'Board of Directors',
+    lien_status: false,
+    linked_bank_account: 'bnk-1',
+    funding_source: 'Company Emergency Reserve',
+    status: 'ACTIVE',
+    notes: 'Primary 12-month fixed deposit for reserve interest yield.',
+    created_by: 'Finance Executive',
+    created_at: '2026-05-10T11:00:00Z'
+  }
+];
+
+const MOCK_DPS_ACCOUNTS: DpsAccount[] = [
+  {
+    id: 'dps-201',
+    entity_id: 'ent-1',
+    bank_name: 'BRAC Bank PLC',
+    branch_name: 'Banani Branch',
+    account_title: 'Creatiancy Corporate DPS',
+    dps_account_number: 'BRAC-DPS-2026-9912',
+    currency: 'BDT',
+    installment_amount: 25000.00,
+    payment_frequency: 'MONTHLY',
+    start_date: '2026-01-10',
+    next_installment_date: '2026-08-10',
+    maturity_date: '2029-01-10',
+    total_installments: 36,
+    paid_installments: 7,
+    remaining_installments: 29,
+    total_deposited_amount: 175000.00,
+    expected_interest_amount: 85000.00,
+    expected_maturity_value: 985000.00,
+    late_payment_charge: 0.00,
+    missed_installments_count: 0,
+    grace_period_days: 5,
+    auto_debit: true,
+    linked_bank_account: 'bnk-1',
+    funding_source: 'Company Emergency Reserve',
+    status: 'ACTIVE',
+    notes: 'Monthly corporate DPS investment scheme.',
+    created_by: 'Finance Executive',
+    created_at: '2026-01-10T09:00:00Z'
+  }
+];
+
+const MOCK_DPS_INSTALLMENTS: DpsInstallment[] = [
+  { id: 'inst-1', dps_account_id: 'dps-201', installment_number: 1, due_date: '2026-01-10', amount: 25000, status: 'PAID', paid_date: '2026-01-10', transaction_reference: 'TXN-DPS-001', late_fee: 0, created_at: '2026-01-10T09:00:00Z' },
+  { id: 'inst-2', dps_account_id: 'dps-201', installment_number: 2, due_date: '2026-02-10', amount: 25000, status: 'PAID', paid_date: '2026-02-10', transaction_reference: 'TXN-DPS-002', late_fee: 0, created_at: '2026-02-10T09:00:00Z' },
+  { id: 'inst-3', dps_account_id: 'dps-201', installment_number: 3, due_date: '2026-03-10', amount: 25000, status: 'PAID', paid_date: '2026-03-10', transaction_reference: 'TXN-DPS-003', late_fee: 0, created_at: '2026-03-10T09:00:00Z' },
+  { id: 'inst-4', dps_account_id: 'dps-201', installment_number: 4, due_date: '2026-04-10', amount: 25000, status: 'PAID', paid_date: '2026-04-10', transaction_reference: 'TXN-DPS-004', late_fee: 0, created_at: '2026-04-10T09:00:00Z' },
+  { id: 'inst-5', dps_account_id: 'dps-201', installment_number: 5, due_date: '2026-05-10', amount: 25000, status: 'PAID', paid_date: '2026-05-10', transaction_reference: 'TXN-DPS-005', late_fee: 0, created_at: '2026-05-10T09:00:00Z' },
+  { id: 'inst-6', dps_account_id: 'dps-201', installment_number: 6, due_date: '2026-06-10', amount: 25000, status: 'PAID', paid_date: '2026-06-10', transaction_reference: 'TXN-DPS-006', late_fee: 0, created_at: '2026-06-10T09:00:00Z' },
+  { id: 'inst-7', dps_account_id: 'dps-201', installment_number: 7, due_date: '2026-07-10', amount: 25000, status: 'PAID', paid_date: '2026-07-10', transaction_reference: 'TXN-DPS-007', late_fee: 0, created_at: '2026-07-10T09:00:00Z' },
+  { id: 'inst-8', dps_account_id: 'dps-201', installment_number: 8, due_date: '2026-08-10', amount: 25000, status: 'PENDING', late_fee: 0, created_at: '2026-07-10T09:00:00Z' }
+];
+
+const MOCK_WITHDRAWAL_REQUESTS: ReserveWithdrawalRequest[] = [];
+const MOCK_SAVINGS_DOCUMENTS: SavingsDocument[] = [];
+const MOCK_FINANCIAL_RECONCILIATIONS: FinancialReconciliation[] = [];
+const MOCK_FINANCIAL_AUDIT_LOGS: FinancialAuditLog[] = [];
 
 const MOCK_CLIENT_SERVICE_RATES: ClientServiceRate[] = [
   { id: 'csr-1', client_id: 'cli-1', service_name: 'Static Banner Design', unit_price: 1300, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
@@ -1098,6 +1461,86 @@ class LocalStore {
 
   set fromEmail(val: string) {
     this.setVal('from_email', val);
+  }
+
+  get reserveSettings(): ReserveSettings {
+    return this.getVal('reserve_settings', MOCK_RESERVE_SETTINGS);
+  }
+
+  set reserveSettings(val: ReserveSettings) {
+    this.setVal('reserve_settings', val);
+  }
+
+  get reserveSettingsHistory(): ReserveSettingsHistory[] {
+    return this.getVal('reserve_settings_history', MOCK_RESERVE_SETTINGS_HISTORY);
+  }
+
+  set reserveSettingsHistory(val: ReserveSettingsHistory[]) {
+    this.setVal('reserve_settings_history', [...val]);
+  }
+
+  get reserveLedger(): ReserveLedgerEntry[] {
+    return this.getVal('reserve_ledger', MOCK_RESERVE_LEDGER);
+  }
+
+  set reserveLedger(val: ReserveLedgerEntry[]) {
+    this.setVal('reserve_ledger', [...val]);
+  }
+
+  get fdrAccounts(): FdrAccount[] {
+    return this.getVal('fdr_accounts', MOCK_FDR_ACCOUNTS);
+  }
+
+  set fdrAccounts(val: FdrAccount[]) {
+    this.setVal('fdr_accounts', [...val]);
+  }
+
+  get dpsAccounts(): DpsAccount[] {
+    return this.getVal('dps_accounts', MOCK_DPS_ACCOUNTS);
+  }
+
+  set dpsAccounts(val: DpsAccount[]) {
+    this.setVal('dps_accounts', [...val]);
+  }
+
+  get dpsInstallments(): DpsInstallment[] {
+    return this.getVal('dps_installments', MOCK_DPS_INSTALLMENTS);
+  }
+
+  set dpsInstallments(val: DpsInstallment[]) {
+    this.setVal('dps_installments', [...val]);
+  }
+
+  get withdrawalRequests(): ReserveWithdrawalRequest[] {
+    return this.getVal('withdrawal_requests', MOCK_WITHDRAWAL_REQUESTS);
+  }
+
+  set withdrawalRequests(val: ReserveWithdrawalRequest[]) {
+    this.setVal('withdrawal_requests', [...val]);
+  }
+
+  get savingsDocuments(): SavingsDocument[] {
+    return this.getVal('savings_documents', MOCK_SAVINGS_DOCUMENTS);
+  }
+
+  set savingsDocuments(val: SavingsDocument[]) {
+    this.setVal('savings_documents', [...val]);
+  }
+
+  get financialReconciliations(): FinancialReconciliation[] {
+    return this.getVal('financial_reconciliations', MOCK_FINANCIAL_RECONCILIATIONS);
+  }
+
+  set financialReconciliations(val: FinancialReconciliation[]) {
+    this.setVal('financial_reconciliations', [...val]);
+  }
+
+  get financialAuditLogs(): FinancialAuditLog[] {
+    return this.getVal('financial_audit_logs', MOCK_FINANCIAL_AUDIT_LOGS);
+  }
+
+  set financialAuditLogs(val: FinancialAuditLog[]) {
+    this.setVal('financial_audit_logs', [...val]);
   }
 }
 
@@ -1771,11 +2214,49 @@ export const db = {
       }
     }
 
+    // AUTOMATIC RESERVE ALLOCATION (20% by default or as configured)
+    const reserveSettings = localStore.reserveSettings;
+    const reservePct = reserveSettings ? reserveSettings.reserve_percentage : 20.00;
+    const allocatedReserveAmount = Math.round((newPayment.amount * (reservePct / 100)) * 100) / 100;
+
+    const reserveLedgerList = localStore.reserveLedger;
+    const existingAllocation = reserveLedgerList.find(r => r.payment_id === newPayment.id);
+    if (!existingAllocation && allocatedReserveAmount > 0) {
+      const reserveTxn: ReserveLedgerEntry = {
+        id: `res-tx-${Date.now()}`,
+        entity_id: invoice.entity_id || 'ent-1',
+        currency: newPayment.currency,
+        transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
+        amount: allocatedReserveAmount,
+        source: 'CLIENT_PAYMENT',
+        payment_id: newPayment.id,
+        invoice_id: invoice.id,
+        client_id: invoice.client_id,
+        deposit_date: newPayment.payment_date,
+        reason: `${reservePct}% Automatic emergency reserve allocation from payment (Receipt #${newPayment.receipt_number})`,
+        status: 'COMPLETED',
+        created_by: 'SYSTEM',
+        created_at: new Date().toISOString()
+      };
+      reserveLedgerList.unshift(reserveTxn);
+      localStore.reserveLedger = reserveLedgerList;
+
+      await db.logFinancialAudit({
+        user_id: user.id,
+        user_role: user.role_name,
+        action: 'AUTOMATIC_RESERVE_ALLOCATION',
+        module: 'RESERVE_SAVINGS',
+        record_id: reserveTxn.id,
+        previous_value: null,
+        new_value: { payment_id: newPayment.id, allocated_amount: allocatedReserveAmount, reserve_percentage: reservePct }
+      });
+    }
+
     await db.notifyAction({
       sender_name: user.full_name,
       sender_role: user.role_name,
       title: `Payment Recorded: ${newPayment.currency} ${newPayment.amount.toLocaleString()}`,
-      message: `Payment received for ${invoice.invoice_number || invoice.id} via ${newPayment.payment_method} (Receipt #${newPayment.receipt_number}).`,
+      message: `Payment received for ${invoice.invoice_number || invoice.id} via ${newPayment.payment_method} (Receipt #${newPayment.receipt_number}). 20% allocated to Emergency Reserve.`,
       category: 'payment_recorded',
       target_roles: ['Super Admin', 'Finance Admin', 'Client Service'],
       link_url: `/billing/invoices/${invoice.id}`
@@ -1783,6 +2264,539 @@ export const db = {
 
     db.logAudit(user.id, 'record_payment', 'payments', newPayment.id, null, newPayment);
     return newPayment;
+  },
+
+  // Reserve Settings Actions
+  getReserveSettings: async (): Promise<ReserveSettings> => {
+    return localStore.reserveSettings;
+  },
+
+  updateReserveSettings: async (updates: Partial<ReserveSettings>, reason: string, user: Profile): Promise<ReserveSettings> => {
+    const prev = localStore.reserveSettings;
+    const updated: ReserveSettings = {
+      ...prev,
+      ...updates,
+      updated_by: user.id,
+      updated_at: new Date().toISOString()
+    };
+    localStore.reserveSettings = updated;
+
+    if (updates.reserve_percentage !== undefined && updates.reserve_percentage !== prev.reserve_percentage) {
+      const historyList = localStore.reserveSettingsHistory;
+      historyList.unshift({
+        id: `rsh-${Date.now()}`,
+        previous_percentage: prev.reserve_percentage,
+        new_percentage: updates.reserve_percentage,
+        changed_by: `${user.full_name} (${user.role_name})`,
+        effective_date: new Date().toISOString().split('T')[0],
+        reason: reason || 'Updated reserve allocation policy',
+        created_at: new Date().toISOString()
+      });
+      localStore.reserveSettingsHistory = historyList;
+
+      await db.logFinancialAudit({
+        user_id: user.id,
+        user_role: user.role_name,
+        action: 'UPDATE_RESERVE_PERCENTAGE',
+        module: 'RESERVE_SAVINGS',
+        record_id: 'default-setting',
+        previous_value: { reserve_percentage: prev.reserve_percentage },
+        new_value: { reserve_percentage: updates.reserve_percentage, reason }
+      });
+    }
+    return updated;
+  },
+
+  getReserveSettingsHistory: async (): Promise<ReserveSettingsHistory[]> => {
+    return localStore.reserveSettingsHistory;
+  },
+
+  // Reserve Ledger Actions
+  getReserveLedger: async (): Promise<ReserveLedgerEntry[]> => {
+    return localStore.reserveLedger;
+  },
+
+  addReserveLedgerEntry: async (entry: Omit<ReserveLedgerEntry, 'id' | 'created_at'>, user: Profile): Promise<ReserveLedgerEntry> => {
+    const list = localStore.reserveLedger;
+    const newEntry: ReserveLedgerEntry = {
+      ...entry,
+      id: `res-tx-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.unshift(newEntry);
+    localStore.reserveLedger = list;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'ADD_RESERVE_LEDGER_ENTRY',
+      module: 'RESERVE_SAVINGS',
+      record_id: newEntry.id,
+      previous_value: null,
+      new_value: newEntry
+    });
+    return newEntry;
+  },
+
+  // FDR Management Actions
+  getFdrAccounts: async (): Promise<FdrAccount[]> => {
+    return localStore.fdrAccounts;
+  },
+
+  createFdrAccount: async (fdr: Omit<FdrAccount, 'id' | 'created_at'>, user: Profile): Promise<FdrAccount> => {
+    const list = localStore.fdrAccounts;
+    const newFdr: FdrAccount = {
+      ...fdr,
+      id: `fdr-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.unshift(newFdr);
+    localStore.fdrAccounts = list;
+
+    // Create corresponding TRANSFER_TO_FDR transaction in Reserve Ledger
+    await db.addReserveLedgerEntry({
+      entity_id: newFdr.entity_id,
+      currency: newFdr.currency,
+      transaction_type: 'TRANSFER_TO_FDR',
+      amount: newFdr.principal_amount,
+      source: newFdr.funding_source,
+      deposit_date: newFdr.start_date,
+      destination_account: `${newFdr.bank_name} - ${newFdr.fdr_reference_number}`,
+      reason: `Internal asset transfer: Created FDR #${newFdr.fdr_reference_number} at ${newFdr.bank_name}`,
+      status: 'COMPLETED',
+      created_by: user.full_name,
+      approved_by: user.full_name
+    }, user);
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'CREATE_FDR_ACCOUNT',
+      module: 'RESERVE_SAVINGS',
+      record_id: newFdr.id,
+      previous_value: null,
+      new_value: newFdr
+    });
+    return newFdr;
+  },
+
+  updateFdrAccount: async (id: string, updates: Partial<FdrAccount>, user: Profile): Promise<FdrAccount> => {
+    const list = localStore.fdrAccounts;
+    const idx = list.findIndex(f => f.id === id);
+    if (idx === -1) throw new Error('FDR account not found');
+
+    const prev = list[idx];
+    const updated = { ...prev, ...updates };
+    list[idx] = updated;
+    localStore.fdrAccounts = list;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'UPDATE_FDR_ACCOUNT',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: prev,
+      new_value: updated
+    });
+    return updated;
+  },
+
+  recordFdrMaturity: async (id: string, actualNetValue: number, action: 'CLOSE' | 'RENEW', renewalNotes: string, user: Profile): Promise<FdrAccount> => {
+    const list = localStore.fdrAccounts;
+    const idx = list.findIndex(f => f.id === id);
+    if (idx === -1) throw new Error('FDR account not found');
+
+    const fdr = list[idx];
+    fdr.actual_maturity_value = actualNetValue;
+    fdr.status = action === 'RENEW' ? 'RENEWED' : 'CLOSED';
+    fdr.notes = renewalNotes ? `${fdr.notes || ''} | Maturity notes: ${renewalNotes}` : fdr.notes;
+    list[idx] = fdr;
+    localStore.fdrAccounts = list;
+
+    // Record maturity proceeds entry in Reserve Ledger
+    await db.addReserveLedgerEntry({
+      entity_id: fdr.entity_id,
+      currency: fdr.currency,
+      transaction_type: action === 'RENEW' ? 'RENEWAL' : 'MATURITY_PROCEEDS',
+      amount: actualNetValue,
+      source: `${fdr.bank_name} FDR #${fdr.fdr_reference_number}`,
+      deposit_date: new Date().toISOString().split('T')[0],
+      reason: `FDR ${action === 'RENEW' ? 'Renewal' : 'Maturity'} proceeds realized. Net amount: ${fdr.currency} ${actualNetValue.toLocaleString()}`,
+      status: 'COMPLETED',
+      created_by: user.full_name,
+      approved_by: user.full_name
+    }, user);
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: action === 'RENEW' ? 'RENEW_FDR' : 'CLOSE_FDR',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: { status: 'ACTIVE' },
+      new_value: { status: fdr.status, actual_maturity_value: actualNetValue }
+    });
+
+    return fdr;
+  },
+
+  // DPS Management Actions
+  getDpsAccounts: async (): Promise<DpsAccount[]> => {
+    return localStore.dpsAccounts;
+  },
+
+  getDpsInstallments: async (dpsId?: string): Promise<DpsInstallment[]> => {
+    const list = localStore.dpsInstallments;
+    if (dpsId) return list.filter(i => i.dps_account_id === dpsId);
+    return list;
+  },
+
+  createDpsAccount: async (dps: Omit<DpsAccount, 'id' | 'created_at'>, user: Profile): Promise<DpsAccount> => {
+    const list = localStore.dpsAccounts;
+    const newDps: DpsAccount = {
+      ...dps,
+      id: `dps-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.unshift(newDps);
+    localStore.dpsAccounts = list;
+
+    // Automatically generate installment schedules
+    const installments: DpsInstallment[] = [];
+    let currDate = new Date(newDps.start_date);
+    for (let i = 1; i <= newDps.total_installments; i++) {
+      installments.push({
+        id: `inst-${Date.now()}-${i}`,
+        dps_account_id: newDps.id,
+        installment_number: i,
+        due_date: currDate.toISOString().split('T')[0],
+        amount: newDps.installment_amount,
+        status: i === 1 ? 'PAID' : 'PENDING',
+        paid_date: i === 1 ? newDps.start_date : undefined,
+        transaction_reference: i === 1 ? `INIT-DEPOSIT-${newDps.id}` : undefined,
+        late_fee: 0,
+        created_at: new Date().toISOString()
+      });
+      // Increment next month
+      currDate.setMonth(currDate.getMonth() + 1);
+    }
+
+    const allInstallments = localStore.dpsInstallments;
+    allInstallments.unshift(...installments);
+    localStore.dpsInstallments = allInstallments;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'CREATE_DPS_ACCOUNT',
+      module: 'RESERVE_SAVINGS',
+      record_id: newDps.id,
+      previous_value: null,
+      new_value: newDps
+    });
+
+    return newDps;
+  },
+
+  payDpsInstallment: async (installmentId: string, txnRef: string, paidFrom: string, user: Profile): Promise<DpsInstallment> => {
+    const installments = localStore.dpsInstallments;
+    const idx = installments.findIndex(i => i.id === installmentId);
+    if (idx === -1) throw new Error('Installment not found');
+
+    const inst = installments[idx];
+    inst.status = 'PAID';
+    inst.paid_date = new Date().toISOString().split('T')[0];
+    inst.transaction_reference = txnRef;
+    inst.paid_from_account = paidFrom;
+    inst.verified_by = user.full_name;
+    installments[idx] = inst;
+    localStore.dpsInstallments = installments;
+
+    // Update parent DPS account deposited amount and count
+    const dpsList = localStore.dpsAccounts;
+    const dpsIdx = dpsList.findIndex(d => d.id === inst.dps_account_id);
+    if (dpsIdx !== -1) {
+      const dps = dpsList[dpsIdx];
+      dps.paid_installments = (dps.paid_installments || 0) + 1;
+      dps.remaining_installments = Math.max(0, dps.total_installments - dps.paid_installments);
+      dps.total_deposited_amount = (dps.total_deposited_amount || 0) + inst.amount;
+
+      // Update next installment date
+      const nextPending = installments.find(i => i.dps_account_id === dps.id && i.status === 'PENDING');
+      if (nextPending) dps.next_installment_date = nextPending.due_date;
+      dpsList[dpsIdx] = dps;
+      localStore.dpsAccounts = dpsList;
+
+      // Create ledger transfer entry
+      await db.addReserveLedgerEntry({
+        entity_id: dps.entity_id,
+        currency: dps.currency,
+        transaction_type: 'TRANSFER_TO_DPS',
+        amount: inst.amount,
+        source: paidFrom || 'COMPANY_RESERVE',
+        deposit_date: inst.paid_date,
+        destination_account: `${dps.bank_name} DPS #${dps.dps_account_number}`,
+        reason: `Paid DPS Installment #${inst.installment_number} of ${dps.total_installments}`,
+        status: 'COMPLETED',
+        created_by: user.full_name
+      }, user);
+    }
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'PAY_DPS_INSTALLMENT',
+      module: 'RESERVE_SAVINGS',
+      record_id: installmentId,
+      previous_value: { status: 'PENDING' },
+      new_value: inst
+    });
+
+    return inst;
+  },
+
+  // Reserve Withdrawal Requests & Approvals
+  getWithdrawalRequests: async (): Promise<ReserveWithdrawalRequest[]> => {
+    return localStore.withdrawalRequests;
+  },
+
+  createWithdrawalRequest: async (req: Omit<ReserveWithdrawalRequest, 'id' | 'status' | 'created_at'>, user: Profile): Promise<ReserveWithdrawalRequest> => {
+    const list = localStore.withdrawalRequests;
+    const newReq: ReserveWithdrawalRequest = {
+      ...req,
+      id: `wth-${Date.now()}`,
+      status: 'SUBMITTED',
+      created_at: new Date().toISOString()
+    };
+    list.unshift(newReq);
+    localStore.withdrawalRequests = list;
+
+    await db.notifyAction({
+      sender_name: user.full_name,
+      sender_role: user.role_name,
+      title: `Reserve Withdrawal Request: ${req.currency} ${req.requested_amount.toLocaleString()}`,
+      message: `Emergency reserve withdrawal submitted by ${user.full_name} for purpose: ${req.purpose}`,
+      category: 'approval_required',
+      target_roles: ['Super Admin'],
+      link_url: `/billing/reserve`
+    });
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'SUBMIT_WITHDRAWAL_REQUEST',
+      module: 'RESERVE_SAVINGS',
+      record_id: newReq.id,
+      previous_value: null,
+      new_value: newReq
+    });
+
+    return newReq;
+  },
+
+  reviewWithdrawalRequest: async (id: string, status: 'APPROVED' | 'REJECTED', comment: string, user: Profile): Promise<ReserveWithdrawalRequest> => {
+    if (user.role_name !== 'Super Admin') {
+      throw new Error('Only Super Admin can approve or reject reserve withdrawal requests');
+    }
+
+    const list = localStore.withdrawalRequests;
+    const idx = list.findIndex(r => r.id === id);
+    if (idx === -1) throw new Error('Withdrawal request not found');
+
+    const req = list[idx];
+    req.status = status;
+    req.approved_by = `${user.full_name} (${user.role_name})`;
+    req.approved_at = new Date().toISOString();
+    req.approval_comment = comment;
+    list[idx] = req;
+    localStore.withdrawalRequests = list;
+
+    // If approved, create RESERVE_WITHDRAWAL transaction in Reserve Ledger
+    if (status === 'APPROVED') {
+      await db.addReserveLedgerEntry({
+        entity_id: req.entity_id,
+        currency: req.currency,
+        transaction_type: 'RESERVE_WITHDRAWAL',
+        amount: req.requested_amount,
+        source: 'COMPANY_RESERVE',
+        deposit_date: new Date().toISOString().split('T')[0],
+        withdrawal_date: new Date().toISOString().split('T')[0],
+        destination_account: req.destination_account || 'Operating Cash Account',
+        reason: `Approved Reserve Withdrawal: ${req.purpose} (${req.detailed_reason})`,
+        status: 'COMPLETED',
+        created_by: req.requested_by,
+        approved_by: user.full_name
+      }, user);
+    }
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: status === 'APPROVED' ? 'APPROVE_WITHDRAWAL' : 'REJECT_WITHDRAWAL',
+      module: 'RESERVE_SAVINGS',
+      record_id: id,
+      previous_value: { status: 'SUBMITTED' },
+      new_value: { status, approved_by: user.full_name, comment }
+    });
+
+    return req;
+  },
+
+  // Document Management & Reconciliation Actions
+  getSavingsDocuments: async (): Promise<SavingsDocument[]> => {
+    return localStore.savingsDocuments;
+  },
+
+  addSavingsDocument: async (doc: Omit<SavingsDocument, 'id' | 'uploaded_at'>, user: Profile): Promise<SavingsDocument> => {
+    const list = localStore.savingsDocuments;
+    const newDoc: SavingsDocument = {
+      ...doc,
+      id: `doc-${Date.now()}`,
+      uploaded_at: new Date().toISOString()
+    };
+    list.unshift(newDoc);
+    localStore.savingsDocuments = list;
+    return newDoc;
+  },
+
+  getFinancialReconciliations: async (): Promise<FinancialReconciliation[]> => {
+    return localStore.financialReconciliations;
+  },
+
+  addFinancialReconciliation: async (recon: Omit<FinancialReconciliation, 'id' | 'created_at'>, user: Profile): Promise<FinancialReconciliation> => {
+    const list = localStore.financialReconciliations;
+    const newRecon: FinancialReconciliation = {
+      ...recon,
+      id: `recon-${Date.now()}`,
+      created_at: new Date().toISOString()
+    };
+    list.unshift(newRecon);
+    localStore.financialReconciliations = list;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: 'CREATE_RECONCILIATION',
+      module: 'RESERVE_SAVINGS',
+      record_id: newRecon.id,
+      previous_value: null,
+      new_value: newRecon
+    });
+
+    return newRecon;
+  },
+
+  // Financial Audit Logs
+  getFinancialAuditLogs: async (): Promise<FinancialAuditLog[]> => {
+    return localStore.financialAuditLogs;
+  },
+
+  logFinancialAudit: async (log: Omit<FinancialAuditLog, 'id' | 'timestamp'>): Promise<FinancialAuditLog> => {
+    const list = localStore.financialAuditLogs;
+    const newLog: FinancialAuditLog = {
+      ...log,
+      id: `fin-audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      timestamp: new Date().toISOString()
+    };
+    list.unshift(newLog);
+    localStore.financialAuditLogs = list;
+    return newLog;
+  },
+
+  // Reserve Dashboard Aggregated Summary Engine
+  getReserveDashboardSummary: async (entityFilter?: string, currencyFilter?: 'BDT' | 'USD') => {
+    const settings = localStore.reserveSettings;
+    const ledger = localStore.reserveLedger;
+    const fdrs = localStore.fdrAccounts;
+    const dpsList = localStore.dpsAccounts;
+    const installments = localStore.dpsInstallments;
+    const expenses = localStore.expenses;
+    const payments = localStore.payments;
+
+    // Filter by entity & currency
+    const filteredLedger = ledger.filter(l => {
+      if (entityFilter && entityFilter !== 'all' && l.entity_id !== entityFilter) return false;
+      if (currencyFilter && l.currency !== currencyFilter) return false;
+      return l.status === 'COMPLETED';
+    });
+
+    const filteredFdrs = fdrs.filter(f => {
+      if (entityFilter && entityFilter !== 'all' && f.entity_id !== entityFilter) return false;
+      if (currencyFilter && f.currency !== currencyFilter) return false;
+      return f.status === 'ACTIVE' || f.status === 'NEAR_MATURITY';
+    });
+
+    const filteredDps = dpsList.filter(d => {
+      if (entityFilter && entityFilter !== 'all' && d.entity_id !== entityFilter) return false;
+      if (currencyFilter && d.currency !== currencyFilter) return false;
+      return d.status === 'ACTIVE' || d.status === 'PAYMENT_DUE';
+    });
+
+    // 1. Calculate Net Reserve Cash Balance from Ledger
+    let netReserveCash = 0;
+    filteredLedger.forEach(entry => {
+      const type = entry.transaction_type;
+      if (['AUTOMATIC_RESERVE_ALLOCATION', 'MANUAL_DEPOSIT', 'TRANSFER_FROM_FDR', 'TRANSFER_FROM_DPS', 'INTEREST_RECEIVED', 'MATURITY_PROCEEDS', 'OPENING_BALANCE'].includes(type)) {
+        netReserveCash += entry.amount;
+      } else if (['RESERVE_WITHDRAWAL', 'TRANSFER_TO_FDR', 'TRANSFER_TO_DPS', 'BANK_CHARGE', 'TAX_DEDUCTION', 'PENALTY', 'REFUND_ADJUSTMENT'].includes(type)) {
+        netReserveCash -= entry.amount;
+      }
+    });
+
+    // 2. FDR & DPS Totals
+    const totalFdrPrincipal = filteredFdrs.reduce((sum, f) => sum + f.principal_amount, 0);
+    const expectedFdrReturns = filteredFdrs.reduce((sum, f) => sum + (f.expected_net_maturity_value - f.principal_amount), 0);
+
+    const totalDpsDeposited = filteredDps.reduce((sum, d) => sum + d.total_deposited_amount, 0);
+    const expectedDpsReturns = filteredDps.reduce((sum, d) => sum + d.expected_interest_amount, 0);
+
+    // Total Savings = Reserve Cash + FDR Principal + DPS Deposited
+    const totalCompanySavings = netReserveCash + totalFdrPrincipal + totalDpsDeposited;
+
+    // 3. Operating Cash Calculation (80% of Payments minus Operating Expenses)
+    const filteredPayments = payments.filter(p => {
+      if (currencyFilter && p.currency !== currencyFilter) return false;
+      return true;
+    });
+    const totalReceivedPayments = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
+    const totalOperatingExpenses = expenses.filter(e => (!currencyFilter || e.currency === currencyFilter)).reduce((sum, e) => sum + e.amount, 0);
+    const availableOperatingCash = Math.max(0, (totalReceivedPayments * 0.80) - totalOperatingExpenses);
+
+    // 4. Safety Target Calculation
+    const targetBdt = settings.target_fixed_bdt || 5000000;
+    const targetUsd = settings.target_fixed_usd || 50000;
+    const activeTargetAmount = (currencyFilter === 'USD') ? targetUsd : targetBdt;
+
+    const avgMonthlyExpense = totalOperatingExpenses > 0 ? (totalOperatingExpenses / 6) : 250000;
+    const coverageMonths = avgMonthlyExpense > 0 ? (totalCompanySavings / avgMonthlyExpense) : 12;
+
+    const targetGap = Math.max(0, activeTargetAmount - totalCompanySavings);
+    const targetCompletionPct = Math.min(100, Math.round((totalCompanySavings / (activeTargetAmount || 1)) * 100));
+
+    // 5. Installment Alerts
+    const nowStr = new Date().toISOString().split('T')[0];
+    const overdueDpsCount = installments.filter(i => i.status === 'OVERDUE' || (i.status === 'PENDING' && i.due_date < nowStr)).length;
+    const upcomingDpsCount = installments.filter(i => i.status === 'PENDING' && i.due_date >= nowStr).length;
+
+    return {
+      reserveSettings: settings,
+      netReserveCash,
+      availableOperatingCash,
+      totalFdrPrincipal,
+      expectedFdrReturns,
+      totalDpsDeposited,
+      expectedDpsReturns,
+      totalCompanySavings,
+      coverageMonths: parseFloat(coverageMonths.toFixed(1)),
+      activeTargetAmount,
+      targetGap,
+      targetCompletionPct,
+      overdueDpsCount,
+      upcomingDpsCount,
+      activeFdrCount: filteredFdrs.length,
+      activeDpsCount: filteredDps.length
+    };
   },
 
   // Email Actions
