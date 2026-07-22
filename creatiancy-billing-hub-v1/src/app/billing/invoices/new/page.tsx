@@ -814,40 +814,74 @@ export default function NewInvoicePage() {
             {currency === 'BDT' ? (
               <div className="space-y-3">
                 <span className="block text-xs font-semibold uppercase tracking-wider text-gray-400">VAT (Value Added Tax)</span>
-                <div className="flex gap-3 items-center">
-                  <div className="flex items-center space-x-1.5">
-                    <input
-                      id="vat_rate"
-                      type="number"
-                      value={vatRate}
-                      onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
-                      className="block w-16 rounded-lg border border-gray-200 bg-white py-2 px-2 text-xs text-[#1E1E1E] focus:outline-none"
-                    />
-                    <span className="text-xs font-semibold text-gray-500">%</span>
+
+                {/* VAT Excluding Toggle — Primary Option */}
+                <div className={`rounded-xl border-2 p-3.5 transition-all ${!vatInclusive && vatRate > 0 ? 'border-[#9B1C22] bg-red-50/40' : 'border-gray-200 bg-gray-50/30'}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-extrabold text-gray-800">VAT Excluding (Add on Top)</span>
+                      <p className="text-[10px] text-gray-500 mt-0.5">
+                        {!vatInclusive && vatRate > 0
+                          ? `${vatRate}% VAT will be calculated and added separately on top of subtotal`
+                          : 'Enable to add VAT separately above the subtotal amount'}
+                      </p>
+                    </div>
+                    {/* Toggle Switch */}
+                    <button
+                      type="button"
+                      onClick={() => setVatInclusive(vatRate > 0 ? vatInclusive : false)}
+                      className="relative shrink-0"
+                      title={!vatInclusive && vatRate > 0 ? 'VAT Excluding is ON' : 'Click to toggle'}
+                    >
+                      <div
+                        onClick={() => {
+                          if (vatRate === 0) return;
+                          setVatInclusive(curr => !curr);
+                        }}
+                        className={`w-11 h-6 rounded-full transition-all cursor-pointer flex items-center px-0.5 ${!vatInclusive && vatRate > 0 ? 'bg-[#9B1C22]' : 'bg-gray-300'}`}
+                      >
+                        <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${!vatInclusive && vatRate > 0 ? 'translate-x-5' : 'translate-x-0'}`} />
+                      </div>
+                    </button>
                   </div>
-                  <div className="flex items-center gap-4 text-xs font-semibold text-gray-650">
-                    <label className="flex items-center space-x-1.5 cursor-pointer">
+
+                  {/* VAT Rate + Preview */}
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase">VAT Rate</span>
                       <input
-                        type="radio"
-                        name="vat_inclusive_mode"
-                        checked={vatInclusive}
-                        onChange={() => setVatInclusive(true)}
-                        className="accent-[#9B1C22] h-4 w-4"
+                        id="vat_rate"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={vatRate}
+                        onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
+                        className="w-14 rounded-lg border border-gray-200 bg-white py-1.5 px-2 text-xs font-bold text-[#1E1E1E] focus:outline-none text-center"
                       />
-                      <span>VAT Inclusive</span>
-                    </label>
-                    <label className="flex items-center space-x-1.5 cursor-pointer">
-                      <input
-                        type="radio"
-                        name="vat_inclusive_mode"
-                        checked={!vatInclusive}
-                        onChange={() => setVatInclusive(false)}
-                        className="accent-[#9B1C22] h-4 w-4"
-                      />
-                      <span>VAT Exclusive (Add on top)</span>
-                    </label>
+                      <span className="text-xs font-extrabold text-gray-700">%</span>
+                    </div>
+                    {vatRate > 0 && !vatInclusive && (
+                      <div className="flex items-center gap-1.5 bg-white rounded-lg border border-[#9B1C22]/20 px-2.5 py-1.5">
+                        <span className="text-[10px] text-gray-500">VAT Amount:</span>
+                        <span className="text-xs font-extrabold text-[#9B1C22]">{formatCurrency(totals.vatAmount, 'BDT')}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* VAT Inclusive option (secondary, collapsed) */}
+                <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <div
+                    onClick={() => { if (vatRate > 0) setVatInclusive(curr => !curr); }}
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center transition ${vatInclusive && vatRate > 0 ? 'bg-[#9B1C22] border-[#9B1C22]' : 'border-gray-300 bg-white'} cursor-pointer`}
+                  >
+                    {vatInclusive && vatRate > 0 && <span className="text-white text-[8px] font-black">✓</span>}
+                  </div>
+                  <span className="text-[11px] font-semibold text-gray-500 group-hover:text-gray-700">
+                    VAT Inclusive — VAT already included in item prices (back-calculate)
+                    {vatInclusive && vatRate > 0 && <span className="ml-1 text-[#9B1C22] font-bold">[Extracted: {formatCurrency(totals.vatAmount, 'BDT')}]</span>}
+                  </span>
+                </label>
               </div>
             ) : (
               <div className="text-xs text-gray-450 italic flex items-center">
@@ -866,7 +900,7 @@ export default function NewInvoicePage() {
               className="accent-[#9B1C22] h-4 w-4 rounded border-gray-300 cursor-pointer"
             />
             <label htmlFor="round_total_checkbox" className="text-xs font-bold text-gray-700 cursor-pointer">
-              Round Total Payable Amount (Remove decimals / Round to nearest integer)
+              Round Total to Whole Number (Remove decimals — e.g. ৳12,450.75 → ৳12,451)
             </label>
           </div>
 

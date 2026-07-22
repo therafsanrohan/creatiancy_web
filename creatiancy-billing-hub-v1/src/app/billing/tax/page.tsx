@@ -95,6 +95,18 @@ export default function TaxLedgerPage() {
   const [vcfgSummary, setVcfgSummary] = useState('Updated VAT service category rules');
   const [publishVatToNotice, setPublishVatToNotice] = useState(true);
 
+  // VAT Registration Profile Editor Modal
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profBusinessName, setProfBusinessName] = useState('');
+  const [profBin, setProfBin] = useState('');
+  const [profBinStatus, setProfBinStatus] = useState<VatRegistrationProfile['bin_status']>('VAT_REGISTERED');
+  const [profCircle, setProfCircle] = useState('');
+  const [profDivision, setProfDivision] = useState('');
+  const [profAddress, setProfAddress] = useState('');
+  const [profEffectiveDate, setProfEffectiveDate] = useState('');
+  const [profReturnFreq, setProfReturnFreq] = useState<VatRegistrationProfile['default_return_frequency']>('MONTHLY');
+  const [savingProfile, setSavingProfile] = useState(false);
+
   const [showDocModal, setShowDocModal] = useState(false);
   const [docType, setDocType] = useState<VatDocument['document_type']>('MUSHAK_6_6');
   const [docNumber, setDocNumber] = useState('');
@@ -123,6 +135,48 @@ export default function TaxLedgerPage() {
 
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'success' | 'error' | 'info'; title: string; message: string; }>({ isOpen: false, type: 'info', title: '', message: '' });
   const showNotif = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => setModalState({ isOpen: true, title, message, type });
+
+  const openProfileModal = () => {
+    if (!vatProfile) return;
+    setProfBusinessName(vatProfile.business_name);
+    setProfBin(vatProfile.bin_number);
+    setProfBinStatus(vatProfile.bin_status);
+    setProfCircle(vatProfile.vat_circle);
+    setProfDivision(vatProfile.vat_division);
+    setProfAddress(vatProfile.registered_address);
+    setProfEffectiveDate(vatProfile.registration_effective_date);
+    setProfReturnFreq(vatProfile.default_return_frequency);
+    setShowProfileModal(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!currentUser) return;
+    if (!profBin.trim()) {
+      showNotif('Validation Error', 'BIN Number is required.', 'error');
+      return;
+    }
+    setSavingProfile(true);
+    try {
+      const updated = await db.saveVatRegistrationProfile({
+        business_name: profBusinessName,
+        bin_number: profBin.trim(),
+        bin_status: profBinStatus,
+        vat_circle: profCircle,
+        vat_division: profDivision,
+        registered_address: profAddress,
+        registration_effective_date: profEffectiveDate,
+        default_return_frequency: profReturnFreq,
+        status: 'ACTIVE'
+      }, currentUser);
+      setVatProfile(updated);
+      setShowProfileModal(false);
+      showNotif('VAT Profile Updated', `BIN ${updated.bin_number} — ${updated.vat_circle}, ${updated.vat_division} saved successfully.`, 'success');
+    } catch (e) {
+      showNotif('Error', 'Failed to save VAT registration profile.', 'error');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   const canManageTax = currentUser && ['Super Admin', 'Admin', 'Finance Admin'].includes(currentUser.role_name);
 
@@ -529,22 +583,40 @@ export default function TaxLedgerPage() {
         {activeTab === 'vat_tracker' && (
           <div className="space-y-6">
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="Gross Output VAT (15%)" amount={formatCurrency(vatStats.outputVat, 'BDT')} sub="Generated from BDT invoices" color="bg-[#9B1C22]" icon={Receipt} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              <StatCard label="Gross Output VAT (15%)" amount={formatCurrency(vatStats.outputVat, 'BDT')} sub="From BDT sales invoices" color="bg-[#9B1C22]" icon={Receipt} />
               <StatCard label="Eligible Input VAT Credit" amount={formatCurrency(vatStats.eligibleInputVat, 'BDT')} sub="Approved vendor purchases" color="bg-emerald-600" icon={CheckCircle} />
-              <StatCard label="Verified VDS Deductions" amount={formatCurrency(vatStats.verifiedVdsAdjustments, 'BDT')} sub="Mushak 6.6 client certificates" color="bg-blue-600" icon={ShieldCheck} />
-              <StatCard label="Net VAT Payable to Govt." amount={formatCurrency(vatStats.netVatPayable, 'BDT')} sub={`Treasury Deposited: ${formatCurrency(vatStats.totalVatPaid, 'BDT')}`} color="bg-purple-600" icon={Calculator} badge={{ text: vatStats.netVatPayable <= 0 ? 'PAID / CLEARED' : 'NET DUE', type: vatStats.netVatPayable <= 0 ? 'ok' : 'warn' }} />
+              <StatCard label="Verified VDS Deductions" amount={formatCurrency(vatStats.verifiedVdsAdjustments, 'BDT')} sub="Mushak 6.6 certificates" color="bg-blue-600" icon={ShieldCheck} />
+              <StatCard label="Treasury VAT Paid" amount={formatCurrency(vatStats.totalVatPaid, 'BDT')} sub="Govt. treasury deposits" color="bg-amber-600" icon={DollarSign} badge={{ text: vatStats.totalVatPaid > 0 ? 'DEPOSITED' : 'NOT PAID', type: vatStats.totalVatPaid > 0 ? 'ok' : 'warn' }} />
+              <StatCard label="Net VAT Still Payable" amount={formatCurrency(vatStats.netVatPayable, 'BDT')} sub={`After all deductions & payments`} color="bg-purple-600" icon={Calculator} badge={{ text: vatStats.netVatPayable <= 0 ? 'CLEARED' : 'DUE NOW', type: vatStats.netVatPayable <= 0 ? 'ok' : 'warn' }} />
             </div>
 
             {/* VAT Registration Profile & Active Configuration Banner */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-2xs space-y-2">
-                <span className="font-extrabold uppercase tracking-wider text-gray-400 block text-[10px]">VAT Registration Profile</span>
-                <p className="font-extrabold text-gray-900 text-sm">{vatProfile?.business_name}</p>
-                <p className="text-gray-600">BIN: <strong className="font-mono text-gray-900">{vatProfile?.bin_number}</strong></p>
-                <p className="text-gray-500">{vatProfile?.vat_circle} · {vatProfile?.vat_division}</p>
-                <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  STATUS: {vatProfile?.bin_status}
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold uppercase tracking-wider text-gray-400 text-[10px]">VAT Registration Profile</span>
+                  {canManageTax && (
+                    <button
+                      onClick={openProfileModal}
+                      title="Edit VAT Registration Profile"
+                      className="flex items-center gap-1 text-[10px] font-bold text-[#9B1C22] bg-red-50 border border-red-100 hover:bg-red-100 px-2 py-0.5 rounded-lg transition cursor-pointer"
+                    >
+                      <Pencil className="h-3 w-3" /> Edit Profile
+                    </button>
+                  )}
+                </div>
+                <p className="font-extrabold text-gray-900 text-sm">{vatProfile?.business_name || '—'}</p>
+                <p className="text-gray-600">BIN: <strong className="font-mono text-gray-900">{vatProfile?.bin_number || 'Not Configured'}</strong></p>
+                <p className="text-gray-500">{vatProfile?.vat_circle || '—'} · {vatProfile?.vat_division || '—'}</p>
+                <p className="text-gray-400 text-[10px]">Effective: {vatProfile?.registration_effective_date || '—'} · {vatProfile?.default_return_frequency} Returns</p>
+                <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  vatProfile?.bin_status === 'VAT_REGISTERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                  vatProfile?.bin_status === 'SUSPENDED' ? 'bg-red-50 text-red-700 border-red-200' :
+                  vatProfile?.bin_status === 'REGISTRATION_PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                  'bg-gray-100 text-gray-600 border-gray-200'
+                }`}>
+                  {vatProfile?.bin_status || 'NOT_CONFIGURED'}
                 </span>
               </div>
 
@@ -865,41 +937,133 @@ export default function TaxLedgerPage() {
         {/* Tab 5: Corporate Income Tax Engine */}
         {activeTab === 'income_tax' && (
           <div className="space-y-6">
+            {/* Income Tax Dashboard Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard label="Gross Revenue (FY)" amount={formatCurrency(grossReceipts, 'BDT')} sub={`Financial Year ${financialYear}`} color="bg-[#9B1C22]" icon={TrendingUp} />
+              <StatCard label="Taxable Profit" amount={formatCurrency(taxResult.taxableProfitForTax, 'BDT')} sub={`Accounting Profit: ${formatCurrency(taxResult.accountingProfit, 'BDT')}`} color="bg-blue-600" icon={Scale} />
+              <StatCard label="Final Tax Payable" amount={formatCurrency(taxResult.finalTaxPayable, 'BDT')} sub={`Route: ${taxResult.liabilityDeterminedBy.replace(/_/g, ' ')}`} color="bg-amber-600" icon={Calculator} badge={{ text: taxResult.liabilityDeterminedBy === 'REGULAR_CORPORATE_TAX' ? '25% / 27.5%' : taxResult.liabilityDeterminedBy === 'TURNOVER_MINIMUM_TAX' ? '0.60% TURNOVER' : 'SOURCE MIN', type: 'info' }} />
+              <StatCard label="Corp. Tax Deposited" amount={formatCurrency(totalCorpTaxPaid, 'BDT')} sub={`Balance: ${formatCurrency(Math.max(0, taxBalance), 'BDT')}`} color="bg-emerald-600" icon={CheckCircle} badge={{ text: taxBalance <= 0 ? 'SETTLED' : 'OUTSTANDING', type: taxBalance <= 0 ? 'ok' : 'warn' }} />
+            </div>
+
             <div className="bg-white rounded-2xl border border-gray-100 shadow-2xs p-6 space-y-4">
               <h3 className="text-sm font-extrabold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-3">
                 <Calculator className="h-4 w-4 text-[#9B1C22]" />
                 Bangladesh Corporate Income Tax 3-Route Calculation Engine (Sec 163)
+                <span className="ml-auto text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                  FY {financialYear} · AY {activeTaxConfig?.assessment_year || `${parseInt(financialYear.split('-')[1])}-${parseInt(financialYear.split('-')[1]) + 1}`}
+                </span>
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1.5">Gross Revenue (BDT)</label>
                   <input type="number" min="0" value={grossReceipts} onChange={e => setGrossReceipts(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-extrabold text-gray-900 focus:outline-none" />
+                  <p className="text-[10px] text-gray-400 mt-1">Auto-filled from paid invoices this FY</p>
                 </div>
                 <div>
                   <label className="block font-bold text-gray-700 mb-1.5">Allowable Expenses (BDT)</label>
                   <input type="number" min="0" value={allowableExpenses} onChange={e => setAllowableExpenses(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-extrabold text-gray-900 focus:outline-none" />
+                  <p className="text-[10px] text-gray-400 mt-1">Auto-filled from expense records this FY</p>
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Disallowed Expenses (BDT)</label>
+                  <input type="number" min="0" value={disallowedExpenses} onChange={e => setDisallowedExpenses(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Other Adjustments (BDT)</label>
+                  <input type="number" value={otherAdjustments} onChange={e => setOtherAdjustments(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none" />
+                  <p className="text-[10px] text-gray-400 mt-1">+/− adjustments to taxable income</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-xs">
                 <div className={`rounded-xl border-2 p-4 space-y-2 ${taxResult.liabilityDeterminedBy === 'REGULAR_CORPORATE_TAX' ? 'border-[#9B1C22] bg-red-50/40' : 'border-gray-200 bg-gray-50/50'}`}>
-                  <span className="font-bold text-gray-700 block">Regular Corp. Tax</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-gray-700">Route 1: Regular Corp. Tax</span>
+                    {taxResult.liabilityDeterminedBy === 'REGULAR_CORPORATE_TAX' && <span className="text-[10px] font-extrabold text-[#9B1C22] bg-red-100 px-1.5 py-0.5 rounded">ACTIVE</span>}
+                  </div>
                   <p className="text-xl font-extrabold text-gray-900">{formatCurrency(taxResult.regularCorporateTax, 'BDT')}</p>
+                  <p className="text-[10px] text-gray-400">{allTransactionsViaBank ? '25%' : '27.5%'} × Taxable Profit</p>
                 </div>
                 <div className={`rounded-xl border-2 p-4 space-y-2 ${taxResult.liabilityDeterminedBy === 'SOURCE_MINIMUM_TAX' ? 'border-amber-500 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50'}`}>
-                  <span className="font-bold text-gray-700 block">Source Min. Tax</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-gray-700">Route 2: Source Min. Tax</span>
+                    {taxResult.liabilityDeterminedBy === 'SOURCE_MINIMUM_TAX' && <span className="text-[10px] font-extrabold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">ACTIVE</span>}
+                  </div>
                   <p className="text-xl font-extrabold text-gray-900">{formatCurrency(taxResult.sourceMinimumTax, 'BDT')}</p>
+                  <p className="text-[10px] text-gray-400">TDS deducted at source from invoices</p>
                 </div>
                 <div className={`rounded-xl border-2 p-4 space-y-2 ${taxResult.liabilityDeterminedBy === 'TURNOVER_MINIMUM_TAX' ? 'border-purple-600 bg-purple-50/40' : 'border-gray-200 bg-gray-50/50'}`}>
-                  <span className="font-bold text-gray-700 block">Turnover Min. Tax</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-gray-700">Route 3: Turnover Min. Tax</span>
+                    {taxResult.liabilityDeterminedBy === 'TURNOVER_MINIMUM_TAX' && <span className="text-[10px] font-extrabold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">ACTIVE</span>}
+                  </div>
                   <p className="text-xl font-extrabold text-gray-900">{formatCurrency(taxResult.turnoverMinimumTax, 'BDT')}</p>
+                  <p className="text-[10px] text-gray-400">0.60% × Revenue (if ≥ ৳50L)</p>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-[#9B1C22] text-white p-4 space-y-1 mt-4">
-                <span className="text-[11px] uppercase tracking-wider text-red-200 font-bold block">Final Corporate Income Tax Payable</span>
-                <p className="text-2xl font-black">{formatCurrency(taxResult.finalTaxPayable, 'BDT')}</p>
+              {/* Bank Condition Toggle */}
+              <div className="flex items-center gap-3 p-3.5 bg-blue-50 rounded-xl border border-blue-100">
+                <input
+                  type="checkbox"
+                  id="bankToggle"
+                  checked={allTransactionsViaBank}
+                  onChange={e => setAllTransactionsViaBank(e.target.checked)}
+                  className="h-4 w-4 rounded text-[#9B1C22] cursor-pointer"
+                />
+                <label htmlFor="bankToggle" className="text-xs font-bold text-blue-900 cursor-pointer">
+                  All business transactions conducted through banking channels (qualifies for 25% rate instead of 27.5%)
+                </label>
+              </div>
+
+              {/* Certified TDS & Advance Tax */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Certified TDS Received (BDT)</label>
+                  <input type="number" min="0" value={certifiedTds} onChange={e => setCertifiedTds(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Advance Tax Paid (BDT)</label>
+                  <input type="number" min="0" value={advanceTaxPaid} onChange={e => setAdvanceTaxPaid(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1.5">Manual Adjustment (BDT)</label>
+                  <input type="number" value={manualTaxAdjustment} onChange={e => setManualTaxAdjustment(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none" />
+                </div>
+              </div>
+
+              {/* Summary Result */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-xl bg-[#9B1C22] text-white p-5">
+                  <span className="text-[11px] uppercase tracking-wider text-red-200 font-bold block">Final Corporate Income Tax Payable</span>
+                  <p className="text-3xl font-black mt-1">{formatCurrency(taxResult.finalTaxPayable, 'BDT')}</p>
+                  <p className="text-[11px] text-red-200 mt-1">Gross Liability: {formatCurrency(taxResult.grossTaxLiability, 'BDT')} − Credits: {formatCurrency(taxResult.availableTaxCredit, 'BDT')}</p>
+                </div>
+                <div className="rounded-xl bg-gray-50 border border-gray-200 p-5 space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Gross Tax Liability:</span>
+                    <span className="font-extrabold text-gray-900">{formatCurrency(taxResult.grossTaxLiability, 'BDT')}</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-700">
+                    <span>Less: Certified TDS + Advance:</span>
+                    <span className="font-extrabold">−{formatCurrency(taxResult.availableTaxCredit, 'BDT')}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-gray-200 pt-2">
+                    <span className="font-bold text-gray-700">Treasury Deposited:</span>
+                    <span className="font-extrabold text-amber-700">{formatCurrency(totalCorpTaxPaid, 'BDT')}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-bold text-gray-700">Outstanding Balance:</span>
+                    <span className={`font-black ${taxBalance > 0 ? 'text-[#9B1C22]' : 'text-emerald-700'}`}>{formatCurrency(Math.max(0, taxBalance), 'BDT')}</span>
+                  </div>
+                  {taxResult.unadjustedTaxCredit > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Unadjusted Credit C/F:</span>
+                      <span className="font-bold text-blue-700">{formatCurrency(taxResult.unadjustedTaxCredit, 'BDT')}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -1083,6 +1247,151 @@ export default function TaxLedgerPage() {
             <div className="flex gap-3 pt-2">
               <button onClick={() => setShowRecordModal(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50">Cancel</button>
               <button onClick={handleRecordPayment} className="flex-1 py-2.5 rounded-xl bg-[#9B1C22] text-white text-xs font-bold hover:bg-[#7d1219]">Save Payment</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal E: Edit VAT Registration Profile */}
+      {showProfileModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+              <div>
+                <h3 className="text-base font-extrabold text-gray-900">Edit VAT Registration Profile</h3>
+                <p className="text-xs text-gray-400 mt-0.5">BIN · NBR Circle & Division · Return frequency</p>
+              </div>
+              <button onClick={() => setShowProfileModal(false)} className="text-gray-400 hover:text-gray-700 cursor-pointer p-1">
+                <X className="h-4.5 w-4.5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Registered Business Name</label>
+                <input
+                  type="text"
+                  value={profBusinessName}
+                  onChange={e => setProfBusinessName(e.target.value)}
+                  placeholder="e.g. Creatiancy Limited"
+                  className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/20"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">BIN Number *</label>
+                  <input
+                    type="text"
+                    value={profBin}
+                    onChange={e => setProfBin(e.target.value)}
+                    placeholder="e.g. 001234567-0101"
+                    className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-mono font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/20"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">BIN Status</label>
+                  <select
+                    value={profBinStatus}
+                    onChange={e => setProfBinStatus(e.target.value as VatRegistrationProfile['bin_status'])}
+                    className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-bold text-gray-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="VAT_REGISTERED">VAT Registered</option>
+                    <option value="TURNOVER_TAX_ENLISTED">Turnover Tax Enlisted</option>
+                    <option value="VOLUNTARILY_REGISTERED">Voluntarily Registered</option>
+                    <option value="REGISTRATION_PENDING">Registration Pending</option>
+                    <option value="SUSPENDED">Suspended</option>
+                    <option value="CANCELLED">Cancelled</option>
+                    <option value="NOT_CONFIGURED">Not Configured</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">VAT Circle (NBR)</label>
+                  <input
+                    type="text"
+                    value={profCircle}
+                    onChange={e => setProfCircle(e.target.value)}
+                    placeholder="e.g. Banani Circle"
+                    className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">VAT Division (NBR)</label>
+                  <input
+                    type="text"
+                    value={profDivision}
+                    onChange={e => setProfDivision(e.target.value)}
+                    placeholder="e.g. Dhaka North Division"
+                    className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Registration Effective Date</label>
+                  <input
+                    type="date"
+                    value={profEffectiveDate}
+                    onChange={e => setProfEffectiveDate(e.target.value)}
+                    className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Default Return Frequency</label>
+                  <select
+                    value={profReturnFreq}
+                    onChange={e => setProfReturnFreq(e.target.value as VatRegistrationProfile['default_return_frequency'])}
+                    className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-bold text-gray-900 focus:outline-none cursor-pointer"
+                  >
+                    <option value="MONTHLY">Monthly (Standard)</option>
+                    <option value="QUARTERLY">Quarterly</option>
+                    <option value="FOUR_MONTHLY">Four Monthly</option>
+                    <option value="ANNUAL">Annual</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Registered Address</label>
+                <textarea
+                  value={profAddress}
+                  onChange={e => setProfAddress(e.target.value)}
+                  rows={2}
+                  placeholder="Full registered business address as per NBR certificate"
+                  className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none resize-none"
+                />
+              </div>
+
+              <div className="flex items-start gap-2 p-3 bg-amber-50 rounded-xl border border-amber-100">
+                <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-[11px] text-amber-800 leading-relaxed">
+                  This profile is stored in your billing database and appears on VAT returns, Mushak document headers, and the Tax Ledger. Ensure BIN matches your official NBR registration certificate exactly.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowProfileModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveProfile}
+                disabled={savingProfile}
+                className="flex-1 py-2.5 rounded-xl bg-[#9B1C22] text-white text-xs font-bold hover:bg-[#7d1219] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {savingProfile
+                  ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  : <Check className="h-3.5 w-3.5" />
+                }
+                {savingProfile ? 'Saving…' : 'Save VAT Profile'}
+              </button>
             </div>
           </div>
         </div>
