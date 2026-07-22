@@ -24,6 +24,10 @@ CREATE TABLE IF NOT EXISTS expenses (
 -- Ensure username column exists on profiles table
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;
 
+-- Ensure tax and vat columns exist on business_entities table
+ALTER TABLE public.business_entities ADD COLUMN IF NOT EXISTS corporate_tax_rate NUMERIC(12,2) DEFAULT 30.00;
+ALTER TABLE public.business_entities ADD COLUMN IF NOT EXISTS default_vat_rate NUMERIC(12,2) DEFAULT 15.00;
+
 -- Update handle_new_user trigger function to safely extract username
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
