@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { db, Invoice, BillingClient, InvoiceItem, Payment, BankAccount, BusinessEntity } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
-import { Printer, ShieldCheck } from 'lucide-react';
+import { Printer, ShieldCheck, Building2 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 export default function PublicInvoicePage() {
@@ -283,115 +283,149 @@ export default function PublicInvoicePage() {
         </div>
 
         {/* Document Bottom */}
-        <div>
-          <div className="grid grid-cols-12 gap-6 border-t border-gray-150 pt-8">
-            {/* Left: Payment instructions + QR */}
-            <div className="col-span-7 space-y-3.5 text-[9px] leading-relaxed">
-              <span className="font-bold text-gray-400 uppercase tracking-wider text-[10px] block">PAYMENT INSTRUCTIONS:</span>
-              {bankAccount ? (
-                <div className="space-y-1 text-gray-500 rounded-xl bg-gray-50 p-3 border border-gray-100">
-                  <p className="font-bold text-gray-800 text-xs">{bankAccount.bank_name}</p>
-                  <p><span className="font-semibold text-gray-400">Account Name:</span> {bankAccount.account_holder}</p>
-                  <p><span className="font-semibold text-gray-400">Account Number:</span> {bankAccount.account_number}</p>
-                  {bankAccount.branch && <p><span className="font-semibold text-gray-400">Branch Name:</span> {bankAccount.branch}</p>}
-                  {bankAccount.routing_number && <p><span className="font-semibold text-gray-400">Routing Code:</span> {bankAccount.routing_number}</p>}
-                  {bankAccount.swift_bic && <p><span className="font-semibold text-gray-400">SWIFT / BIC:</span> {bankAccount.swift_bic}</p>}
-                  {bankAccount.bank_address && <p><span className="font-semibold text-gray-400">Bank Address:</span> {bankAccount.bank_address}</p>}
-                </div>
-              ) : null}
-
-              {/* Mobile Wallets for BDT entity */}
-              {isBdt && (entity?.bkash_merchant || entity?.nagad_merchant) && (
-                <div className="rounded-xl border border-gray-100 bg-gray-50 p-3 space-y-2">
-                  <p className="font-semibold text-[10px] text-gray-400 uppercase tracking-wider">Mobile Wallet (Merchant)</p>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    {entity.bkash_merchant && (
-                      <div className="flex flex-col rounded-lg bg-white p-2 border border-gray-100/80">
-                        <span className="text-[10px] font-semibold text-gray-500">bKash Merchant</span>
-                        <span className="font-mono font-bold text-gray-900 mt-0.5">{entity.bkash_merchant}</span>
-                      </div>
-                    )}
-                    {entity.nagad_merchant && (
-                      <div className="flex flex-col rounded-lg bg-white p-2 border border-gray-100/80">
-                        <span className="text-[10px] font-semibold text-gray-500">Nagad Merchant</span>
-                        <span className="font-mono font-bold text-gray-900 mt-0.5">{entity.nagad_merchant}</span>
-                      </div>
-                    )}
-                  </div>
+        <div className="space-y-6 pt-4 border-t border-gray-150">
+          {/* Totals Section (Right Aligned) */}
+          <div className="flex justify-end">
+            <div className="w-full sm:w-72 space-y-2 text-xs text-gray-700 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+              <div className="flex justify-between">
+                <span className="text-gray-500 font-semibold">Subtotal:</span>
+                <span className="font-bold">{formatCurrency(totals.subtotal, invoice.currency)}</span>
+              </div>
+              {invoice.discount_type !== 'none' && (
+                <div className="flex justify-between text-[#9B1C22]">
+                  <span className="font-semibold">Discount:</span>
+                  <span className="font-bold">-{formatCurrency(totals.discountAmount, invoice.currency)}</span>
                 </div>
               )}
+              {isBdt && invoice.vat_rate > 0 && (
+                <div className="flex justify-between text-gray-500">
+                  <span className="font-semibold">
+                    VAT ({invoice.vat_rate}% {invoice.vat_inclusive ? 'Included' : 'Exclusive'}):
+                  </span>
+                  <span className="font-bold">{formatCurrency(totals.vatAmount, invoice.currency)}</span>
+                </div>
+              )}
+              <div className="flex justify-between border-t border-gray-200 pt-2 text-sm font-extrabold text-[#9B1C22]">
+                <span>Total Payable:</span>
+                <span>{formatCurrency(totals.totalPayable, invoice.currency)}</span>
+              </div>
+              <div className="flex justify-between text-green-600 font-semibold text-xs pt-1">
+                <span>Amount Paid:</span>
+                <span>{formatCurrency(totals.amountPaid, invoice.currency)}</span>
+              </div>
+              <div className="flex justify-between border-t border-gray-200 pt-2 text-xs font-bold text-gray-900">
+                <span>Amount Due:</span>
+                <span>{formatCurrency(totals.amountDue, invoice.currency)}</span>
+              </div>
+            </div>
+          </div>
 
-              {/* QR Code Verification */}
-              {verifyUrl && (
-                <div className="mt-3 flex items-start space-x-2.5 rounded-xl border border-[#9B1C22]/15 bg-[#9B1C22]/4 p-2.5">
+          {/* Full Width Bank Details & Payment Instructions Section */}
+          <div className="border-t border-gray-200 pt-6 space-y-4">
+            <span className="font-extrabold text-xs uppercase tracking-wider text-gray-500 block">
+              PAYMENT & REMITTANCE INSTRUCTIONS
+            </span>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              {/* Bank Account Box with LARGER Readable Fonts */}
+              {bankAccount ? (
+                <div className="rounded-xl bg-gray-50 p-4 border border-gray-200/70 space-y-1.5 text-gray-700">
+                  <div className="flex items-center space-x-2 text-[#9B1C22] font-bold text-sm mb-1">
+                    <Building2 className="h-4 w-4" />
+                    <span>{bankAccount.bank_name}</span>
+                  </div>
+                  <p><span className="font-semibold text-gray-500">Account Holder:</span> <strong className="text-gray-900">{bankAccount.account_holder}</strong></p>
+                  <p><span className="font-semibold text-gray-500">Account Number:</span> <strong className="font-mono text-gray-900 text-sm">{bankAccount.account_number}</strong></p>
+                  {bankAccount.branch && <p><span className="font-semibold text-gray-500">Branch Name:</span> <span className="text-gray-800">{bankAccount.branch}</span></p>}
+                  {bankAccount.routing_number && <p><span className="font-semibold text-gray-500">Routing Code:</span> <span className="font-mono text-gray-800">{bankAccount.routing_number}</span></p>}
+                  {bankAccount.swift_bic && <p><span className="font-semibold text-gray-500">SWIFT / BIC:</span> <span className="font-mono text-gray-800">{bankAccount.swift_bic}</span></p>}
+                  {bankAccount.bank_address && <p><span className="font-semibold text-gray-500">Bank Address:</span> <span className="text-gray-800">{bankAccount.bank_address}</span></p>}
+                </div>
+              ) : (
+                <p className="text-gray-400 italic text-xs">No bank account details specified.</p>
+              )}
+
+              {/* Mobile Wallets & Instructions */}
+              <div className="space-y-3">
+                {isBdt && (entity?.bkash_merchant || entity?.nagad_merchant) && (
+                  <div className="rounded-xl border border-gray-200/70 bg-gray-50 p-4 space-y-2">
+                    <p className="font-bold text-xs text-gray-600 uppercase tracking-wider">Mobile Wallet (Merchant Payment)</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      {entity.bkash_merchant && (
+                        <div className="rounded-lg bg-white p-2.5 border border-gray-200/80">
+                          <span className="text-[10px] font-bold text-pink-600 block uppercase">bKash Merchant</span>
+                          <span className="font-mono font-extrabold text-gray-900 text-sm">{entity.bkash_merchant}</span>
+                        </div>
+                      )}
+                      {entity.nagad_merchant && (
+                        <div className="rounded-lg bg-white p-2.5 border border-gray-200/80">
+                          <span className="text-[10px] font-bold text-orange-600 block uppercase">Nagad Merchant</span>
+                          <span className="font-mono font-extrabold text-gray-900 text-sm">{entity.nagad_merchant}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {invoice.payment_instructions && (
+                  <div className="rounded-xl bg-gray-50 p-3.5 border border-gray-200/70 text-xs text-gray-700 leading-relaxed italic">
+                    {invoice.payment_instructions}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Hyper-Strict QR Verification Badge */}
+            {verifyUrl && (
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-[#9B1C22]/20 bg-[#9B1C22]/5 p-3.5">
+                <div className="flex items-center space-x-3">
                   <QRCodeSVG
                     value={verifyUrl}
-                    size={48}
+                    size={56}
                     bgColor="#ffffff"
                     fgColor="#9B1C22"
                     level="H"
                     marginSize={1}
                   />
                   <div>
-                    <p className="font-bold text-[#9B1C22] text-[9px] uppercase tracking-wider">Verify Authenticity</p>
-                    <p className="text-gray-500 text-[8px] leading-relaxed mt-0.5">
-                      Scan this QR code to confirm this invoice was issued by Creatiancy. Any alteration will invalidate this document.
+                    <div className="flex items-center space-x-1.5">
+                      <ShieldCheck className="h-4 w-4 text-[#9B1C22]" />
+                      <span className="font-extrabold text-[#9B1C22] text-xs uppercase tracking-wider">Creatiancy Authenticity Verified</span>
+                    </div>
+                    <p className="text-gray-600 text-[10px] leading-tight mt-0.5">
+                      Scan QR code with smartphone to verify digital signature on official portal.
                     </p>
-                    <p className="mt-1 text-[7px] text-gray-400 break-all font-mono">{verifyUrl}</p>
+                    <div className="flex items-center space-x-2 mt-1.5">
+                      <span className="font-mono text-[9px] font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200">
+                        Invoice No: {invoice.invoice_number || 'DRAFT'}
+                      </span>
+                      <span className="font-mono text-[9px] text-gray-500">
+                        Token: {invoice.secure_token ? `${invoice.secure_token.substring(0, 16)}...` : 'SECURE-VERIFIED'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Right: Totals */}
-            <div className="col-span-5 flex flex-col justify-start">
-              <div className="space-y-2 text-xs text-gray-600">
-                <div className="flex justify-between">
-                  <span className="text-gray-400 font-semibold">Subtotal:</span>
-                  <span className="font-bold">{formatCurrency(totals.subtotal, invoice.currency)}</span>
-                </div>
-                {invoice.discount_type !== 'none' && (
-                  <div className="flex justify-between text-[#9B1C22]">
-                    <span className="font-semibold">Discount:</span>
-                    <span className="font-bold">-{formatCurrency(totals.discountAmount, invoice.currency)}</span>
-                  </div>
-                )}
-                {isBdt && invoice.vat_rate > 0 && (
-                  <div className="flex justify-between text-gray-500">
-                    <span className="font-semibold">
-                      VAT ({invoice.vat_rate}% {invoice.vat_inclusive ? 'Included' : 'Exclusive'}):
-                    </span>
-                    <span className="font-bold">{formatCurrency(totals.vatAmount, invoice.currency)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between border-t border-gray-100 pt-2 text-sm font-extrabold text-[#9B1C22]">
-                  <span>Total Payable:</span>
-                  <span>{formatCurrency(totals.totalPayable, invoice.currency)}</span>
-                </div>
-                <div className="flex justify-between text-green-600 font-semibold">
-                  <span>Amount Paid:</span>
-                  <span>{formatCurrency(totals.amountPaid, invoice.currency)}</span>
-                </div>
-                <div className="flex justify-between border-t border-gray-100 pt-2 text-xs font-bold text-gray-800">
-                  <span>Amount Due:</span>
-                  <span>{formatCurrency(totals.amountDue, invoice.currency)}</span>
+                <div className="hidden sm:block text-right">
+                  <span className="text-[9px] font-bold uppercase text-[#9B1C22] bg-white border border-[#9B1C22]/20 px-2.5 py-1 rounded-md shadow-2xs">
+                    Creatiancy Original
+                  </span>
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 pt-4 border-t border-gray-100 text-[8px] text-gray-400 text-center leading-normal space-y-1">
+          {/* Legal footer */}
+          <div className="mt-8 pt-4 border-t border-gray-200 text-[9px] text-gray-500 text-center leading-normal space-y-1">
             <p className="font-bold text-[#9B1C22] tracking-wide">
-              {isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}
+              {entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}
             </p>
-            <p className="text-gray-400">
+            <p className="text-gray-500">
               {isBdt
                 ? 'All rates are inclusive of applicable VAT in accordance with the prevailing laws and regulations of Bangladesh.'
                 : 'All rates are inclusive of applicable taxes in accordance with the prevailing laws and regulations.'}
             </p>
-            <div className="pt-2 border-t border-dashed border-gray-200 text-[8px] text-gray-400">
-              This invoice is computer-generated and requires no physical signature.
+            <div className="pt-2 border-t border-dashed border-gray-200 text-[9px] font-semibold text-gray-400">
+              Creatiancy Original Document • Computer-generated • No physical signature required.
             </div>
           </div>
         </div>

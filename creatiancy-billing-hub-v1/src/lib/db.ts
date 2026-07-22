@@ -323,20 +323,7 @@ const MOCK_EXPENSES: Expense[] = [];
 // HELPER STATE MANAGEMENT USING LOCALSTORAGE (DEMO MODE ENGINE)
 class LocalStore {
   constructor() {
-    if (typeof window !== 'undefined') {
-      const version = localStorage.getItem('billing_hub_v1_prod_clean');
-      if (!version) {
-        localStorage.removeItem('billing_hub_invoices');
-        localStorage.removeItem('billing_hub_clients');
-        localStorage.removeItem('billing_hub_items');
-        localStorage.removeItem('billing_hub_snapshots');
-        localStorage.removeItem('billing_hub_payments');
-        localStorage.removeItem('billing_hub_expenses');
-        localStorage.removeItem('billing_hub_tax_payments');
-        localStorage.removeItem('billing_hub_email_logs');
-        localStorage.setItem('billing_hub_v1_prod_clean', 'true');
-      }
-    }
+    // Retain and protect all user-entered live testing data
   }
 
   private getVal(key: string, def: any): any {
