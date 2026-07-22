@@ -107,7 +107,7 @@ export default function PublicInvoicePage() {
     if (!invoice) return;
     const clientPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
     const shareLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
-    const messageText = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nHere is your official invoice from ${entity?.legal_name || (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}:\n\n📄 Invoice Number: ${invoice.invoice_number || 'DRAFT'}\n💰 Total Amount: ${formatCurrency(totals.totalPayable, invoice.currency)}\n📅 Due Date: ${invoice.due_date}\n\n🔗 View & Pay Online:\n${shareLink}\n\nThank you for working with Creatiancy!`;
+    const messageText = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official billing invoice from ${entity?.legal_name || (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}.\n\nInvoice Number: ${invoice.invoice_number || 'DRAFT'}\nTotal Amount: ${formatCurrency(totals.totalPayable, invoice.currency)}\nDue Date: ${invoice.due_date}\n\nView & Pay Secure Invoice Online:\n${shareLink}\n\nThank you,\n${entity?.legal_name || (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
     const targetUrl = clientPhone ? `https://wa.me/${clientPhone}?text=${encodeURIComponent(messageText)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
     window.open(targetUrl, '_blank');
   };

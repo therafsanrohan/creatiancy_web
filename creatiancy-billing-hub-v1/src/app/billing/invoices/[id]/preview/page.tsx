@@ -139,7 +139,7 @@ export default function InvoicePreviewPage() {
 
       // 2. Build WhatsApp message with direct verification/public invoice URL
       const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
-      const message = `Hi ${client?.contact_person || 'there'},\n\nPlease find attached invoice *${invoice.invoice_number || 'Draft'}* for *${invoice.project_name}*.\n\n📄 *View & Download Digital Invoice:* ${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+      const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
 
       // 3. Open WhatsApp Web / App directly
       const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
@@ -154,7 +154,7 @@ export default function InvoicePreviewPage() {
       console.error('Error sharing to WhatsApp:', error);
       // Direct fallback: open WhatsApp even if PDF stream encountered browser restriction
       const docLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
-      const message = `Hi ${client?.contact_person || 'there'},\n\nPlease find invoice *${invoice.invoice_number || 'Draft'}* for *${invoice.project_name}*.\n\n📄 *View Digital Invoice:* ${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+      const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
       const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
       const waUrl = cleanPhone
         ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
