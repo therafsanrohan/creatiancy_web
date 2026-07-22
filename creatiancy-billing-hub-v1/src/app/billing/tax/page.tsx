@@ -6,7 +6,8 @@ import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import NotificationModal from '@/components/NotificationModal';
 import {
   Calculator, TrendingUp, DollarSign, CheckCircle, Plus,
-  Receipt, AlertCircle, Loader2, Calendar, Download, Pencil, Globe
+  Receipt, AlertCircle, Loader2, Calendar, Download, Pencil, Globe,
+  Scale, ShieldCheck, ArrowRight, Info, X
 } from 'lucide-react';
 
 type PeriodFilter = 'this-month' | 'last-month' | 'this-quarter' | 'this-year' | 'custom-year';
@@ -127,8 +128,23 @@ export default function TaxLedgerPage() {
     const relevantExpenses = expenses.filter(e => e.currency === currency && filterFn(e.expense_date)).reduce((s, e) => s + e.amount, 0);
     const preTaxRevenue = revenue - vat;
     const taxableProfit = Math.max(0, preTaxRevenue - relevantExpenses);
-    const tax = (taxableProfit * localTaxRate) / 100;
-    return { revenue, vat, tax, expenses: relevantExpenses, taxableProfit };
+
+    /* Bangladesh Tax Law (Income Tax Act 2023, Section 163):
+     * - Corporate tax: 27.5% on net taxable profit (non-listed company)
+     * - Minimum tax: 1.0% of gross receipts/turnover (regardless of profit/loss)
+     * - Effective liability = whichever is higher */
+    const corporateTaxOnProfit = (taxableProfit * localTaxRate) / 100;
+    const minimumTaxOnTurnover = currency === 'BDT' ? (preTaxRevenue * 1.0) / 100 : 0;
+    const effectiveTax = currency === 'BDT'
+      ? Math.max(corporateTaxOnProfit, minimumTaxOnTurnover)
+      : corporateTaxOnProfit;
+    const minimumTaxApplies = currency === 'BDT' && minimumTaxOnTurnover > corporateTaxOnProfit;
+
+    return {
+      revenue, vat, tax: effectiveTax, expenses: relevantExpenses,
+      taxableProfit, preTaxRevenue,
+      corporateTaxOnProfit, minimumTaxOnTurnover, minimumTaxApplies
+    };
   };
 
   // Client Direct-Paid VAT Invoices (where vat_rate <= 0 or not charged by Creatiancy)
@@ -139,7 +155,14 @@ export default function TaxLedgerPage() {
     filterDate(inv.issue_date)
   );
 
-  const { revenue: totalRevenue, vat: totalAccruedVAT, tax: totalAccruedTax } = computeAccruals(regionTab, filterDate);
+  const accruals = computeAccruals(regionTab, filterDate);
+  const {
+    revenue: totalRevenue, vat: totalAccruedVAT, tax: totalAccruedTax,
+    expenses: totalExpenses, taxableProfit: totalTaxableProfit,
+    preTaxRevenue: totalPreTaxRevenue,
+    corporateTaxOnProfit: totalCorpTaxCalc, minimumTaxOnTurnover: totalMinTaxCalc,
+    minimumTaxApplies: minTaxApplies
+  } = accruals;
 
   const filteredTaxPayments = taxPayments.filter(tp => filterDate(tp.payment_date));
   const totalVATPaid = filteredTaxPayments.filter(tp => tp.tax_type === 'VAT').reduce((s, tp) => s + tp.amount, 0);
@@ -292,11 +315,13 @@ export default function TaxLedgerPage() {
       </div>
 
       <div className="flex-1 p-4 sm:p-6 space-y-6">
-        {/* Region-specific notice */}
+        {/* Region-specific legal reference notice */}
         {regionTab === 'BDT' ? (
           <div className="flex items-start gap-3 bg-blue-50 border border-blue-100 rounded-2xl px-5 py-4 text-xs text-blue-800">
-            <AlertCircle className="h-4 w-4 mt-0.5 text-blue-500 shrink-0" />
-            <div><strong>Bangladesh BDT Tax Accruals:</strong> Corporate Income Tax at <strong>{localTaxRate}%</strong> is calculated on Net Taxable Cashflow Profit. Default VAT is set to <strong>{localVatRate}%</strong>.</div>
+            <Scale className="h-4 w-4 mt-0.5 text-blue-500 shrink-0" />
+            <div>
+              <strong>Bangladesh Income Tax Act 2023 (FY 2025-26):</strong> Non-publicly traded companies pay Corporate Tax at <strong>{localTaxRate}%</strong> on net profit, or <strong>Minimum Tax at 1.0%</strong> of gross receipts (Section 163) — whichever is higher. Standard VAT rate is <strong>{localVatRate}%</strong> (applicable if annual turnover exceeds BDT 50 Lakh).
+            </div>
           </div>
         ) : (
           <div className="flex items-start gap-3 bg-purple-50 border border-purple-100 rounded-2xl px-5 py-4 text-xs text-purple-800">
@@ -309,9 +334,104 @@ export default function TaxLedgerPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label={`${regionTab} Revenue`} amount={formatCurrency(totalRevenue, regionTab)} sub={`Active ${regionTab} invoices`} color="bg-gray-700" icon={DollarSign} />
           <StatCard label={`Accrued VAT (${localVatRate}%)`} amount={formatCurrency(totalAccruedVAT, regionTab)} sub="Based on declared invoice VAT" color="bg-amber-500" icon={TrendingUp} badge={{ text: regionTab === 'BDT' ? 'BD VAT' : 'US Sales Tax', type: 'warn' }} />
-          <StatCard label={`Accrued Corp. Tax (${localTaxRate}%)`} amount={formatCurrency(totalAccruedTax, regionTab)} sub="On Net Cashflow Profit" color="bg-[#9B1C22]" icon={Calculator} badge={{ text: regionTab, type: 'info' }} />
+          <StatCard label={`Effective Corp. Tax`} amount={formatCurrency(totalAccruedTax, regionTab)} sub={regionTab === 'BDT' ? (minTaxApplies ? 'Min. tax (1%) applies' : `${localTaxRate}% on net profit`) : `${localTaxRate}% on net profit`} color="bg-[#9B1C22]" icon={Calculator} badge={{ text: regionTab === 'BDT' ? (minTaxApplies ? 'MIN TAX' : 'CORP TAX') : regionTab, type: minTaxApplies ? 'warn' : 'info' }} />
           <StatCard label="Total Tax Burden" amount={formatCurrency(totalAccruedVAT + totalAccruedTax, regionTab)} sub="VAT + Corp Tax combined" color="bg-purple-600" icon={Receipt} />
         </div>
+
+        {/* Smart Tax Advisory Panel (BDT only — BD law compliance) */}
+        {regionTab === 'BDT' && (
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
+              <ShieldCheck className="h-4.5 w-4.5 text-[#9B1C22]" />
+              <h2 className="text-sm font-bold text-gray-900">Tax Obligation Advisory</h2>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border bg-blue-50 text-blue-700 border-blue-200 ml-auto">Live Data</span>
+            </div>
+            <div className="p-6 space-y-5">
+              {/* Financial Summary */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+                  <p className="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Gross Revenue</p>
+                  <p className="text-lg font-extrabold text-gray-900">{formatCurrency(totalRevenue, 'BDT')}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+                  <p className="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Pre-Tax Revenue (excl. VAT)</p>
+                  <p className="text-lg font-extrabold text-gray-900">{formatCurrency(totalPreTaxRevenue, 'BDT')}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+                  <p className="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Total Expenses</p>
+                  <p className="text-lg font-extrabold text-red-600">{formatCurrency(totalExpenses, 'BDT')}</p>
+                </div>
+                <div className="bg-gray-50 rounded-xl p-4 space-y-1">
+                  <p className="text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Net Taxable Profit</p>
+                  <p className="text-lg font-extrabold text-emerald-700">{formatCurrency(totalTaxableProfit, 'BDT')}</p>
+                </div>
+              </div>
+
+              {/* Two-column comparison: Corporate Tax vs Minimum Tax */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Corporate Tax Route */}
+                <div className={`rounded-xl border-2 p-4 space-y-2.5 transition ${!minTaxApplies ? 'border-[#9B1C22] bg-red-50/40' : 'border-gray-200 bg-gray-50/50'}`}>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Route A: Corporate Tax</p>
+                    {!minTaxApplies && (
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-[#9B1C22] text-white">Applies</span>
+                    )}
+                  </div>
+                  <p className="text-2xl font-extrabold text-gray-900">{formatCurrency(totalCorpTaxCalc, 'BDT')}</p>
+                  <div className="space-y-1 text-xs text-gray-500">
+                    <div className="flex justify-between">
+                      <span>Net Taxable Profit</span>
+                      <span className="font-semibold text-gray-700">{formatCurrency(totalTaxableProfit, 'BDT')}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-400">
+                      <ArrowRight className="h-3 w-3" />
+                      <span>@ {localTaxRate}% (Income Tax Act, Sixth Schedule)</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Minimum Tax Route */}
+                <div className={`rounded-xl border-2 p-4 space-y-2.5 transition ${minTaxApplies ? 'border-amber-500 bg-amber-50/40' : 'border-gray-200 bg-gray-50/50'}`}>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold text-gray-700 uppercase tracking-wider">Route B: Minimum Tax (Sec. 163)</p>
+                    {minTaxApplies && (
+                      <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-600 text-white">Applies</span>
+                    )}
+                  </div>
+                  <p className="text-2xl font-extrabold text-gray-900">{formatCurrency(totalMinTaxCalc, 'BDT')}</p>
+                  <div className="space-y-1 text-xs text-gray-500">
+                    <div className="flex justify-between">
+                      <span>Gross Receipts (Pre-Tax)</span>
+                      <span className="font-semibold text-gray-700">{formatCurrency(totalPreTaxRevenue, 'BDT')}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-gray-400">
+                      <ArrowRight className="h-3 w-3" />
+                      <span>@ 1.0% minimum (regardless of profit/loss)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verdict */}
+              <div className={`rounded-xl p-4 flex items-start gap-3 ${minTaxApplies ? 'bg-amber-50 border border-amber-200' : totalTaxableProfit > 0 ? 'bg-red-50 border border-red-200' : 'bg-emerald-50 border border-emerald-200'}`}>
+                <Info className="h-4 w-4 mt-0.5 shrink-0" style={{ color: minTaxApplies ? '#d97706' : totalTaxableProfit > 0 ? '#9B1C22' : '#059669' }} />
+                <div className="text-xs leading-relaxed">
+                  {totalPreTaxRevenue === 0 ? (
+                    <p className="text-emerald-800"><strong>No taxable revenue detected.</strong> No corporate tax or minimum tax obligation for this period based on current data.</p>
+                  ) : minTaxApplies ? (
+                    <p className="text-amber-800">
+                      <strong>Minimum Tax applies.</strong> Your corporate tax ({formatCurrency(totalCorpTaxCalc, 'BDT')}) is lower than the minimum tax ({formatCurrency(totalMinTaxCalc, 'BDT')}). Per Section 163 of the Income Tax Act 2023, you must pay <strong>{formatCurrency(totalMinTaxCalc, 'BDT')}</strong> as minimum tax on gross receipts, regardless of profit level.
+                    </p>
+                  ) : (
+                    <p className="text-[#9B1C22]">
+                      <strong>Corporate Tax applies.</strong> Your net taxable profit of {formatCurrency(totalTaxableProfit, 'BDT')} yields a corporate tax of <strong>{formatCurrency(totalCorpTaxCalc, 'BDT')}</strong> at {localTaxRate}%, which exceeds the minimum tax floor of {formatCurrency(totalMinTaxCalc, 'BDT')}. This is your effective tax liability for this period.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Payment Status Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -535,53 +655,58 @@ export default function TaxLedgerPage() {
 
       {/* Record Payment Modal */}
       {showRecordModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
-              <div><h3 className="text-base font-extrabold text-gray-900">Record Tax Payment</h3><p className="text-xs text-gray-400 mt-0.5">Enter Challan details for the govt. exchequer payment.</p></div>
-              <button onClick={() => setShowRecordModal(false)} className="text-gray-400 hover:text-gray-700 cursor-pointer p-1">✕</button>
-            </div>
-            <div className="px-6 py-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-0 sm:p-4">
+          <div className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 sticky top-0 bg-white z-10 rounded-t-2xl">
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Business Entity</label>
-                <select value={formEntityId} onChange={e => setFormEntityId(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30">
+                <h3 className="text-base font-extrabold text-gray-900">Record Tax Payment</h3>
+                <p className="text-xs text-gray-400 mt-1">Enter Challan details for the govt. exchequer payment.</p>
+              </div>
+              <button onClick={() => setShowRecordModal(false)} className="text-gray-400 hover:text-gray-700 cursor-pointer p-1.5 rounded-lg hover:bg-gray-100 transition">
+                <X className="h-4.5 w-4.5" />
+              </button>
+            </div>
+            <div className="px-6 py-6 space-y-5">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Business Entity</label>
+                <select value={formEntityId} onChange={e => setFormEntityId(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30 cursor-pointer">
                   {entities.map(e => <option key={e.id} value={e.id}>{e.legal_name}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Tax Type</label>
-                <div className="grid grid-cols-2 gap-2">
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Tax Type</label>
+                <div className="grid grid-cols-2 gap-3">
                   {(['VAT', 'Corporate Tax'] as const).map(t => (
-                    <button key={t} onClick={() => setFormTaxType(t)} className={`py-2.5 rounded-xl text-sm font-bold border transition cursor-pointer ${formTaxType === t ? 'bg-[#9B1C22] text-white border-[#9B1C22]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{t}</button>
+                    <button key={t} onClick={() => setFormTaxType(t)} className={`py-3 rounded-xl text-sm font-bold border transition cursor-pointer ${formTaxType === t ? 'bg-[#9B1C22] text-white border-[#9B1C22]' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>{t}</button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Amount Paid ({regionTab})</label>
-                <input type="number" min="0" step="0.01" value={formAmount} onChange={e => setFormAmount(e.target.value)} placeholder="e.g. 50000" className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Amount Paid ({regionTab})</label>
+                <input type="number" min="0" step="0.01" value={formAmount} onChange={e => setFormAmount(e.target.value)} placeholder="e.g. 50000" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Payment Date</label>
-                <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Payment Date</label>
+                <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Challan / Treasury Number</label>
-                <input type="text" value={formChallan} onChange={e => setFormChallan(e.target.value)} placeholder="e.g. TC-2026-001234" className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
+                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Challan / Treasury Number</label>
+                <input type="text" value={formChallan} onChange={e => setFormChallan(e.target.value)} placeholder="e.g. TC-2026-001234" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Period Start</label>
-                  <input type="date" value={formPeriodStart} onChange={e => setFormPeriodStart(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Period Start</label>
+                  <input type="date" value={formPeriodStart} onChange={e => setFormPeriodStart(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1.5">Period End</label>
-                  <input type="date" value={formPeriodEnd} onChange={e => setFormPeriodEnd(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2">Period End</label>
+                  <input type="date" value={formPeriodEnd} onChange={e => setFormPeriodEnd(e.target.value)} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/30" />
                 </div>
               </div>
             </div>
-            <div className="px-6 pb-5 flex gap-3">
-              <button onClick={() => setShowRecordModal(false)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer">Cancel</button>
-              <button onClick={handleRecordPayment} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#9B1C22] text-white text-sm font-bold hover:bg-[#7d1219] shadow-sm transition disabled:opacity-50 cursor-pointer">
+            <div className="px-6 pb-6 pt-2 flex gap-3 sticky bottom-0 bg-white border-t border-gray-50">
+              <button onClick={() => setShowRecordModal(false)} className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition cursor-pointer">Cancel</button>
+              <button onClick={handleRecordPayment} disabled={saving} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#9B1C22] text-white text-sm font-bold hover:bg-[#7d1219] shadow-sm transition disabled:opacity-50 cursor-pointer">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
                 Save Payment
               </button>
