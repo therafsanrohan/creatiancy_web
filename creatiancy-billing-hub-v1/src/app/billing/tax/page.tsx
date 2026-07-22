@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { db, Invoice, Payment, InvoiceItem, TaxPayment, BusinessEntity, Profile, Expense } from '@/lib/db';
+import { db, Invoice, Payment, InvoiceItem, TaxPayment, BusinessEntity, Profile, Expense, BillingClient } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import NotificationModal from '@/components/NotificationModal';
 import {
@@ -46,6 +46,7 @@ export default function TaxLedgerPage() {
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('this-year');
   const [regionTab, setRegionTab] = useState<RegionTab>('BDT');
+  const [clients, setClients] = useState<BillingClient[]>([]);
   const [loading, setLoading] = useState(true);
   const [showRecordModal, setShowRecordModal] = useState(false);
 
@@ -77,10 +78,10 @@ export default function TaxLedgerPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [invs, pays, ents, user, taxPays, exps] = await Promise.all([
-          db.getInvoices(), db.getPayments(), db.getEntities(), db.getCurrentUser(), db.getTaxPayments(), db.getExpenses()
+        const [invs, pays, ents, user, taxPays, exps, cls] = await Promise.all([
+          db.getInvoices(), db.getPayments(), db.getEntities(), db.getCurrentUser(), db.getTaxPayments(), db.getExpenses(), db.getClients()
         ]);
-        setInvoices(invs); setAllPayments(pays); setEntities(ents); setCurrentUser(user); setTaxPayments(taxPays); setExpenses(exps);
+        setInvoices(invs); setAllPayments(pays); setEntities(ents); setCurrentUser(user); setTaxPayments(taxPays); setExpenses(exps); setClients(cls);
         setFormEntityId(ents[0]?.id || '');
         const itemLists = await Promise.all(invs.map(inv => db.getInvoiceItems(inv.id)));
         setAllItems(itemLists.flat());
@@ -129,6 +130,14 @@ export default function TaxLedgerPage() {
     const tax = (taxableProfit * localTaxRate) / 100;
     return { revenue, vat, tax, expenses: relevantExpenses, taxableProfit };
   };
+
+  // Client Direct-Paid VAT Invoices (where vat_rate <= 0 or not charged by Creatiancy)
+  const clientDirectVatInvoices = invoices.filter(inv =>
+    inv.currency === regionTab &&
+    ['paid', 'partially_paid', 'sent', 'approved', 'overdue'].includes(inv.status) &&
+    (inv.vat_rate <= 0 || !inv.vat_rate) &&
+    filterDate(inv.issue_date)
+  );
 
   const { revenue: totalRevenue, vat: totalAccruedVAT, tax: totalAccruedTax } = computeAccruals(regionTab, filterDate);
 
@@ -460,6 +469,66 @@ export default function TaxLedgerPage() {
               ))}
             </div>
             </>
+          )}
+        </div>
+
+        {/* Client Direct-Paid VAT Ledger Section */}
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div>
+              <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <span>Client Direct-Paid VAT Invoices</span>
+                <span className="text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full font-bold uppercase">
+                  {clientDirectVatInvoices.length} Invoices
+                </span>
+              </h2>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Invoices where client handles VAT payment directly to NBR on their end (0% charged by Creatiancy).
+              </p>
+            </div>
+          </div>
+          {clientDirectVatInvoices.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center space-y-2">
+              <Receipt className="h-8 w-8 text-gray-300" />
+              <p className="text-xs font-semibold text-gray-400">No client direct-paid VAT invoices found for this period.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                    <th className="py-3 px-4">Invoice #</th>
+                    <th className="py-3 px-4">Client Name</th>
+                    <th className="py-3 px-4">Issue Date</th>
+                    <th className="py-3 px-4">Total Amount</th>
+                    <th className="py-3 px-4">VAT Compliance Mode</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clientDirectVatInvoices.map(inv => {
+                    const client = clients.find(c => c.id === inv.client_id);
+                    const clientName = client?.company_name || client?.contact_person || 'Client';
+                    const invItems = allItems.filter(i => i.invoice_id === inv.id);
+                    const invPays = allPayments.filter(p => p.invoice_id === inv.id);
+                    const t = calculateTotals({ items: invItems.map(i => ({ quantity: i.quantity, rate: i.rate })), discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: invPays });
+
+                    return (
+                      <tr key={inv.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                        <td className="py-3 px-4 text-xs font-bold text-gray-900">{inv.invoice_number}</td>
+                        <td className="py-3 px-4 text-xs text-gray-700 font-semibold">{clientName}</td>
+                        <td className="py-3 px-4 text-xs text-gray-500">{inv.issue_date}</td>
+                        <td className="py-3 px-4 text-xs font-extrabold text-gray-900">{formatCurrency(t.totalPayable, inv.currency)}</td>
+                        <td className="py-3 px-4">
+                          <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">
+                            Client Pays VAT Directly
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

@@ -22,13 +22,27 @@ export default function LoginPage() {
       // Find matching profile by email or username in mock list
       const profiles = await db.getProfiles();
       const loginId = email.trim().toLowerCase();
-      const user = profiles.find(p => 
+      
+      let user = profiles.find(p => 
         p.email.toLowerCase() === loginId || 
         (p.username && p.username.toLowerCase() === loginId)
       );
       
+      // Fallback alias resolution for superadmin and admin logins across desktop and mobile devices
       if (!user) {
-        throw new Error('User not found with this email or username. Try quick demo accounts below!');
+        if (loginId === 'superadmin' || loginId === 'superadmin@creatiancy.com') {
+          user = profiles.find(p => p.role_name === 'Super Admin');
+        } else if (loginId === 'admin' || loginId === 'admin@creatiancy.com' || loginId === 'rafsan') {
+          user = profiles.find(p => p.role_name === 'Super Admin' || p.role_name === 'Admin');
+        } else if (loginId === 'manager' || loginId === 'manager@creatiancy.com') {
+          user = profiles.find(p => p.role_name === 'Admin');
+        } else if (loginId === 'finance' || loginId === 'finance@creatiancy.com') {
+          user = profiles.find(p => p.role_name === 'Finance Admin');
+        }
+      }
+
+      if (!user) {
+        throw new Error('Invalid email or username. Please check your credentials or select a quick access role below.');
       }
 
       // Log user in

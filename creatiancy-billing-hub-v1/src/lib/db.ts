@@ -347,7 +347,14 @@ class LocalStore {
   }
 
   get profiles(): Profile[] {
-    return this.getVal('profiles', MOCK_PROFILES);
+    const list = this.getVal('profiles', MOCK_PROFILES);
+    const merged = Array.isArray(list) ? [...list] : [];
+    MOCK_PROFILES.forEach(mockUser => {
+      if (!merged.some(p => p.email.toLowerCase() === mockUser.email.toLowerCase() || (p.username && p.username.toLowerCase() === mockUser.username?.toLowerCase()))) {
+        merged.push(mockUser);
+      }
+    });
+    return merged;
   }
 
   set profiles(val: Profile[]) {
