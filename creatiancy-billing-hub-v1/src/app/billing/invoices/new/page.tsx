@@ -62,6 +62,7 @@ export default function NewInvoicePage() {
   const [mediaUsdBudget, setMediaUsdBudget] = useState(1000);
   const [mediaUsdRate, setMediaUsdRate] = useState(125.50);
   const [mediaFeePercent, setMediaFeePercent] = useState(10);
+  const [mediaVatPercent, setMediaVatPercent] = useState(15);
 
   // Items list
   const [items, setItems] = useState<FormItem[]>([
@@ -174,6 +175,7 @@ export default function NewInvoicePage() {
   const handleInsertPaidMedia = () => {
     const budgetBdt = parseFloat((mediaUsdBudget * mediaUsdRate).toFixed(2));
     const feeBdt = mediaFeePercent > 0 ? parseFloat(((budgetBdt * mediaFeePercent) / 100).toFixed(2)) : 0;
+    const vatBdt = mediaVatPercent > 0 ? parseFloat(((budgetBdt * mediaVatPercent) / 100).toFixed(2)) : 0;
 
     const mediaItem: FormItem = {
       service_name: `${mediaPlatform} Media Buying ($${mediaUsdBudget.toLocaleString()} @ ৳${mediaUsdRate}/USD)`,
@@ -197,6 +199,16 @@ export default function NewInvoicePage() {
         quantity: 1,
         unit: 'Fee',
         rate: currency === 'USD' ? parseFloat(((mediaUsdBudget * mediaFeePercent) / 100).toFixed(2)) : feeBdt
+      });
+    }
+
+    if (vatBdt > 0) {
+      newItemsList.push({
+        service_name: `${mediaPlatform} Platform VAT / Govt Tax (${mediaVatPercent}%)`,
+        description: `Government & ad platform mandatory VAT / Tax on digital media spend`,
+        quantity: 1,
+        unit: 'Tax',
+        rate: currency === 'USD' ? parseFloat(((mediaUsdBudget * mediaVatPercent) / 100).toFixed(2)) : vatBdt
       });
     }
 
@@ -1108,23 +1120,37 @@ export default function NewInvoicePage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-semibold text-gray-700 mb-1">Agency Management Fee (%)</label>
-                <input
-                  type="number"
-                  step="any"
-                  min="0"
-                  value={mediaFeePercent}
-                  onChange={(e) => setMediaFeePercent(parseFloat(e.target.value) || 0)}
-                  className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs font-bold text-[#1E1E1E] focus:outline-none"
-                  placeholder="10"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Agency Management Fee (%)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={mediaFeePercent}
+                    onChange={(e) => setMediaFeePercent(parseFloat(e.target.value) || 0)}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs font-bold text-[#1E1E1E] focus:outline-none"
+                    placeholder="10"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-gray-700 mb-1">Platform VAT / Tax (%)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    min="0"
+                    value={mediaVatPercent}
+                    onChange={(e) => setMediaVatPercent(parseFloat(e.target.value) || 0)}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs font-bold text-[#1E1E1E] focus:outline-none"
+                    placeholder="15"
+                  />
+                </div>
               </div>
 
               {/* Conversion calculation summary */}
               <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-3 space-y-1.5 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Media Spend ({mediaUsdBudget} USD):</span>
+                  <span className="text-gray-600">Media Spend (${mediaUsdBudget.toLocaleString()} USD):</span>
                   <span className="font-bold text-gray-900">৳{(mediaUsdBudget * mediaUsdRate).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
                 </div>
                 {mediaFeePercent > 0 && (
@@ -1133,9 +1159,15 @@ export default function NewInvoicePage() {
                     <span className="font-bold">৳{(((mediaUsdBudget * mediaUsdRate) * mediaFeePercent) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
                   </div>
                 )}
+                {mediaVatPercent > 0 && (
+                  <div className="flex justify-between text-purple-900">
+                    <span>Platform VAT ({mediaVatPercent}%):</span>
+                    <span className="font-bold">৳{(((mediaUsdBudget * mediaUsdRate) * mediaVatPercent) / 100).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
+                  </div>
+                )}
                 <div className="pt-1.5 border-t border-amber-200 flex justify-between font-extrabold text-sm text-[#9B1C22]">
-                  <span>Total Line Amount:</span>
-                  <span>৳{((mediaUsdBudget * mediaUsdRate) * (1 + mediaFeePercent / 100)).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
+                  <span>Total Segment Payable:</span>
+                  <span>৳{((mediaUsdBudget * mediaUsdRate) * (1 + (mediaFeePercent + mediaVatPercent) / 100)).toLocaleString(undefined, { minimumFractionDigits: 2 })} BDT</span>
                 </div>
               </div>
 
