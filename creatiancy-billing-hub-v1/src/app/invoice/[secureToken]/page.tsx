@@ -200,7 +200,8 @@ export default function PublicInvoicePage() {
                 <span className="block">
                   {isBdt ? 'TIN / BIN: ' : 'EIN: '}{entity ? entity.tax_id : (isBdt ? 'TIN-BIN-CLTD-123456' : 'EIN-12-3456789')}
                 </span>
-                <span>Email: {entity ? entity.email : 'billing@creatiancy.com'} • Phone: {entity ? entity.phone : '+880 1325 078 941'}</span>
+                <span className="block">Email: {entity ? entity.email : 'Creatiancy@gmail.com'}</span>
+                <span className="block">Phone: {entity ? entity.phone : '+880 1325 078 941'}</span>
               </div>
             </div>
 
