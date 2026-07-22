@@ -746,7 +746,7 @@ const MOCK_PROFILES: Profile[] = [
 
 const MOCK_ENTITIES: BusinessEntity[] = [
   {
-    id: 'ent-1',
+    id: '11111111-1111-4111-8111-111111111111',
     legal_name: 'Creatiancy Limited',
     entity_code: 'CLTD',
     logo_url: '',
@@ -766,7 +766,7 @@ const MOCK_ENTITIES: BusinessEntity[] = [
     default_vat_rate: 15.0
   },
   {
-    id: 'ent-2',
+    id: '22222222-2222-4222-8222-222222222222',
     legal_name: 'Creatiancy LLC',
     entity_code: 'CLLC',
     logo_url: '',
@@ -790,7 +790,7 @@ const MOCK_ENTITIES: BusinessEntity[] = [
 const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   {
     id: 'bnk-1',
-    entity_id: 'ent-1',
+    entity_id: '11111111-1111-4111-8111-111111111111',
     bank_name: 'City Bank PLC (Bangladesh)',
     account_holder: 'Creatiancy Limited',
     account_number: 'BDT-ACC-1002003004005',
@@ -802,7 +802,7 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   },
   {
     id: 'bnk-2',
-    entity_id: 'ent-2',
+    entity_id: '22222222-2222-4222-8222-222222222222',
     bank_name: 'JPMorgan Chase Bank, N.A. (USA)',
     account_holder: 'Creatiancy LLC',
     account_number: 'USD-ACC-9876543210',
@@ -929,7 +929,7 @@ const MOCK_TAX_AUDIT_LOGS: TaxAuditLog[] = [];
 // VAT Seed Data
 const MOCK_VAT_REGISTRATION_PROFILE: VatRegistrationProfile = {
   id: 'vat-prof-1',
-  company_id: 'ent-1',
+  company_id: '11111111-1111-4111-8111-111111111111',
   business_name: 'Creatiancy Limited',
   bin_number: '001234567-0101',
   bin_status: 'VAT_REGISTERED',
@@ -1074,20 +1074,24 @@ const MOCK_VAT_AUDIT_LOGS: VatAuditLog[] = [];
 
 // Persistent state storage adapter (browser & SSR fallback)
 class LocalStore {
+  private memoryCache: Record<string, any> = {};
+
   constructor() {
     // Retain and protect all user-entered live testing data
   }
 
   private getVal(key: string, def: any): any {
-    if (typeof window === 'undefined') return def;
-    const val = localStorage.getItem(`billing_hub_${key}`);
-    return val ? JSON.parse(val) : def;
+    // Enforcing Cloud-Only: Completely bypass browser localStorage
+    // This prevents stale IDs (like "ent-1") from crashing Supabase Sync.
+    if (this.memoryCache[key] !== undefined) {
+      return this.memoryCache[key];
+    }
+    return def;
   }
 
   private setVal(key: string, val: any) {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(`billing_hub_${key}`, JSON.stringify(val));
-    }
+    // Save only to active memory session, NEVER to browser storage.
+    this.memoryCache[key] = val;
   }
 
   get vatRegistrationProfile(): VatRegistrationProfile {
@@ -2389,7 +2393,7 @@ export const db = {
       if (allocatedReserveAmount > 0) {
         const reserveTxn: ReserveLedgerEntry = {
           id: generateUUID(),
-          entity_id: invoice.entity_id || 'ent-1',
+          entity_id: invoice.entity_id || '11111111-1111-4111-8111-111111111111',
           currency: newPayment.currency,
           transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
           amount: allocatedReserveAmount,
@@ -2434,7 +2438,7 @@ export const db = {
     if (!existingAllocation && allocatedReserveAmount > 0) {
       const reserveTxn: ReserveLedgerEntry = {
         id: `res-tx-${Date.now()}`,
-        entity_id: invoice.entity_id || 'ent-1',
+        entity_id: invoice.entity_id || '11111111-1111-4111-8111-111111111111',
         currency: newPayment.currency,
         transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
         amount: allocatedReserveAmount,
