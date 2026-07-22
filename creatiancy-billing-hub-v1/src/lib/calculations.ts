@@ -112,7 +112,6 @@ export function calculateTotals(input: CalculateTotalsInput): BillingTotals {
 export function formatCurrency(amount: number, currency: 'BDT' | 'USD'): string {
   if (currency === 'BDT') {
     // Standard BDT format (e.g. ৳ 1,20,000 or using Bangladesh numbering layout)
-    // For simplicity of global founder view, we can use standard locale formatting with BDT symbol
     return `৳${amount.toLocaleString('en-IN', {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2
@@ -124,4 +123,113 @@ export function formatCurrency(amount: number, currency: 'BDT' | 'USD'): string 
       maximumFractionDigits: 2
     })}`;
   }
+}
+
+export interface BdCorporateTaxInput {
+  grossReceipts: number;
+  allowableExpenses: number;
+  disallowedExpenses: number;
+  otherAdjustments: number;
+  allTransactionsViaBank: boolean;
+  bankCompliantTaxRate: number; // e.g. 0.25 for 25%
+  standardTaxRate: number;      // e.g. 0.275 for 27.5%
+  turnoverThreshold: number;   // e.g. 5,000,000 BDT
+  turnoverMinimumTaxRate: number; // e.g. 0.006 for 0.60%
+  invoiceTdsSum?: number;      // Sum of source minimum tax from applicable invoices
+  certifiedTds: number;
+  advanceTaxPaid: number;
+  manualTaxAdjustment: number;
+  manualOverrideTax?: number | null;
+}
+
+export interface BdCorporateTaxResult {
+  accountingProfit: number;
+  taxableProfit: number;
+  taxableProfitForTax: number;
+  appliedCorporateTaxRate: number;
+  regularCorporateTax: number;
+  sourceMinimumTax: number;
+  turnoverMinimumTax: number;
+  grossTaxLiability: number;
+  liabilityDeterminedBy: 'REGULAR_CORPORATE_TAX' | 'SOURCE_MINIMUM_TAX' | 'TURNOVER_MINIMUM_TAX';
+  availableTaxCredit: number;
+  systemCalculatedTax: number;
+  manualOverrideTax: number | null;
+  finalTaxPayable: number;
+  unadjustedTaxCredit: number;
+}
+
+export function calculateBangladeshCorporateTax(input: BdCorporateTaxInput): BdCorporateTaxResult {
+  const gross = Math.max(0, input.grossReceipts);
+  const allowable = Math.max(0, input.allowableExpenses);
+  const disallowed = Math.max(0, input.disallowedExpenses);
+  const adjustments = input.otherAdjustments || 0;
+
+  // 1. Accounting & Taxable profit
+  const accountingProfit = roundToTwo(gross - allowable);
+  const taxableProfit = roundToTwo(accountingProfit + disallowed + adjustments);
+  const taxableProfitForTax = Math.max(0, taxableProfit);
+
+  // 2. Applied corporate tax rate (25% bank compliant vs 27.5% standard)
+  const appliedCorporateTaxRate = input.allTransactionsViaBank
+    ? input.bankCompliantTaxRate
+    : input.standardTaxRate;
+
+  // 3. Regular Corporate Tax
+  const regularCorporateTax = roundToTwo(taxableProfitForTax * appliedCorporateTaxRate);
+
+  // 4. Source Minimum Tax
+  const sourceMinimumTax = roundToTwo(Math.max(0, input.invoiceTdsSum || 0));
+
+  // 5. Turnover Minimum Tax (Sec. 163, threshold check)
+  const turnoverThreshold = input.turnoverThreshold || 5000000;
+  const turnoverRate = input.turnoverMinimumTaxRate || 0.006;
+  const turnoverMinimumTax = gross >= turnoverThreshold
+    ? roundToTwo(gross * turnoverRate)
+    : 0;
+
+  // 6. Gross Tax Liability = MAX(regular, source_min, turnover_min)
+  const grossTaxLiability = Math.max(regularCorporateTax, sourceMinimumTax, turnoverMinimumTax);
+
+  let liabilityDeterminedBy: 'REGULAR_CORPORATE_TAX' | 'SOURCE_MINIMUM_TAX' | 'TURNOVER_MINIMUM_TAX' = 'REGULAR_CORPORATE_TAX';
+  if (grossTaxLiability === turnoverMinimumTax && turnoverMinimumTax > regularCorporateTax && turnoverMinimumTax > sourceMinimumTax) {
+    liabilityDeterminedBy = 'TURNOVER_MINIMUM_TAX';
+  } else if (grossTaxLiability === sourceMinimumTax && sourceMinimumTax > regularCorporateTax) {
+    liabilityDeterminedBy = 'SOURCE_MINIMUM_TAX';
+  }
+
+  // 7. Available Tax Credit = Verified Certified TDS + Advance Tax Paid
+  const certifiedTds = Math.max(0, input.certifiedTds);
+  const advanceTax = Math.max(0, input.advanceTaxPaid);
+  const availableTaxCredit = roundToTwo(certifiedTds + advanceTax);
+
+  // 8. System Calculated Tax
+  const manualAdjustment = input.manualTaxAdjustment || 0;
+  const systemCalculatedTax = Math.max(0, roundToTwo(grossTaxLiability - availableTaxCredit + manualAdjustment));
+
+  // 9. Manual Override & Final Tax Payable
+  const overrideVal = (input.manualOverrideTax !== undefined && input.manualOverrideTax !== null && !isNaN(input.manualOverrideTax))
+    ? Math.max(0, input.manualOverrideTax)
+    : null;
+  const finalTaxPayable = overrideVal !== null ? overrideVal : systemCalculatedTax;
+
+  // 10. Unadjusted Tax Credit (if credits exceed gross liability)
+  const unadjustedTaxCredit = Math.max(0, roundToTwo(availableTaxCredit - grossTaxLiability));
+
+  return {
+    accountingProfit,
+    taxableProfit,
+    taxableProfitForTax,
+    appliedCorporateTaxRate,
+    regularCorporateTax,
+    sourceMinimumTax,
+    turnoverMinimumTax,
+    grossTaxLiability,
+    liabilityDeterminedBy,
+    availableTaxCredit,
+    systemCalculatedTax,
+    manualOverrideTax: overrideVal,
+    finalTaxPayable,
+    unadjustedTaxCredit
+  };
 }

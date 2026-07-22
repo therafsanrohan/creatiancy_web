@@ -169,6 +169,12 @@ export interface Invoice {
   discount_value: number;
   vat_rate: number;
   vat_inclusive: boolean;
+  tds_category_code?: string;
+  tds_rate?: number;
+  expected_tds?: number;
+  certified_tds?: number;
+  tds_certificate_ref?: string;
+  include_in_source_min_tax?: boolean;
   client_note: string;
   payment_instructions: string;
   terms_conditions: string;
@@ -207,6 +213,8 @@ export interface Payment {
   bank_gateway: string;
   processing_fee: number;
   internal_note: string;
+  reference_number?: string;
+  note?: string;
   proof_url: string | null;
   recorded_by: string;
   receipt_number: string;
@@ -252,6 +260,108 @@ export interface AuditLog {
   timestamp: string;
 }
 
+// Configurable Financial-Year Based Income Tax System Interfaces
+export interface TaxConfiguration {
+  id: string;
+  country_code: 'BD' | 'US';
+  entity_type: 'NON_PUBLICLY_TRADED_COMPANY';
+  financial_year: string; // e.g. "2026-2027"
+  assessment_year: string; // e.g. "2027-2028"
+  configuration_name: string;
+  bank_compliant_tax_rate: number; // e.g. 0.25 (25%)
+  standard_tax_rate: number;      // e.g. 0.275 (27.5%)
+  turnover_threshold: number;   // e.g. 5000000 (BDT 5,000,000)
+  turnover_minimum_rate: number; // e.g. 0.006 (0.60%)
+  effective_from: string;
+  effective_until?: string;
+  status: 'DRAFT' | 'UNDER_REVIEW' | 'SCHEDULED' | 'ACTIVE' | 'ARCHIVED';
+  version_number: number;
+  change_summary: string;
+  source_reference: string;
+  created_by: string;
+  created_at: string;
+  updated_by?: string;
+  updated_at?: string;
+  approved_by?: string;
+  approved_at?: string;
+  published_at?: string;
+}
+
+export interface TaxServiceCategory {
+  id: string;
+  tax_configuration_id: string;
+  category_code: 'CREATIVE_AGENCY' | 'PROFESSIONAL_SERVICE' | 'TECHNICAL_SERVICE' | 'NO_TDS' | 'CUSTOM';
+  category_name: string;
+  description: string;
+  tds_rate: number; // e.g. 0.04 (4%)
+  is_custom_rate_allowed: boolean;
+  is_active: boolean;
+  effective_from: string;
+  effective_until?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaxCalculation {
+  id: string;
+  company_id: string;
+  tax_configuration_id: string;
+  financial_year: string;
+  assessment_year: string;
+  gross_receipts: number;
+  allowable_expenses: number;
+  disallowed_expenses: number;
+  other_adjustments: number;
+  accounting_profit: number;
+  taxable_profit: number;
+  bank_condition_verified: boolean;
+  applied_corporate_tax_rate: number;
+  regular_corporate_tax: number;
+  source_minimum_tax: number;
+  turnover_minimum_tax: number;
+  gross_tax_liability: number;
+  certified_tds: number;
+  advance_tax_paid: number;
+  available_tax_credit: number;
+  manual_tax_adjustment: number;
+  estimated_final_tax_payable: number;
+  system_calculated_tax: number;
+  manual_override_tax: number | null;
+  manual_override_reason: string | null;
+  final_tax_payable: number;
+  unadjusted_tax_credit: number;
+  liability_determined_by: 'REGULAR_CORPORATE_TAX' | 'SOURCE_MINIMUM_TAX' | 'TURNOVER_MINIMUM_TAX';
+  status: 'DRAFT' | 'CALCULATED' | 'UNDER_REVIEW' | 'APPROVED' | 'LOCKED' | 'SUPERSEDED';
+  calculated_by: string;
+  calculated_at: string;
+  approved_by?: string;
+  approved_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TaxCalculationVersion {
+  id: string;
+  tax_calculation_id: string;
+  version_number: number;
+  calculation_snapshot: TaxCalculation;
+  change_reason: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface TaxAuditLog {
+  id: string;
+  entity_type: 'tax_configuration' | 'tax_calculation' | 'tax_override';
+  entity_id: string;
+  action_type: 'CREATE' | 'UPDATE' | 'ACTIVATE' | 'OVERRIDE' | 'ARCHIVE' | 'PUBLISH';
+  previous_value: any;
+  new_value: any;
+  reason: string;
+  performed_by: string;
+  performed_at: string;
+}
+
 // Check if Supabase keys exist and are not templates
 const hasSupabaseEnv =
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -295,8 +405,8 @@ const MOCK_ENTITIES: BusinessEntity[] = [
     legal_name: 'Creatiancy LLC',
     entity_code: 'CLLC',
     logo_url: '',
-    registered_address: '1619 Broadway, Suite 500, New York, NY 10019, USA',
-    registration_number: 'NY-CLLC-2026-98765',
+    registered_address: '160 Greentree Dr, Suite 101, Dover, DE 19904, USA',
+    registration_number: 'DE-LLC-7890123',
     tax_id: 'EIN-12-3456789',
     email: 'billing@creatiancy.com',
     phone: '+1 212 555 0199',
@@ -348,6 +458,7 @@ const MOCK_EMAIL_LOGS: EmailLog[] = [];
 const MOCK_AUDIT_LOGS: AuditLog[] = [];
 const MOCK_TAX_PAYMENTS: TaxPayment[] = [];
 const MOCK_EXPENSES: Expense[] = [];
+
 const MOCK_CLIENT_SERVICE_RATES: ClientServiceRate[] = [
   { id: 'csr-1', client_id: 'cli-1', service_name: 'Static Banner Design', unit_price: 1300, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
   { id: 'csr-2', client_id: 'cli-1', service_name: 'Meta Ads Media Buying ($1,000)', unit_price: 125500, unit: 'budget', is_paid_media: true, usd_budget: 1000, usd_rate: 125.5, updated_at: '2026-07-01T00:00:00Z' },
@@ -382,6 +493,41 @@ const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
   }
 ];
 
+const MOCK_TAX_CONFIGURATIONS: TaxConfiguration[] = [
+  {
+    id: 'tax-cfg-2026-2027',
+    country_code: 'BD',
+    entity_type: 'NON_PUBLICLY_TRADED_COMPANY',
+    financial_year: '2026-2027',
+    assessment_year: '2027-2028',
+    configuration_name: 'Bangladesh Corporate Income Tax FY 2026-27 (NBR Standard)',
+    bank_compliant_tax_rate: 0.25,
+    standard_tax_rate: 0.275,
+    turnover_threshold: 5000000,
+    turnover_minimum_rate: 0.006,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE',
+    version_number: 1,
+    change_summary: 'Initial seed tax configuration for FY 2026-2027 per NBR guidelines (25% banking compliant, 27.5% standard, 0.60% turnover minimum tax above 50L BDT).',
+    source_reference: 'Income Tax Act 2023, Section 163 & Finance Act 2026',
+    created_by: 'usr-1',
+    created_at: '2026-07-01T00:00:00Z',
+    approved_by: 'usr-1',
+    approved_at: '2026-07-01T00:00:00Z',
+    published_at: '2026-07-01T00:00:00Z'
+  }
+];
+
+const MOCK_TAX_SERVICE_CATEGORIES: TaxServiceCategory[] = [
+  { id: 'cat-1', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'CREATIVE_AGENCY', category_name: 'Creative Agency Services', description: 'Advertising, design, branding, and media services', tds_rate: 0.04, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'cat-2', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'PROFESSIONAL_SERVICE', category_name: 'Professional Services', description: 'Consulting, advisory, and professional fees', tds_rate: 0.075, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'cat-3', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'TECHNICAL_SERVICE', category_name: 'Technical & IT Services', description: 'Software engineering, maintenance, and IT consulting', tds_rate: 0.10, is_custom_rate_allowed: true, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'cat-4', tax_configuration_id: 'tax-cfg-2026-2027', category_code: 'NO_TDS', category_name: 'Exempt / No TDS', description: 'Zero source tax deducted at source', tds_rate: 0.0, is_custom_rate_allowed: false, is_active: true, effective_from: '2026-07-01', created_at: '2026-07-01T00:00:00Z', updated_at: '2026-07-01T00:00:00Z' }
+];
+
+const MOCK_TAX_CALCULATIONS: TaxCalculation[] = [];
+const MOCK_TAX_AUDIT_LOGS: TaxAuditLog[] = [];
+
 // Persistent state storage adapter (browser & SSR fallback)
 class LocalStore {
   constructor() {
@@ -398,6 +544,38 @@ class LocalStore {
     if (typeof window !== 'undefined') {
       localStorage.setItem(`billing_hub_${key}`, JSON.stringify(val));
     }
+  }
+
+  get taxConfigurations(): TaxConfiguration[] {
+    return this.getVal('tax_configurations', MOCK_TAX_CONFIGURATIONS);
+  }
+
+  set taxConfigurations(val: TaxConfiguration[]) {
+    this.setVal('tax_configurations', [...val]);
+  }
+
+  get taxServiceCategories(): TaxServiceCategory[] {
+    return this.getVal('tax_service_categories', MOCK_TAX_SERVICE_CATEGORIES);
+  }
+
+  set taxServiceCategories(val: TaxServiceCategory[]) {
+    this.setVal('tax_service_categories', [...val]);
+  }
+
+  get taxCalculations(): TaxCalculation[] {
+    return this.getVal('tax_calculations', MOCK_TAX_CALCULATIONS);
+  }
+
+  set taxCalculations(val: TaxCalculation[]) {
+    this.setVal('tax_calculations', [...val]);
+  }
+
+  get taxAuditLogs(): TaxAuditLog[] {
+    return this.getVal('tax_audit_logs', MOCK_TAX_AUDIT_LOGS);
+  }
+
+  set taxAuditLogs(val: TaxAuditLog[]) {
+    this.setVal('tax_audit_logs', [...val]);
   }
 
   get currentUser(): Profile {
@@ -1347,5 +1525,220 @@ export const db = {
 
   clearAllNotifications: async (): Promise<void> => {
     localStore.systemNotifications = [];
+  },
+
+  // Configurable Financial-Year Based Income Tax System DB API
+  getTaxConfigurations: async (): Promise<TaxConfiguration[]> => {
+    return localStore.taxConfigurations;
+  },
+
+  getActiveTaxConfiguration: async (financialYear?: string): Promise<TaxConfiguration | null> => {
+    const list = localStore.taxConfigurations;
+    if (financialYear) {
+      const found = list.find(c => c.financial_year === financialYear && c.status === 'ACTIVE');
+      if (found) return found;
+    }
+    const active = list.find(c => c.status === 'ACTIVE');
+    return active || list[0] || null;
+  },
+
+  saveTaxConfiguration: async (
+    configData: Partial<TaxConfiguration> & { financial_year: string; configuration_name: string },
+    user: Profile
+  ): Promise<TaxConfiguration> => {
+    const list = localStore.taxConfigurations;
+    const now = new Date().toISOString();
+    const existingIdx = list.findIndex(c => c.id === configData.id || c.financial_year === configData.financial_year);
+    
+    let savedConfig: TaxConfiguration;
+    
+    if (existingIdx >= 0 && configData.id) {
+      const prev = list[existingIdx];
+      savedConfig = {
+        ...prev,
+        ...configData,
+        updated_by: user.id,
+        updated_at: now,
+        version_number: (prev.version_number || 1) + 1
+      } as TaxConfiguration;
+      list[existingIdx] = savedConfig;
+    } else {
+      // Deactivate older active configs for same FY if new one is set to ACTIVE
+      if (configData.status === 'ACTIVE') {
+        list.forEach(c => {
+          if (c.financial_year === configData.financial_year) {
+            c.status = 'ARCHIVED';
+          }
+        });
+      }
+
+      savedConfig = {
+        id: configData.id || `tax-cfg-${Date.now()}`,
+        country_code: configData.country_code || 'BD',
+        entity_type: configData.entity_type || 'NON_PUBLICLY_TRADED_COMPANY',
+        financial_year: configData.financial_year,
+        assessment_year: configData.assessment_year || `${parseInt(configData.financial_year.split('-')[0]) + 1}-${parseInt(configData.financial_year.split('-')[1]) + 1}`,
+        configuration_name: configData.configuration_name,
+        bank_compliant_tax_rate: configData.bank_compliant_tax_rate ?? 0.25,
+        standard_tax_rate: configData.standard_tax_rate ?? 0.275,
+        turnover_threshold: configData.turnover_threshold ?? 5000000,
+        turnover_minimum_rate: configData.turnover_minimum_rate ?? 0.006,
+        effective_from: configData.effective_from || now.slice(0, 10),
+        status: configData.status || 'ACTIVE',
+        version_number: 1,
+        change_summary: configData.change_summary || 'Updated tax configuration parameters.',
+        source_reference: configData.source_reference || 'Income Tax Act 2023, Sec. 163',
+        created_by: user.id,
+        created_at: now,
+        approved_by: user.id,
+        approved_at: now,
+        published_at: configData.status === 'ACTIVE' ? now : undefined
+      };
+      list.unshift(savedConfig);
+    }
+
+    localStore.taxConfigurations = list;
+
+    // Log audit action
+    await db.addTaxAuditLog({
+      entity_type: 'tax_configuration',
+      entity_id: savedConfig.id,
+      action_type: existingIdx >= 0 ? 'UPDATE' : 'CREATE',
+      previous_value: existingIdx >= 0 ? list[existingIdx] : null,
+      new_value: savedConfig,
+      reason: configData.change_summary || 'Tax configuration modified',
+      performed_by: user.full_name || user.email
+    });
+
+    return savedConfig;
+  },
+
+  publishTaxNotice: async (config: TaxConfiguration, user: Profile): Promise<SystemNotification> => {
+    const title = `Income Tax Rates Active for Financial Year ${config.financial_year}`;
+    const message = `Tax configurations for ${config.financial_year} (AY ${config.assessment_year}) are live: Corporate Tax ${(config.standard_tax_rate * 100).toFixed(1)}% (Standard) / ${(config.bank_compliant_tax_rate * 100).toFixed(1)}% (Banking Compliant), Turnover Minimum Tax ${(config.turnover_minimum_rate * 100).toFixed(2)}% on revenue above ৳${config.turnover_threshold.toLocaleString()}. Source: ${config.source_reference}.`;
+    
+    return db.notifyAction({
+      sender_name: user.full_name || 'System Admin',
+      sender_role: user.role_name || 'Super Admin',
+      title,
+      message,
+      category: 'broadcast',
+      target_roles: ['Super Admin', 'Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+      link_url: '/billing/tax'
+    });
+  },
+
+  getTaxServiceCategories: async (configId?: string): Promise<TaxServiceCategory[]> => {
+    const list = localStore.taxServiceCategories;
+    if (!configId) return list;
+    return list.filter(c => c.tax_configuration_id === configId);
+  },
+
+  saveTaxServiceCategory: async (category: Partial<TaxServiceCategory> & { category_code: TaxServiceCategory['category_code']; tds_rate: number }): Promise<TaxServiceCategory> => {
+    const list = localStore.taxServiceCategories;
+    const now = new Date().toISOString();
+    const idx = list.findIndex(c => c.id === category.id);
+
+    let saved: TaxServiceCategory;
+    if (idx >= 0 && category.id) {
+      saved = { ...list[idx], ...category, updated_at: now } as TaxServiceCategory;
+      list[idx] = saved;
+    } else {
+      saved = {
+        id: `cat-${Date.now()}`,
+        tax_configuration_id: category.tax_configuration_id || 'tax-cfg-2026-2027',
+        category_code: category.category_code,
+        category_name: category.category_name || category.category_code,
+        description: category.description || '',
+        tds_rate: category.tds_rate,
+        is_custom_rate_allowed: category.is_custom_rate_allowed ?? true,
+        is_active: category.is_active ?? true,
+        effective_from: category.effective_from || now.slice(0, 10),
+        created_at: now,
+        updated_at: now
+      };
+      list.push(saved);
+    }
+    localStore.taxServiceCategories = list;
+    return saved;
+  },
+
+  getTaxCalculations: async (financialYear?: string): Promise<TaxCalculation[]> => {
+    const list = localStore.taxCalculations;
+    if (!financialYear) return list;
+    return list.filter(c => c.financial_year === financialYear);
+  },
+
+  saveTaxCalculation: async (calcData: Omit<TaxCalculation, 'id' | 'created_at' | 'updated_at'> & { id?: string }): Promise<TaxCalculation> => {
+    const list = localStore.taxCalculations;
+    const now = new Date().toISOString();
+    const idx = list.findIndex(c => c.id === calcData.id);
+
+    let saved: TaxCalculation;
+    if (idx >= 0 && calcData.id) {
+      saved = { ...list[idx], ...calcData, updated_at: now };
+      list[idx] = saved;
+    } else {
+      saved = {
+        ...calcData,
+        id: calcData.id || `tax-calc-${Date.now()}`,
+        created_at: now,
+        updated_at: now
+      };
+      list.unshift(saved);
+    }
+    localStore.taxCalculations = list;
+    return saved;
+  },
+
+  overrideTaxCalculation: async (
+    calcId: string,
+    overrideAmount: number,
+    overrideReason: string,
+    user: Profile
+  ): Promise<TaxCalculation> => {
+    const list = localStore.taxCalculations;
+    const idx = list.findIndex(c => c.id === calcId);
+    if (idx === -1) throw new Error('Calculation record not found.');
+
+    const prev = list[idx];
+    const updated: TaxCalculation = {
+      ...prev,
+      manual_override_tax: overrideAmount,
+      manual_override_reason: overrideReason,
+      final_tax_payable: overrideAmount,
+      updated_at: new Date().toISOString()
+    };
+
+    list[idx] = updated;
+    localStore.taxCalculations = list;
+
+    await db.addTaxAuditLog({
+      entity_type: 'tax_override',
+      entity_id: calcId,
+      action_type: 'OVERRIDE',
+      previous_value: { system_tax: prev.system_calculated_tax, override_tax: prev.manual_override_tax },
+      new_value: { override_tax: overrideAmount, reason: overrideReason },
+      reason: overrideReason,
+      performed_by: user.full_name || user.email
+    });
+
+    return updated;
+  },
+
+  getTaxAuditLogs: async (): Promise<TaxAuditLog[]> => {
+    return localStore.taxAuditLogs;
+  },
+
+  addTaxAuditLog: async (log: Omit<TaxAuditLog, 'id' | 'performed_at'>): Promise<TaxAuditLog> => {
+    const list = localStore.taxAuditLogs;
+    const newLog: TaxAuditLog = {
+      ...log,
+      id: `tax-audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      performed_at: new Date().toISOString()
+    };
+    list.unshift(newLog);
+    localStore.taxAuditLogs = list;
+    return newLog;
   }
 };
