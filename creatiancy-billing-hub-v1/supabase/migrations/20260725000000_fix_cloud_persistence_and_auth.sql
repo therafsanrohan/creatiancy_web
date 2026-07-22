@@ -1,4 +1,4 @@
--- Corrective Migration: Fix Cloud Database Persistence, Canonical Roles, and Auth Triggers
+-- Corrective Migration: Fix Cloud Database Persistence, Canonical Roles, and Idempotent Policies
 
 -- 1. UPDATE ROLE CHECK CONSTRAINT ON PROFILES
 ALTER TABLE profiles DROP CONSTRAINT IF EXISTS profiles_role_name_check;
@@ -45,7 +45,7 @@ BEGIN
   END IF;
 END $$;
 
--- 3. ENSURE RLS HELPER FUNCTION & PROFILES POLICIES
+-- 3. ENSURE RLS HELPER FUNCTION & IDEMPOTENT PROFILES POLICIES
 CREATE OR REPLACE FUNCTION is_finance_authorized()
 RETURNS BOOLEAN AS $$
 BEGIN
@@ -57,7 +57,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- RLS Policies for Profiles
+-- Idempotent RLS Policies for Profiles
+DROP POLICY IF EXISTS "Users can read all profiles" ON profiles;
+CREATE POLICY "Users can read all profiles" ON profiles FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Super Admins can manage all profiles" ON profiles;
+CREATE POLICY "Super Admins can manage all profiles" ON profiles FOR ALL USING (
+  EXISTS (
+    SELECT 1 FROM profiles 
+    WHERE profiles.id = auth.uid() 
+    AND profiles.role_name IN ('Super Admin', 'super_admin', 'Admin', 'admin')
+  )
+);
+
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id OR auth.uid() IS NOT NULL);
 
