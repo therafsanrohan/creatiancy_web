@@ -86,6 +86,12 @@ export interface Expense {
   vendor: string;
   invoice_ref: string;
   recorded_by: string;
+  vendor_bin?: string;
+  mushak_6_3_number?: string;
+  input_vat_amount?: number;
+  input_credit_status?: 'ELIGIBLE_INPUT_CREDIT' | 'PARTIALLY_ELIGIBLE' | 'INELIGIBLE' | 'CLAIMED' | 'REJECTED';
+  verification_status?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  tax_period?: string;
   created_at: string;
 }
 
@@ -119,6 +125,8 @@ export interface BillingClient {
   account_manager_id: string;
   internal_note: string;
   status: 'active' | 'archived';
+  bin_number?: string;
+  is_vat_withholding_entity?: boolean;
 }
 
 export interface ClientServiceRate {
@@ -146,6 +154,14 @@ export interface InvoiceItem {
   is_paid_media?: boolean;
   usd_amount?: number;
   usd_rate?: number;
+  service_category_code?: string;
+  service_code?: string;
+  vat_pricing_mode?: 'VAT_EXCLUSIVE' | 'VAT_INCLUSIVE' | 'ZERO_RATED' | 'EXEMPT' | 'OUT_OF_SCOPE';
+  vat_rate?: number;
+  vat_amount?: number;
+  taxable_value?: number;
+  vds_rate?: number;
+  expected_vds?: number;
 }
 
 export interface Invoice {
@@ -169,6 +185,18 @@ export interface Invoice {
   discount_value: number;
   vat_rate: number;
   vat_inclusive: boolean;
+  vds_applicable?: boolean;
+  expected_vds?: number;
+  actual_vds_deducted?: number;
+  vds_status?: 'NOT_APPLICABLE' | 'EXPECTED' | 'DEDUCTED' | 'CERTIFICATE_PENDING' | 'CERTIFICATE_RECEIVED' | 'VERIFIED' | 'REJECTED' | 'ADJUSTED_IN_RETURN';
+  mushak_6_3_number?: string;
+  mushak_6_3_date?: string;
+  mushak_6_3_status?: 'NOT_GENERATED' | 'DRAFT' | 'GENERATED' | 'ISSUED' | 'CANCELLED' | 'REPLACED';
+  mushak_6_6_number?: string;
+  mushak_6_6_date?: string;
+  mushak_6_6_status?: 'PENDING' | 'RECEIVED' | 'VERIFIED' | 'REJECTED' | 'DUPLICATE' | 'EXPIRED_FOR_ADJUSTMENT' | 'CLAIMED';
+  zero_rate_evidence_ref?: string;
+  zero_rate_status?: 'NOT_REQUESTED' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'MORE_INFORMATION_REQUIRED';
   tds_category_code?: string;
   tds_rate?: number;
   expected_tds?: number;
@@ -362,6 +390,139 @@ export interface TaxAuditLog {
   performed_at: string;
 }
 
+export interface VatRegistrationProfile {
+  id: string;
+  company_id: string;
+  business_name: string;
+  bin_number: string;
+  bin_status: 'VAT_REGISTERED' | 'TURNOVER_TAX_ENLISTED' | 'VOLUNTARILY_REGISTERED' | 'REGISTRATION_PENDING' | 'SUSPENDED' | 'CANCELLED' | 'NOT_CONFIGURED';
+  registration_effective_date: string;
+  vat_circle: string;
+  vat_division: string;
+  registered_address: string;
+  default_return_frequency: 'MONTHLY' | 'QUARTERLY' | 'FOUR_MONTHLY' | 'ANNUAL';
+  default_currency: 'BDT';
+  status: 'ACTIVE' | 'INACTIVE';
+  updated_at: string;
+}
+
+export interface VatConfiguration {
+  id: string;
+  country_code: 'BD';
+  financial_year: string;
+  configuration_name: string;
+  registration_type: 'VAT_REGISTERED' | 'TURNOVER_TAX_ENLISTED';
+  return_frequency: 'MONTHLY' | 'QUARTERLY' | 'FOUR_MONTHLY' | 'ANNUAL';
+  effective_from: string;
+  effective_until?: string;
+  status: 'DRAFT' | 'UNDER_REVIEW' | 'SCHEDULED' | 'ACTIVE' | 'ARCHIVED';
+  version_number: number;
+  change_summary: string;
+  source_reference: string;
+  created_by: string;
+  created_at: string;
+  updated_by?: string;
+  updated_at?: string;
+  approved_by?: string;
+  approved_at?: string;
+  published_at?: string;
+}
+
+export interface VatServiceCategory {
+  id: string;
+  vat_configuration_id: string;
+  category_code: 'ADVERTISING_AGENCY' | 'GRAPHIC_DESIGN' | 'CONSULTANCY' | 'IT_ENABLED_SERVICE' | 'SOFTWARE_DEVELOPMENT' | 'WEB_DEVELOPMENT' | 'DIGITAL_MARKETING' | 'MEDIA_BUYING' | 'PRODUCTION_SERVICE' | 'MISCELLANEOUS_SERVICE' | 'ZERO_RATED_EXPORT_SERVICE' | 'EXEMPT_SERVICE' | 'CUSTOM_SERVICE';
+  category_name: string;
+  official_service_code: string;
+  description: string;
+  vat_rate: number;
+  vds_rate: number;
+  is_vds_applicable: boolean;
+  is_input_credit_allowed: boolean;
+  is_zero_rated: boolean;
+  is_exempt: boolean;
+  is_custom_rate_allowed: boolean;
+  effective_from: string;
+  effective_until?: string;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+export interface VatDocument {
+  id: string;
+  document_type: 'MUSHAK_6_3' | 'MUSHAK_6_6' | 'PURCHASE_VAT_INVOICE' | 'ZERO_RATE_EVIDENCE' | 'PAYMENT_CHALLAN';
+  document_number: string;
+  document_date: string;
+  invoice_id?: string;
+  client_id?: string;
+  vendor_id?: string;
+  tax_period: string;
+  amount: number;
+  attachment_url?: string;
+  verification_status: 'PENDING' | 'RECEIVED' | 'VERIFIED' | 'REJECTED' | 'DUPLICATE' | 'CLAIMED';
+  verified_by?: string;
+  verified_at?: string;
+  created_at: string;
+}
+
+export interface InputVatEntry {
+  id: string;
+  vendor_name: string;
+  expense_id?: string;
+  vendor_bin: string;
+  purchase_invoice_number: string;
+  mushak_6_3_number: string;
+  purchase_date: string;
+  taxable_value: number;
+  input_vat_amount: number;
+  approved_input_vat: number;
+  eligibility_status: 'ELIGIBLE_INPUT_CREDIT' | 'PARTIALLY_ELIGIBLE' | 'INELIGIBLE' | 'CLAIMED' | 'REJECTED';
+  verification_status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  tax_period: string;
+  claimed_return_id?: string;
+  supporting_document?: string;
+  created_by: string;
+  approved_by?: string;
+  created_at: string;
+}
+
+export interface VatReturn {
+  id: string;
+  company_id: string;
+  vat_configuration_id: string;
+  financial_year: string;
+  tax_period: string;
+  tax_period_start: string;
+  tax_period_end: string;
+  opening_balance: number;
+  output_vat: number;
+  eligible_input_vat: number;
+  vds_decreasing_adjustment: number;
+  increasing_adjustments: number;
+  decreasing_adjustments: number;
+  net_vat_payable: number;
+  carried_forward_credit: number;
+  status: 'DRAFT' | 'DATA_COLLECTION' | 'UNDER_REVIEW' | 'APPROVED' | 'FILED' | 'PAID' | 'LOCKED';
+  prepared_by: string;
+  reviewed_by?: string;
+  approved_by?: string;
+  filed_at?: string;
+  payment_reference?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface VatAuditLog {
+  id: string;
+  entity_type: 'vat_configuration' | 'vds_certificate' | 'mushak_document' | 'input_vat' | 'vat_override';
+  entity_id: string;
+  action_type: 'CREATE' | 'UPDATE' | 'ACTIVATE' | 'VERIFY' | 'OVERRIDE' | 'CLAIM' | 'PUBLISH';
+  previous_value: any;
+  new_value: any;
+  reason: string;
+  performed_by: string;
+  performed_at: string;
+}
+
 // Check if Supabase keys exist and are not templates
 const hasSupabaseEnv =
   process.env.NEXT_PUBLIC_SUPABASE_URL &&
@@ -528,6 +689,152 @@ const MOCK_TAX_SERVICE_CATEGORIES: TaxServiceCategory[] = [
 const MOCK_TAX_CALCULATIONS: TaxCalculation[] = [];
 const MOCK_TAX_AUDIT_LOGS: TaxAuditLog[] = [];
 
+// VAT Seed Data
+const MOCK_VAT_REGISTRATION_PROFILE: VatRegistrationProfile = {
+  id: 'vat-prof-1',
+  company_id: 'ent-1',
+  business_name: 'Creatiancy Limited',
+  bin_number: '001234567-0101',
+  bin_status: 'VAT_REGISTERED',
+  registration_effective_date: '2021-07-01',
+  vat_circle: 'Banani Circle',
+  vat_division: 'Dhaka North Division',
+  registered_address: 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh',
+  default_return_frequency: 'MONTHLY',
+  default_currency: 'BDT',
+  status: 'ACTIVE',
+  updated_at: '2026-07-01T00:00:00Z'
+};
+
+const MOCK_VAT_CONFIGURATIONS: VatConfiguration[] = [
+  {
+    id: 'vat-cfg-2026-2027',
+    country_code: 'BD',
+    financial_year: '2026-2027',
+    configuration_name: 'NBR Standard VAT Configuration FY 2026-2027',
+    registration_type: 'VAT_REGISTERED',
+    return_frequency: 'MONTHLY',
+    effective_from: '2026-07-01',
+    status: 'ACTIVE',
+    version_number: 1,
+    change_summary: 'Configured standard Bangladesh VAT Act 2012 / Rules 2019 service category classifications.',
+    source_reference: 'NBR Value Added Tax and Supplementary Duty Act 2012',
+    created_by: 'usr-1',
+    created_at: '2026-07-01T00:00:00Z',
+    published_at: '2026-07-01T00:00:00Z'
+  }
+];
+
+const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
+  {
+    id: 'vsc-1',
+    vat_configuration_id: 'vat-cfg-2026-2027',
+    category_code: 'ADVERTISING_AGENCY',
+    category_name: 'Advertising Agency',
+    official_service_code: 'S007.00',
+    description: 'Digital advertising, campaign management, agency creative services',
+    vat_rate: 0.15,
+    vds_rate: 0.15,
+    is_vds_applicable: true,
+    is_input_credit_allowed: true,
+    is_zero_rated: false,
+    is_exempt: false,
+    is_custom_rate_allowed: true,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'vsc-2',
+    vat_configuration_id: 'vat-cfg-2026-2027',
+    category_code: 'GRAPHIC_DESIGN',
+    category_name: 'Graphic Designer',
+    official_service_code: 'S050.20',
+    description: 'Visual identity, graphic assets, motion design',
+    vat_rate: 0.15,
+    vds_rate: 0.15,
+    is_vds_applicable: true,
+    is_input_credit_allowed: true,
+    is_zero_rated: false,
+    is_exempt: false,
+    is_custom_rate_allowed: true,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'vsc-3',
+    vat_configuration_id: 'vat-cfg-2026-2027',
+    category_code: 'CONSULTANCY',
+    category_name: 'Consultancy',
+    official_service_code: 'S032.00',
+    description: 'Strategic management and tech advisory consulting',
+    vat_rate: 0.15,
+    vds_rate: 0.15,
+    is_vds_applicable: true,
+    is_input_credit_allowed: true,
+    is_zero_rated: false,
+    is_exempt: false,
+    is_custom_rate_allowed: true,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'vsc-4',
+    vat_configuration_id: 'vat-cfg-2026-2027',
+    category_code: 'IT_ENABLED_SERVICE',
+    category_name: 'IT Enabled Service (ITES)',
+    official_service_code: 'S099.10',
+    description: 'Cloud hosting, SaaS, remote IT support, web development',
+    vat_rate: 0.05,
+    vds_rate: 0.05,
+    is_vds_applicable: true,
+    is_input_credit_allowed: true,
+    is_zero_rated: false,
+    is_exempt: false,
+    is_custom_rate_allowed: true,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'vsc-5',
+    vat_configuration_id: 'vat-cfg-2026-2027',
+    category_code: 'MISCELLANEOUS_SERVICE',
+    category_name: 'Other Miscellaneous Service',
+    official_service_code: 'S099.20',
+    description: 'General professional services',
+    vat_rate: 0.15,
+    vds_rate: 0.15,
+    is_vds_applicable: true,
+    is_input_credit_allowed: true,
+    is_zero_rated: false,
+    is_exempt: false,
+    is_custom_rate_allowed: true,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE'
+  },
+  {
+    id: 'vsc-6',
+    vat_configuration_id: 'vat-cfg-2026-2027',
+    category_code: 'ZERO_RATED_EXPORT_SERVICE',
+    category_name: 'Zero-Rated Export Service',
+    official_service_code: 'EXPORT-00',
+    description: 'Software development and IT export services to foreign clients',
+    vat_rate: 0.0,
+    vds_rate: 0.0,
+    is_vds_applicable: false,
+    is_input_credit_allowed: true,
+    is_zero_rated: true,
+    is_exempt: false,
+    is_custom_rate_allowed: false,
+    effective_from: '2026-07-01',
+    status: 'ACTIVE'
+  }
+];
+
+const MOCK_VAT_DOCUMENTS: VatDocument[] = [];
+const MOCK_INPUT_VAT_ENTRIES: InputVatEntry[] = [];
+const MOCK_VAT_RETURNS: VatReturn[] = [];
+const MOCK_VAT_AUDIT_LOGS: VatAuditLog[] = [];
+
 // Persistent state storage adapter (browser & SSR fallback)
 class LocalStore {
   constructor() {
@@ -544,6 +851,62 @@ class LocalStore {
     if (typeof window !== 'undefined') {
       localStorage.setItem(`billing_hub_${key}`, JSON.stringify(val));
     }
+  }
+
+  get vatRegistrationProfile(): VatRegistrationProfile {
+    return this.getVal('vat_registration_profile', MOCK_VAT_REGISTRATION_PROFILE);
+  }
+
+  set vatRegistrationProfile(val: VatRegistrationProfile) {
+    this.setVal('vat_registration_profile', val);
+  }
+
+  get vatConfigurations(): VatConfiguration[] {
+    return this.getVal('vat_configurations', MOCK_VAT_CONFIGURATIONS);
+  }
+
+  set vatConfigurations(val: VatConfiguration[]) {
+    this.setVal('vat_configurations', [...val]);
+  }
+
+  get vatServiceCategories(): VatServiceCategory[] {
+    return this.getVal('vat_service_categories', MOCK_VAT_SERVICE_CATEGORIES);
+  }
+
+  set vatServiceCategories(val: VatServiceCategory[]) {
+    this.setVal('vat_service_categories', [...val]);
+  }
+
+  get vatDocuments(): VatDocument[] {
+    return this.getVal('vat_documents', MOCK_VAT_DOCUMENTS);
+  }
+
+  set vatDocuments(val: VatDocument[]) {
+    this.setVal('vat_documents', [...val]);
+  }
+
+  get inputVatEntries(): InputVatEntry[] {
+    return this.getVal('input_vat_entries', MOCK_INPUT_VAT_ENTRIES);
+  }
+
+  set inputVatEntries(val: InputVatEntry[]) {
+    this.setVal('input_vat_entries', [...val]);
+  }
+
+  get vatReturns(): VatReturn[] {
+    return this.getVal('vat_returns', MOCK_VAT_RETURNS);
+  }
+
+  set vatReturns(val: VatReturn[]) {
+    this.setVal('vat_returns', [...val]);
+  }
+
+  get vatAuditLogs(): VatAuditLog[] {
+    return this.getVal('vat_audit_logs', MOCK_VAT_AUDIT_LOGS);
+  }
+
+  set vatAuditLogs(val: VatAuditLog[]) {
+    this.setVal('vat_audit_logs', [...val]);
   }
 
   get taxConfigurations(): TaxConfiguration[] {
@@ -1739,6 +2102,350 @@ export const db = {
     };
     list.unshift(newLog);
     localStore.taxAuditLogs = list;
+    return newLog;
+  },
+
+  // Configurable Financial-Year Based VAT System DB API
+  getVatRegistrationProfile: async (): Promise<VatRegistrationProfile> => {
+    return localStore.vatRegistrationProfile;
+  },
+
+  saveVatRegistrationProfile: async (profile: Partial<VatRegistrationProfile>, user: Profile): Promise<VatRegistrationProfile> => {
+    const current = localStore.vatRegistrationProfile;
+    const updated: VatRegistrationProfile = {
+      ...current,
+      ...profile,
+      updated_at: new Date().toISOString()
+    };
+    localStore.vatRegistrationProfile = updated;
+    await db.addVatAuditLog({
+      entity_type: 'vat_configuration',
+      entity_id: updated.id,
+      action_type: 'UPDATE',
+      previous_value: current,
+      new_value: updated,
+      reason: 'Updated VAT registration profile',
+      performed_by: user.full_name || user.email
+    });
+    return updated;
+  },
+
+  getVatConfigurations: async (): Promise<VatConfiguration[]> => {
+    return localStore.vatConfigurations;
+  },
+
+  getActiveVatConfiguration: async (financialYear?: string): Promise<VatConfiguration | null> => {
+    const list = localStore.vatConfigurations;
+    if (financialYear) {
+      const found = list.find(c => c.financial_year === financialYear && c.status === 'ACTIVE');
+      if (found) return found;
+    }
+    const active = list.find(c => c.status === 'ACTIVE');
+    return active || list[0] || null;
+  },
+
+  saveVatConfiguration: async (
+    configData: Partial<VatConfiguration> & { financial_year: string; configuration_name: string },
+    user: Profile
+  ): Promise<VatConfiguration> => {
+    const list = localStore.vatConfigurations;
+    const now = new Date().toISOString();
+    const existingIdx = list.findIndex(c => c.id === configData.id || c.financial_year === configData.financial_year);
+    
+    let savedConfig: VatConfiguration;
+    if (existingIdx >= 0 && configData.id) {
+      const prev = list[existingIdx];
+      savedConfig = {
+        ...prev,
+        ...configData,
+        updated_by: user.id,
+        updated_at: now,
+        version_number: (prev.version_number || 1) + 1
+      } as VatConfiguration;
+      list[existingIdx] = savedConfig;
+    } else {
+      if (configData.status === 'ACTIVE') {
+        list.forEach(c => {
+          if (c.financial_year === configData.financial_year) {
+            c.status = 'ARCHIVED';
+          }
+        });
+      }
+      savedConfig = {
+        id: configData.id || `vat-cfg-${Date.now()}`,
+        country_code: 'BD',
+        financial_year: configData.financial_year,
+        configuration_name: configData.configuration_name,
+        registration_type: configData.registration_type || 'VAT_REGISTERED',
+        return_frequency: configData.return_frequency || 'MONTHLY',
+        effective_from: configData.effective_from || now.slice(0, 10),
+        status: configData.status || 'ACTIVE',
+        version_number: 1,
+        change_summary: configData.change_summary || 'Updated VAT configuration parameters.',
+        source_reference: configData.source_reference || 'NBR Value Added Tax and Supplementary Duty Act 2012',
+        created_by: user.id,
+        created_at: now,
+        approved_by: user.id,
+        approved_at: now,
+        published_at: configData.status === 'ACTIVE' ? now : undefined
+      };
+      list.unshift(savedConfig);
+    }
+
+    localStore.vatConfigurations = list;
+
+    await db.addVatAuditLog({
+      entity_type: 'vat_configuration',
+      entity_id: savedConfig.id,
+      action_type: existingIdx >= 0 ? 'UPDATE' : 'CREATE',
+      previous_value: existingIdx >= 0 ? list[existingIdx] : null,
+      new_value: savedConfig,
+      reason: configData.change_summary || 'VAT configuration modified',
+      performed_by: user.full_name || user.email
+    });
+
+    return savedConfig;
+  },
+
+  publishVatNotice: async (config: VatConfiguration, user: Profile): Promise<SystemNotification> => {
+    const title = `VAT Rates Updated for Financial Year ${config.financial_year}`;
+    const message = `Official VAT parameters updated for ${config.financial_year}: Registration Type ${config.registration_type}, Frequency: ${config.return_frequency}. Service category classifications and VDS withholding guidelines updated per NBR rules (${config.source_reference}).`;
+    
+    return db.notifyAction({
+      sender_name: user.full_name || 'System Admin',
+      sender_role: user.role_name || 'Super Admin',
+      title,
+      message,
+      category: 'broadcast',
+      target_roles: ['Super Admin', 'Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+      link_url: '/billing/tax'
+    });
+  },
+
+  getVatServiceCategories: async (configId?: string): Promise<VatServiceCategory[]> => {
+    const list = localStore.vatServiceCategories;
+    if (!configId) return list;
+    return list.filter(c => c.vat_configuration_id === configId);
+  },
+
+  saveVatServiceCategory: async (category: Partial<VatServiceCategory> & { category_code: VatServiceCategory['category_code']; vat_rate: number }): Promise<VatServiceCategory> => {
+    const list = localStore.vatServiceCategories;
+    const now = new Date().toISOString();
+    const idx = list.findIndex(c => c.id === category.id);
+
+    let saved: VatServiceCategory;
+    if (idx >= 0 && category.id) {
+      saved = { ...list[idx], ...category } as VatServiceCategory;
+      list[idx] = saved;
+    } else {
+      saved = {
+        id: `vsc-${Date.now()}`,
+        vat_configuration_id: category.vat_configuration_id || 'vat-cfg-2026-2027',
+        category_code: category.category_code,
+        category_name: category.category_name || category.category_code,
+        official_service_code: category.official_service_code || 'S099.20',
+        description: category.description || '',
+        vat_rate: category.vat_rate,
+        vds_rate: category.vds_rate ?? category.vat_rate,
+        is_vds_applicable: category.is_vds_applicable ?? true,
+        is_input_credit_allowed: category.is_input_credit_allowed ?? true,
+        is_zero_rated: category.is_zero_rated ?? false,
+        is_exempt: category.is_exempt ?? false,
+        is_custom_rate_allowed: category.is_custom_rate_allowed ?? true,
+        effective_from: category.effective_from || now.slice(0, 10),
+        status: category.status || 'ACTIVE'
+      };
+      list.push(saved);
+    }
+    localStore.vatServiceCategories = list;
+    return saved;
+  },
+
+  getVatDocuments: async (type?: VatDocument['document_type']): Promise<VatDocument[]> => {
+    const list = localStore.vatDocuments;
+    if (!type) return list;
+    return list.filter(d => d.document_type === type);
+  },
+
+  saveVatDocument: async (docData: Omit<VatDocument, 'id' | 'created_at'> & { id?: string }, user: Profile): Promise<VatDocument> => {
+    const list = localStore.vatDocuments;
+    const now = new Date().toISOString();
+
+    // Duplicate Mushak 6.6 prevention check
+    if (docData.document_type === 'MUSHAK_6_6') {
+      const duplicate = list.find(d => 
+        d.id !== docData.id &&
+        d.document_type === 'MUSHAK_6_6' &&
+        d.document_number.trim().toLowerCase() === docData.document_number.trim().toLowerCase()
+      );
+      if (duplicate) {
+        throw new Error(`Mushak 6.6 Certificate #${docData.document_number} has already been registered in the system. Duplicate claims are prohibited.`);
+      }
+    }
+
+    const idx = list.findIndex(d => d.id === docData.id);
+    let savedDoc: VatDocument;
+
+    if (idx >= 0 && docData.id) {
+      savedDoc = { ...list[idx], ...docData };
+      list[idx] = savedDoc;
+    } else {
+      savedDoc = {
+        ...docData,
+        id: `vat-doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        created_at: now
+      };
+      list.unshift(savedDoc);
+    }
+    localStore.vatDocuments = list;
+
+    await db.addVatAuditLog({
+      entity_type: docData.document_type === 'MUSHAK_6_6' ? 'vds_certificate' : 'mushak_document',
+      entity_id: savedDoc.id,
+      action_type: idx >= 0 ? 'UPDATE' : 'CREATE',
+      previous_value: idx >= 0 ? list[idx] : null,
+      new_value: savedDoc,
+      reason: `Recorded ${docData.document_type} #${docData.document_number}`,
+      performed_by: user.full_name || user.email
+    });
+
+    return savedDoc;
+  },
+
+  verifyVatDocument: async (docId: string, status: VatDocument['verification_status'], user: Profile): Promise<VatDocument> => {
+    const list = localStore.vatDocuments;
+    const idx = list.findIndex(d => d.id === docId);
+    if (idx === -1) throw new Error('VAT Document record not found.');
+
+    const prev = list[idx];
+    const updated: VatDocument = {
+      ...prev,
+      verification_status: status,
+      verified_by: user.full_name || user.email,
+      verified_at: new Date().toISOString()
+    };
+
+    list[idx] = updated;
+    localStore.vatDocuments = list;
+
+    await db.addVatAuditLog({
+      entity_type: prev.document_type === 'MUSHAK_6_6' ? 'vds_certificate' : 'mushak_document',
+      entity_id: docId,
+      action_type: 'VERIFY',
+      previous_value: { verification_status: prev.verification_status },
+      new_value: { verification_status: status },
+      reason: `Changed verification status to ${status}`,
+      performed_by: user.full_name || user.email
+    });
+
+    return updated;
+  },
+
+  getInputVatEntries: async (): Promise<InputVatEntry[]> => {
+    return localStore.inputVatEntries;
+  },
+
+  saveInputVatEntry: async (entryData: Omit<InputVatEntry, 'id' | 'created_at'> & { id?: string }, user: Profile): Promise<InputVatEntry> => {
+    const list = localStore.inputVatEntries;
+    const now = new Date().toISOString();
+    const idx = list.findIndex(e => e.id === entryData.id);
+    let saved: InputVatEntry;
+
+    if (idx >= 0 && entryData.id) {
+      saved = { ...list[idx], ...entryData };
+      list[idx] = saved;
+    } else {
+      saved = {
+        ...entryData,
+        id: `ive-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        created_at: now
+      };
+      list.unshift(saved);
+    }
+    localStore.inputVatEntries = list;
+
+    await db.addVatAuditLog({
+      entity_type: 'input_vat',
+      entity_id: saved.id,
+      action_type: idx >= 0 ? 'UPDATE' : 'CREATE',
+      previous_value: idx >= 0 ? list[idx] : null,
+      new_value: saved,
+      reason: `Recorded Input VAT from vendor ${entryData.vendor_name}`,
+      performed_by: user.full_name || user.email
+    });
+
+    return saved;
+  },
+
+  approveInputVatEntry: async (entryId: string, approvedVatAmount: number, status: InputVatEntry['eligibility_status'], user: Profile): Promise<InputVatEntry> => {
+    const list = localStore.inputVatEntries;
+    const idx = list.findIndex(e => e.id === entryId);
+    if (idx === -1) throw new Error('Input VAT record not found.');
+
+    const prev = list[idx];
+    const updated: InputVatEntry = {
+      ...prev,
+      approved_input_vat: approvedVatAmount,
+      eligibility_status: status,
+      verification_status: status === 'ELIGIBLE_INPUT_CREDIT' || status === 'PARTIALLY_ELIGIBLE' ? 'APPROVED' : 'REJECTED',
+      approved_by: user.full_name || user.email
+    };
+
+    list[idx] = updated;
+    localStore.inputVatEntries = list;
+
+    await db.addVatAuditLog({
+      entity_type: 'input_vat',
+      entity_id: entryId,
+      action_type: 'VERIFY',
+      previous_value: { eligibility_status: prev.eligibility_status, approved_input_vat: prev.approved_input_vat },
+      new_value: { eligibility_status: status, approved_input_vat: approvedVatAmount },
+      reason: `Approved Input VAT credit of ৳${approvedVatAmount}`,
+      performed_by: user.full_name || user.email
+    });
+
+    return updated;
+  },
+
+  getVatReturns: async (): Promise<VatReturn[]> => {
+    return localStore.vatReturns;
+  },
+
+  saveVatReturn: async (returnData: Omit<VatReturn, 'id' | 'created_at' | 'updated_at'> & { id?: string }, user: Profile): Promise<VatReturn> => {
+    const list = localStore.vatReturns;
+    const now = new Date().toISOString();
+    const idx = list.findIndex(r => r.id === returnData.id);
+    let saved: VatReturn;
+
+    if (idx >= 0 && returnData.id) {
+      saved = { ...list[idx], ...returnData, updated_at: now };
+      list[idx] = saved;
+    } else {
+      saved = {
+        ...returnData,
+        id: `vr-${Date.now()}`,
+        created_at: now,
+        updated_at: now
+      };
+      list.unshift(saved);
+    }
+    localStore.vatReturns = list;
+    return saved;
+  },
+
+  getVatAuditLogs: async (): Promise<VatAuditLog[]> => {
+    return localStore.vatAuditLogs;
+  },
+
+  addVatAuditLog: async (log: Omit<VatAuditLog, 'id' | 'performed_at'>): Promise<VatAuditLog> => {
+    const list = localStore.vatAuditLogs;
+    const newLog: VatAuditLog = {
+      ...log,
+      id: `vat-audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      performed_at: new Date().toISOString()
+    };
+    list.unshift(newLog);
+    localStore.vatAuditLogs = list;
     return newLog;
   }
 };

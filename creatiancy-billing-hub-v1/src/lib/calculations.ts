@@ -21,6 +21,74 @@ export interface LineItem {
   rate: number;
   is_paid_media?: boolean;
   service_name?: string;
+  service_category_code?: string;
+  service_code?: string;
+  vat_pricing_mode?: VatPricingMode;
+  vat_rate?: number;
+  vds_rate?: number;
+}
+
+export type VatPricingMode = 'VAT_EXCLUSIVE' | 'VAT_INCLUSIVE' | 'ZERO_RATED' | 'EXEMPT' | 'OUT_OF_SCOPE';
+
+export interface CalculateLineVatInput {
+  quantity: number;
+  unitPrice: number;
+  discountAmount?: number;
+  vatPricingMode: VatPricingMode;
+  vatRate: number;
+  vdsRate?: number;
+}
+
+export interface LineVatResult {
+  taxableValue: number;
+  vatAmount: number;
+  lineTotal: number;
+  expectedVds: number;
+  appliedVatRate: number;
+}
+
+export function calculateLineVat(input: CalculateLineVatInput): LineVatResult {
+  const qty = Math.max(0, input.quantity);
+  const unitPrice = Math.max(0, input.unitPrice);
+  const discount = Math.max(0, input.discountAmount || 0);
+
+  const vatRate = input.vatRate > 1 ? input.vatRate / 100 : Math.max(0, input.vatRate);
+  const vdsRate = (input.vdsRate || 0) > 1 ? (input.vdsRate || 0) / 100 : Math.max(0, input.vdsRate || 0);
+
+  const initialAmountCents = Math.max(0, Math.round(qty * unitPrice * 100) - toCents(discount));
+
+  let taxableValueCents = initialAmountCents;
+  let vatCents = 0;
+  let lineTotalCents = initialAmountCents;
+
+  if (input.vatPricingMode === 'VAT_EXCLUSIVE') {
+    taxableValueCents = initialAmountCents;
+    vatCents = Math.round(taxableValueCents * vatRate);
+    lineTotalCents = taxableValueCents + vatCents;
+  } else if (input.vatPricingMode === 'VAT_INCLUSIVE') {
+    if (vatRate > 0) {
+      taxableValueCents = Math.round(initialAmountCents / (1 + vatRate));
+      vatCents = initialAmountCents - taxableValueCents;
+    } else {
+      taxableValueCents = initialAmountCents;
+      vatCents = 0;
+    }
+    lineTotalCents = initialAmountCents;
+  } else {
+    taxableValueCents = initialAmountCents;
+    vatCents = 0;
+    lineTotalCents = initialAmountCents;
+  }
+
+  const expectedVdsCents = Math.round(taxableValueCents * vdsRate);
+
+  return {
+    taxableValue: fromCents(taxableValueCents),
+    vatAmount: fromCents(vatCents),
+    lineTotal: fromCents(lineTotalCents),
+    expectedVds: fromCents(expectedVdsCents),
+    appliedVatRate: vatRate
+  };
 }
 
 export interface CalculateTotalsInput {
@@ -30,6 +98,8 @@ export interface CalculateTotalsInput {
   vatRate: number;
   vatInclusive: boolean;
   roundTotal?: boolean;
+  expectedTdsAmount?: number;
+  expectedVdsAmount?: number;
   payments?: { amount: number }[];
 }
 
@@ -40,6 +110,9 @@ export interface BillingTotals {
   discountAmount: number;
   vatAmount: number;
   totalPayable: number;
+  expectedTds: number;
+  expectedVds: number;
+  netCashReceivable: number;
   amountPaid: number;
   amountDue: number;
 }
@@ -136,6 +209,10 @@ export function calculateTotals(input: CalculateTotalsInput): BillingTotals {
   // 7. Calculate amount due safely in cents
   const amountDueCents = Math.max(0, totalPayableCents - paymentsCents);
 
+  const expectedTdsCents = toCents(Math.max(0, input.expectedTdsAmount || 0));
+  const expectedVdsCents = toCents(Math.max(0, input.expectedVdsAmount || 0));
+  const netCashReceivableCents = Math.max(0, totalPayableCents - expectedTdsCents - expectedVdsCents);
+
   return {
     subtotal: fromCents(subtotalCents),
     discountableSubtotal: fromCents(discountableSubtotalCents),
@@ -143,6 +220,9 @@ export function calculateTotals(input: CalculateTotalsInput): BillingTotals {
     discountAmount: fromCents(discountCents),
     vatAmount: fromCents(vatCents),
     totalPayable: fromCents(totalPayableCents),
+    expectedTds: fromCents(expectedTdsCents),
+    expectedVds: fromCents(expectedVdsCents),
+    netCashReceivable: fromCents(netCashReceivableCents),
     amountPaid: fromCents(paymentsCents),
     amountDue: fromCents(amountDueCents)
   };
