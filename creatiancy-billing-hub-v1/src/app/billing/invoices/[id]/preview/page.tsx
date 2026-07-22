@@ -464,9 +464,6 @@ export default function InvoicePreviewPage() {
                       <span className="font-mono text-[9px] font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200">
                         Invoice No: {invoice.invoice_number || 'DRAFT'}
                       </span>
-                      <span className="font-mono text-[9px] text-gray-500">
-                        Token: {invoice.secure_token ? `${invoice.secure_token.substring(0, 16)}...` : 'SECURE-VERIFIED'}
-                      </span>
                     </div>
                   </div>
                 </div>

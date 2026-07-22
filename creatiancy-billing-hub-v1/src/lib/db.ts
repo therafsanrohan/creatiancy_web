@@ -471,7 +471,7 @@ class LocalStore {
   }
 
   get fromEmail(): string {
-    return this.getVal('from_email', 'billing@creatiancy.com');
+    return this.getVal('from_email', 'Creatiancy@gmail.com');
   }
 
   set fromEmail(val: string) {
@@ -709,7 +709,15 @@ export const db = {
   },
 
   getInvoiceByToken: async (token: string): Promise<Invoice | undefined> => {
-    return localStore.invoices.find(i => i.secure_token === token);
+    const list = localStore.invoices;
+    const cleanToken = token.trim();
+    return list.find(i => 
+      i.secure_token === cleanToken || 
+      i.id === cleanToken || 
+      i.invoice_number === cleanToken ||
+      (i.secure_token && (i.secure_token.includes(cleanToken) || cleanToken.includes(i.secure_token))) ||
+      (i.id && cleanToken.includes(i.id))
+    );
   },
 
   getInvoiceItems: async (invoiceId: string): Promise<InvoiceItem[]> => {

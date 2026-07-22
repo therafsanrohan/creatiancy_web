@@ -105,10 +105,11 @@ export default function PublicInvoicePage() {
 
   const handleWhatsAppShare = () => {
     if (!invoice) return;
-    const text = encodeURIComponent(
-      `Hello! Here is your invoice from ${isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC'}:\nInvoice No: ${invoice.invoice_number}\nTotal: ${formatCurrency(totals.totalPayable, invoice.currency)}\nView Secure Invoice: ${verifyUrl}`
-    );
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    const clientPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+    const shareLink = verifyUrl || (typeof window !== 'undefined' ? window.location.href : '');
+    const messageText = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nHere is your official invoice from ${entity?.legal_name || (isBdt ? 'Creatiancy Limited' : 'Creatiancy LLC')}:\n\n📄 Invoice Number: ${invoice.invoice_number || 'DRAFT'}\n💰 Total Amount: ${formatCurrency(totals.totalPayable, invoice.currency)}\n📅 Due Date: ${invoice.due_date}\n\n🔗 View & Pay Online:\n${shareLink}\n\nThank you for working with Creatiancy!`;
+    const targetUrl = clientPhone ? `https://wa.me/${clientPhone}?text=${encodeURIComponent(messageText)}` : `https://api.whatsapp.com/send?text=${encodeURIComponent(messageText)}`;
+    window.open(targetUrl, '_blank');
   };
 
   const statusColor: Record<string, string> = {
@@ -398,9 +399,6 @@ export default function PublicInvoicePage() {
                     <div className="flex items-center space-x-2 mt-1.5">
                       <span className="font-mono text-[9px] font-bold text-gray-800 bg-white px-2 py-0.5 rounded border border-gray-200">
                         Invoice No: {invoice.invoice_number || 'DRAFT'}
-                      </span>
-                      <span className="font-mono text-[9px] text-gray-500">
-                        Token: {invoice.secure_token ? `${invoice.secure_token.substring(0, 16)}...` : 'SECURE-VERIFIED'}
                       </span>
                     </div>
                   </div>
