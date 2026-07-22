@@ -523,13 +523,9 @@ export interface VatAuditLog {
   performed_at: string;
 }
 
-// Check if Supabase keys exist and are not templates
-const hasSupabaseEnv =
-  process.env.NEXT_PUBLIC_SUPABASE_URL &&
-  process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://your-project-id.supabase.co' &&
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+import { supabase, isSupabaseConfigured } from './supabase';
 
-export const isDemoMode = !hasSupabaseEnv;
+export const isDemoMode = !isSupabaseConfigured;
 
 // Workspace default entity and seed configurations
 const MOCK_PROFILES: Profile[] = [
