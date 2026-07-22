@@ -76,7 +76,7 @@ export default function ReserveManagementPage() {
 
   // Form states
   const [manualDepositForm, setManualDepositForm] = useState({
-    entity_id: 'ent-1',
+    entity_id: 'a0000070-0000-4000-8000-000000000001',
     currency: 'BDT' as 'BDT' | 'USD',
     amount: 100000,
     source: 'BANK_TRANSFER',
@@ -84,7 +84,7 @@ export default function ReserveManagementPage() {
   });
 
   const [fdrForm, setFdrForm] = useState({
-    entity_id: 'ent-1',
+    entity_id: 'a0000070-0000-4000-8000-000000000001',
     bank_name: 'City Bank PLC',
     branch_name: 'Banani Branch',
     account_title: 'Creatiancy Corporate Reserve FDR',
@@ -99,7 +99,7 @@ export default function ReserveManagementPage() {
   });
 
   const [dpsForm, setDpsForm] = useState({
-    entity_id: 'ent-1',
+    entity_id: 'a0000070-0000-4000-8000-000000000001',
     bank_name: 'BRAC Bank PLC',
     branch_name: 'Banani Branch',
     account_title: 'Creatiancy Corporate DPS',
@@ -113,7 +113,7 @@ export default function ReserveManagementPage() {
   });
 
   const [withdrawalForm, setWithdrawalForm] = useState({
-    entity_id: 'ent-1',
+    entity_id: 'a0000070-0000-4000-8000-000000000001',
     currency: 'BDT' as 'BDT' | 'USD',
     requested_amount: 100000,
     purpose: 'Emergency Server Infrastructure Upgrade',
@@ -544,7 +544,7 @@ export default function ReserveManagementPage() {
     const headers = ['Txn ID', 'Entity', 'Currency', 'Type', 'Amount', 'Source', 'Date', 'Status', 'Reason'];
     const rows = ledger.map(l => [
       l.id,
-      l.entity_id === 'ent-1' ? 'Creatiancy Limited' : 'Creatiancy LLC',
+      l.entity_id === 'a0000070-0000-4000-8000-000000000001' ? 'Creatiancy Limited' : 'Creatiancy LLC',
       l.currency,
       l.transaction_type,
       l.amount,
@@ -863,7 +863,7 @@ export default function ReserveManagementPage() {
                         <tr key={entry.id} className="hover:bg-gray-50/60">
                           <td className="py-3 px-2 font-mono text-[11px] text-gray-500">{entry.deposit_date}</td>
                           <td className="py-3 px-2 font-mono font-bold text-gray-800">{entry.id}</td>
-                          <td className="py-3 px-2 font-semibold">{entry.entity_id === 'ent-1' ? 'Creatiancy Ltd' : 'Creatiancy LLC'}</td>
+                          <td className="py-3 px-2 font-semibold">{entry.entity_id === 'a0000070-0000-4000-8000-000000000001' ? 'Creatiancy Ltd' : 'Creatiancy LLC'}</td>
                           <td className="py-3 px-2 font-bold text-gray-800">
                             <span className="block">{entry.transaction_type.replace(/_/g, ' ')}</span>
                             {entry.reason && <span className="text-[10px] font-normal text-gray-400 leading-tight block">{entry.reason}</span>}

@@ -789,7 +789,7 @@ const MOCK_ENTITIES: BusinessEntity[] = [
 
 const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   {
-    id: 'bnk-1',
+    id: 'a00000b0-0000-4000-8000-000000000001',
     entity_id: '11111111-1111-4111-8111-111111111111',
     bank_name: 'City Bank PLC (Bangladesh)',
     account_holder: 'Creatiancy Limited',
@@ -801,7 +801,7 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
     is_active: true
   },
   {
-    id: 'bnk-2',
+    id: 'a00000b0-0000-4000-8000-000000000002',
     entity_id: '22222222-2222-4222-8222-222222222222',
     bank_name: 'JPMorgan Chase Bank, N.A. (USA)',
     account_holder: 'Creatiancy LLC',
@@ -825,7 +825,7 @@ const MOCK_TAX_PAYMENTS: TaxPayment[] = [];
 const MOCK_EXPENSES: Expense[] = [];
 
 const MOCK_RESERVE_SETTINGS: ReserveSettings = {
-  id: 'default-setting',
+  id: '11111111-0000-4000-8000-000000000000',
   reserve_percentage: 20.00,
   target_type: 'EXPENSE_MONTHS',
   target_value: 6.00,
@@ -837,7 +837,7 @@ const MOCK_RESERVE_SETTINGS: ReserveSettings = {
 
 const MOCK_RESERVE_SETTINGS_HISTORY: ReserveSettingsHistory[] = [
   {
-    id: 'rsh-1',
+    id: 'a00000d0-0000-4000-8000-000000000001',
     previous_percentage: 15.00,
     new_percentage: 20.00,
     changed_by: 'Rafsan Rohan (Super Admin)',
@@ -858,15 +858,15 @@ const MOCK_FINANCIAL_RECONCILIATIONS: FinancialReconciliation[] = [];
 const MOCK_FINANCIAL_AUDIT_LOGS: FinancialAuditLog[] = [];
 
 const MOCK_CLIENT_SERVICE_RATES: ClientServiceRate[] = [
-  { id: 'csr-1', client_id: 'cli-1', service_name: 'Static Banner Design', unit_price: 1300, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
-  { id: 'csr-2', client_id: 'cli-1', service_name: 'Meta Ads Media Buying ($1,000)', unit_price: 125500, unit: 'budget', is_paid_media: true, usd_budget: 1000, usd_rate: 125.5, updated_at: '2026-07-01T00:00:00Z' },
-  { id: 'csr-3', client_id: 'cli-2', service_name: 'Static Banner Design', unit_price: 5000, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
-  { id: 'csr-4', client_id: 'cli-2', service_name: 'Full Stack Web Development', unit_price: 45000, unit: 'project', updated_at: '2026-07-01T00:00:00Z' }
+  { id: 'a0000080-0000-4000-8000-000000000001', client_id: 'a0000080-0000-4000-8000-000000000001', service_name: 'Static Banner Design', unit_price: 1300, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'a0000080-0000-4000-8000-000000000002', client_id: 'a0000080-0000-4000-8000-000000000001', service_name: 'Meta Ads Media Buying ($1,000)', unit_price: 125500, unit: 'budget', is_paid_media: true, usd_budget: 1000, usd_rate: 125.5, updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'a0000080-0000-4000-8000-000000000003', client_id: 'a0000080-0000-4000-8000-000000000002', service_name: 'Static Banner Design', unit_price: 5000, unit: 'pcs', updated_at: '2026-07-01T00:00:00Z' },
+  { id: 'a0000080-0000-4000-8000-000000000004', client_id: 'a0000080-0000-4000-8000-000000000002', service_name: 'Full Stack Web Development', unit_price: 45000, unit: 'project', updated_at: '2026-07-01T00:00:00Z' }
 ];
 
 const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
   {
-    id: 'notif-1',
+    id: 'a0000000-0000-4000-8000-000000000001',
     sender_name: 'Rafsan Rohan',
     sender_role: 'Super Admin',
     title: 'Security Compliance & Data Protection Policy Active',
@@ -878,7 +878,7 @@ const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
     read_by: []
   },
   {
-    id: 'notif-2',
+    id: 'a0000000-0000-4000-8000-000000000002',
     sender_name: 'Finance Executive',
     sender_role: 'Finance Admin',
     title: 'Custom Payment Gateway Fee Rates Updated',
@@ -928,7 +928,7 @@ const MOCK_TAX_AUDIT_LOGS: TaxAuditLog[] = [];
 
 // VAT Seed Data
 const MOCK_VAT_REGISTRATION_PROFILE: VatRegistrationProfile = {
-  id: 'vat-prof-1',
+  id: '77777777-0000-4000-8000-000000000000',
   company_id: '11111111-1111-4111-8111-111111111111',
   business_name: 'Creatiancy Limited',
   bin_number: '001234567-0101',
@@ -945,7 +945,7 @@ const MOCK_VAT_REGISTRATION_PROFILE: VatRegistrationProfile = {
 
 const MOCK_VAT_CONFIGURATIONS: VatConfiguration[] = [
   {
-    id: 'vat-cfg-2026-2027',
+    id: '99999999-0000-4000-8000-000000000000',
     country_code: 'BD',
     financial_year: '2026-2027',
     configuration_name: 'NBR Standard VAT Configuration FY 2026-2027',
@@ -964,8 +964,8 @@ const MOCK_VAT_CONFIGURATIONS: VatConfiguration[] = [
 
 const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
   {
-    id: 'vsc-1',
-    vat_configuration_id: 'vat-cfg-2026-2027',
+    id: 'a00000c0-0000-4000-8000-000000000001',
+    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
     category_code: 'ADVERTISING_AGENCY',
     category_name: 'Advertising Agency',
     official_service_code: 'S007.00',
@@ -981,8 +981,8 @@ const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
     status: 'ACTIVE'
   },
   {
-    id: 'vsc-2',
-    vat_configuration_id: 'vat-cfg-2026-2027',
+    id: 'a00000c0-0000-4000-8000-000000000002',
+    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
     category_code: 'GRAPHIC_DESIGN',
     category_name: 'Graphic Designer',
     official_service_code: 'S050.20',
@@ -998,8 +998,8 @@ const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
     status: 'ACTIVE'
   },
   {
-    id: 'vsc-3',
-    vat_configuration_id: 'vat-cfg-2026-2027',
+    id: 'a00000c0-0000-4000-8000-000000000003',
+    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
     category_code: 'CONSULTANCY',
     category_name: 'Consultancy',
     official_service_code: 'S032.00',
@@ -1015,8 +1015,8 @@ const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
     status: 'ACTIVE'
   },
   {
-    id: 'vsc-4',
-    vat_configuration_id: 'vat-cfg-2026-2027',
+    id: 'a00000c0-0000-4000-8000-000000000004',
+    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
     category_code: 'IT_ENABLED_SERVICE',
     category_name: 'IT Enabled Service (ITES)',
     official_service_code: 'S099.10',
@@ -1032,8 +1032,8 @@ const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
     status: 'ACTIVE'
   },
   {
-    id: 'vsc-5',
-    vat_configuration_id: 'vat-cfg-2026-2027',
+    id: 'a00000c0-0000-4000-8000-000000000005',
+    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
     category_code: 'MISCELLANEOUS_SERVICE',
     category_name: 'Other Miscellaneous Service',
     official_service_code: 'S099.20',
@@ -1049,8 +1049,8 @@ const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
     status: 'ACTIVE'
   },
   {
-    id: 'vsc-6',
-    vat_configuration_id: 'vat-cfg-2026-2027',
+    id: 'a00000c0-0000-4000-8000-000000000006',
+    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
     category_code: 'ZERO_RATED_EXPORT_SERVICE',
     category_name: 'Zero-Rated Export Service',
     official_service_code: 'EXPORT-00',
@@ -2527,7 +2527,7 @@ export const db = {
         user_role: user.role_name,
         action: 'UPDATE_RESERVE_PERCENTAGE',
         module: 'RESERVE_SAVINGS',
-        record_id: 'default-setting',
+        record_id: '11111111-0000-4000-8000-000000000000',
         previous_value: { reserve_percentage: prev.reserve_percentage },
         new_value: { reserve_percentage: updates.reserve_percentage, reason }
       });
@@ -3874,7 +3874,7 @@ export const db = {
     } else {
       saved = {
         id: `vsc-${Date.now()}`,
-        vat_configuration_id: category.vat_configuration_id || 'vat-cfg-2026-2027',
+        vat_configuration_id: category.vat_configuration_id || '99999999-0000-4000-8000-000000000000',
         category_code: category.category_code,
         category_name: category.category_name || category.category_code,
         official_service_code: category.official_service_code || 'S099.20',
