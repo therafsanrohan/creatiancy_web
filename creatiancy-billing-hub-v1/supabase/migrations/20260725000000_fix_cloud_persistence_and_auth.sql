@@ -45,36 +45,49 @@ BEGIN
   END IF;
 END $$;
 
--- 3. ENSURE RLS HELPER FUNCTION & IDEMPOTENT PROFILES POLICIES
+-- 3. ENSURE RLS HELPER FUNCTION & NON-RECURSIVE PROFILES POLICIES
+CREATE OR REPLACE FUNCTION public.is_admin_user()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+    AND role_name IN ('Super Admin', 'super_admin', 'Admin', 'admin')
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
 CREATE OR REPLACE FUNCTION is_finance_authorized()
 RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
-    SELECT 1 FROM profiles
-    WHERE profiles.id = auth.uid()
-    AND profiles.role_name IN ('Super Admin', 'super_admin', 'Admin', 'admin', 'Finance Admin', 'finance', 'finance_admin')
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid()
+    AND role_name IN ('Super Admin', 'super_admin', 'Admin', 'admin', 'Finance Admin', 'finance', 'finance_admin')
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Idempotent RLS Policies for Profiles
+-- Idempotent Non-Recursive RLS Policies for Profiles
 DROP POLICY IF EXISTS "Users can read all profiles" ON profiles;
-CREATE POLICY "Users can read all profiles" ON profiles FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Super Admins can manage all profiles" ON profiles;
-CREATE POLICY "Super Admins can manage all profiles" ON profiles FOR ALL USING (
-  EXISTS (
-    SELECT 1 FROM profiles 
-    WHERE profiles.id = auth.uid() 
-    AND profiles.role_name IN ('Super Admin', 'super_admin', 'Admin', 'admin')
-  )
-);
-
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
-CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id OR auth.uid() IS NOT NULL);
-
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
-CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Authenticated users can insert profiles" ON profiles;
+DROP POLICY IF EXISTS "Users or admins can update profiles" ON profiles;
+DROP POLICY IF EXISTS "Admins can delete profiles" ON profiles;
+
+CREATE POLICY "Users can read all profiles" ON profiles 
+    FOR SELECT USING (true);
+
+CREATE POLICY "Authenticated users can insert profiles" ON profiles 
+    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+CREATE POLICY "Users or admins can update profiles" ON profiles 
+    FOR UPDATE USING (auth.uid() = id OR public.is_admin_user());
+
+CREATE POLICY "Admins can delete profiles" ON profiles 
+    FOR DELETE USING (public.is_admin_user());
 
 -- 4. GRANT TABLE PERMISSIONS TO AUTHENTICATED USERS
 GRANT USAGE ON SCHEMA public TO authenticated;
