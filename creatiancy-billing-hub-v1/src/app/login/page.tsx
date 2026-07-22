@@ -168,31 +168,33 @@ export default function LoginPage() {
           </div>
         </form>
 
-        {/* Demo Quick Onboarding Selector */}
-        <div className="mt-8 border-t border-gray-100 pt-6">
-          <div className="flex items-center justify-center space-x-2 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
-            <Terminal className="h-3 w-3" />
-            <span>Developer Sandbox Quick Login</span>
+        {/* Developer Sandbox Quick Login (Disabled in Production) */}
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="mt-8 border-t border-gray-100 pt-6">
+            <div className="flex items-center justify-center space-x-2 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
+              <Terminal className="h-3 w-3" />
+              <span>Developer Sandbox Quick Login</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+              {[
+                { role: 'Super Admin', desc: 'Full Access' },
+                { role: 'Finance Admin', desc: 'Invoices & Payments' },
+                { role: 'Client Service', desc: 'Drafts & Clients' },
+                { role: 'Project Manager', desc: 'Create Drafts' }
+              ].map((d) => (
+                <button
+                  key={d.role}
+                  type="button"
+                  onClick={() => handleQuickLogin(d.role)}
+                  className="flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-2.5 text-center text-xs hover:border-[#9B1C22] hover:bg-gray-50 cursor-pointer"
+                >
+                  <span className="font-semibold text-gray-800">{d.role}</span>
+                  <span className="text-[10px] text-gray-400">{d.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {[
-              { role: 'Super Admin', desc: 'Full Access' },
-              { role: 'Finance Admin', desc: 'Invoices & Payments' },
-              { role: 'Client Service', desc: 'Drafts & Clients' },
-              { role: 'Project Manager', desc: 'Create Drafts' }
-            ].map((d) => (
-              <button
-                key={d.role}
-                type="button"
-                onClick={() => handleQuickLogin(d.role)}
-                className="flex flex-col items-center justify-center rounded-lg border border-gray-200 bg-white p-2.5 text-center text-xs hover:border-[#9B1C22] hover:bg-gray-50 cursor-pointer"
-              >
-                <span className="font-semibold text-gray-800">{d.role}</span>
-                <span className="text-[10px] text-gray-400">{d.desc}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        )}
 
       </div>
     </div>

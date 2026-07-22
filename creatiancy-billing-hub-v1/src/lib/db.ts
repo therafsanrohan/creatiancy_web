@@ -127,6 +127,8 @@ export interface BillingClient {
   status: 'active' | 'archived';
   bin_number?: string;
   is_vat_withholding_entity?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface ClientServiceRate {
