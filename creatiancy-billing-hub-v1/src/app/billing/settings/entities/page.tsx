@@ -18,6 +18,7 @@ export default function EntitySettingsPage() {
   // Form states matching active entity
   const [legalName, setLegalName] = useState('');
   const [address, setAddress] = useState('');
+  const [postalCode, setPostalCode] = useState('');
   const [regNum, setRegNum] = useState('');
   const [taxId, setTaxId] = useState('');
   const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ export default function EntitySettingsPage() {
   const [bkashMerchant, setBkashMerchant] = useState('');
   const [nagadMerchant, setNagadMerchant] = useState('');
   const [corporateTaxRate, setCorporateTaxRate] = useState(27.5);
-  
+
   // Bank states matching active entity
   const [bankId, setBankId] = useState('');
   const [bankName, setBankName] = useState('');
@@ -83,6 +84,7 @@ export default function EntitySettingsPage() {
     if (ent) {
       setLegalName(ent.legal_name || '');
       setAddress(ent.registered_address || '');
+      setPostalCode(ent.postal_code || '');
       setRegNum(ent.registration_number || '');
       setTaxId(ent.tax_id || '');
       setEmail(ent.email || '');
@@ -137,6 +139,7 @@ export default function EntitySettingsPage() {
         const updatedEnt = await db.updateEntity(activeEnt.id, {
           legal_name: legalName.trim(),
           registered_address: address.trim(),
+          postal_code: postalCode.trim(),
           registration_number: regNum.trim(),
           tax_id: taxId.trim(),
           email: email.trim(),
@@ -280,7 +283,7 @@ export default function EntitySettingsPage() {
                   />
                 </div>
 
-                <div className="md:col-span-2">
+                <div>
                   <label className="block font-semibold text-gray-555 mb-1">Registered Address</label>
                   <input
                     type="text"
@@ -288,6 +291,18 @@ export default function EntitySettingsPage() {
                     readOnly={!isSuperAdmin}
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-gray-555 mb-1">Postal Code / ZIP Code</label>
+                  <input
+                    type="text"
+                    readOnly={!isSuperAdmin}
+                    placeholder="e.g. 1213 / 10019"
+                    value={postalCode}
+                    onChange={(e) => setPostalCode(e.target.value)}
                     className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:outline-none"
                   />
                 </div>

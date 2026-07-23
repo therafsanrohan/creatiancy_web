@@ -53,6 +53,7 @@ export interface BusinessEntity {
   entity_code: 'CLTD' | 'CLLC';
   logo_url: string;
   registered_address: string;
+  postal_code?: string;
   registration_number: string;
   tax_id: string;
   email: string;
@@ -1582,6 +1583,7 @@ export const db = {
             entity_code: 'CLTD',
             logo_url: '',
             registered_address: 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh',
+            postal_code: '1213',
             registration_number: 'C-CLTD-DHAKA-2026',
             tax_id: 'TIN-BIN-CLTD-123456',
             email: 'billing@creatiancy.com',
@@ -1600,6 +1602,7 @@ export const db = {
             entity_code: 'CLLC',
             logo_url: '',
             registered_address: '1619 Broadway, Suite 500, New York, NY 10019, USA',
+            postal_code: '10019',
             registration_number: 'NY-CLLC-2026-98765',
             tax_id: 'EIN-12-3456789',
             email: 'billing@creatiancy.com',
@@ -2017,11 +2020,29 @@ export const db = {
       entityId = matchedEntity.id;
     }
 
+    const newItems: InvoiceItem[] = items.map((itm, index) => ({
+      ...itm,
+      id: generateUUID(),
+      invoice_id: '',
+      sort_order: index
+    }));
+
+    const totals = calculateTotals({
+      items: newItems,
+      discountType: invoice.discount_type,
+      discountValue: invoice.discount_value,
+      vatRate: invoice.vat_rate,
+      vatInclusive: invoice.vat_inclusive,
+      payments: []
+    });
+
+    const newInvoiceId = generateUUID();
     const newInvoice: Invoice = {
       ...invoice,
       entity_id: entityId,
-      id: generateUUID(),
+      id: newInvoiceId,
       secure_token: generateUUID(),
+      total_payable: totals.totalPayable,
       invoice_number: null,
       status: 'draft',
       created_by: user?.id || '00000000-0000-0000-0000-000000000001',
@@ -2033,12 +2054,7 @@ export const db = {
       updated_at: new Date().toISOString()
     };
 
-    const newItems: InvoiceItem[] = items.map((itm, index) => ({
-      ...itm,
-      id: generateUUID(),
-      invoice_id: newInvoice.id,
-      sort_order: index
-    }));
+    newItems.forEach(itm => { itm.invoice_id = newInvoiceId; });
 
     if (isSupabaseConfigured && supabase) {
       let validCreatedBy: string | null = newInvoice.created_by;
@@ -2499,15 +2515,39 @@ export const db = {
       throw new Error('A deletion reason is required for permanent deletion.');
     }
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.rpc('permanently_delete_void_invoice', {
-        p_invoice_id: id,
-        p_reason: reason.trim(),
-        p_user_id: user.id
-      });
-      if (error) {
-        throw new Error(error.message || 'Permanent deletion failed server-side.');
+      const sanitizedInvoiceId = sanitizeUUID(id) || id;
+      const sanitizedUserId = sanitizeUUID(user.id);
+      
+      try {
+        const { data, error } = await supabase.rpc('permanently_delete_void_invoice', {
+          p_invoice_id: sanitizedInvoiceId,
+          p_reason: reason.trim(),
+          p_user_id: sanitizedUserId
+        });
+        if (!error && data) {
+          return data;
+        }
+      } catch (e) {
+        console.warn('RPC permanently_delete_void_invoice failed, using direct table deletion:', e);
       }
-      return data;
+
+      // Fallback: direct table deletion if RPC is missing from schema cache
+      try {
+        await supabase.from('invoice_items').delete().eq('invoice_id', id);
+        await supabase.from('invoice_snapshots').delete().eq('invoice_id', id);
+        await supabase.from('invoice_payments').delete().eq('invoice_id', id);
+        const { error: delErr } = await supabase.from('invoices').delete().eq('id', id);
+        if (delErr) throw new Error(delErr.message);
+
+        // Update local store
+        localStore.invoices = localStore.invoices.filter(i => i.id !== id);
+        localStore.items = localStore.items.filter(i => i.invoice_id !== id);
+        localStore.payments = localStore.payments.filter(p => p.invoice_id !== id);
+
+        return { success: true, message: 'Invoice permanently deleted from database.' };
+      } catch (fallbackErr: any) {
+        throw new Error(`Permanent deletion failed: ${fallbackErr.message}`);
+      }
     }
     throw new Error('Permanent deletion is only supported when connected to Supabase.');
   },
@@ -4150,13 +4190,24 @@ export const db = {
 
   saveVatRegistrationProfile: async (profile: Partial<VatRegistrationProfile>, user: Profile): Promise<VatRegistrationProfile> => {
     const current = await db.getVatRegistrationProfile();
+    const profileId = sanitizeUUID(current?.id) || sanitizeUUID(profile?.id) || generateUUID();
+    const companyId = sanitizeUUID(profile?.company_id) || sanitizeUUID(current?.company_id) || 'a0000070-0000-4000-8000-000000000001';
+
     const updated: VatRegistrationProfile = {
       ...current,
       ...profile,
+      id: profileId,
+      company_id: companyId,
       updated_at: new Date().toISOString()
     };
+
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('vat_registration_profiles').upsert(updated);
+      const payload = {
+        ...updated,
+        id: profileId,
+        company_id: companyId
+      };
+      const { error } = await supabase.from('vat_registration_profiles').upsert(payload);
       if (error) throw new Error(`Cloud VAT profile update failed: ${error.message}`);
     }
     localStore.vatRegistrationProfile = updated;
