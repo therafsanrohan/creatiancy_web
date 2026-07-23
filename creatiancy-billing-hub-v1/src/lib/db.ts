@@ -1897,11 +1897,12 @@ export const db = {
     updates: Partial<Invoice>,
     items?: Omit<InvoiceItem, 'id' | 'invoice_id'>[]
   ): Promise<Invoice> => {
-    const invoicesList = localStore.invoices;
-    const idx = invoicesList.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
+    let original = localStore.invoices.find(i => i.id === id);
+    if (!original && isSupabaseConfigured && supabase) {
+      original = await db.getInvoiceById(id);
+    }
+    if (!original) throw new Error('Invoice not found');
 
-    const original = invoicesList[idx];
     if (original.status !== 'draft' && original.status !== 'pending_approval' && original.status !== 'rejected') {
       throw new Error('Only draft, pending_approval, or rejected invoices can be edited');
     }
@@ -1911,77 +1912,101 @@ export const db = {
       ...updates,
       updated_at: new Date().toISOString()
     };
-    invoicesList[idx] = updatedInvoice;
-    localStore.invoices = invoicesList;
 
-    // Replace items if provided
-    if (items) {
-      // Remove old items
-      let itemsList = localStore.items.filter(itm => itm.invoice_id !== id);
-      const newItems: InvoiceItem[] = items.map((itm, index) => ({
-        ...itm,
-        id: `itm-${Date.now()}-${index}`,
-        invoice_id: id,
-        sort_order: index
-      }));
-      itemsList.push(...newItems);
-      localStore.items = itemsList;
+    if (isSupabaseConfigured && supabase) {
+      let validAccountManagerId: string | null = updatedInvoice.account_manager_id || null;
+      if (validAccountManagerId) {
+        const { data: p } = await supabase.from('profiles').select('id').eq('id', validAccountManagerId).maybeSingle();
+        if (!p) validAccountManagerId = null;
+      }
 
-      // Auto-enlist & update Client Service Rates memory for this client
-      const targetClientId = updatedInvoice.client_id;
-      for (const itm of items) {
-        if (targetClientId && itm.service_name && itm.rate > 0) {
-          await db.saveClientServiceRate({
-            client_id: targetClientId,
-            service_name: itm.service_name,
-            unit_price: itm.rate,
-            unit: itm.unit || 'pcs',
-            is_paid_media: itm.is_paid_media,
-            usd_budget: itm.usd_amount,
-            usd_rate: itm.usd_rate
-          });
-        }
+      const invoicePayload = {
+        ...updates,
+        account_manager_id: validAccountManagerId,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: invErr } = await supabase.from('invoices').update(invoicePayload).eq('id', id);
+      if (invErr) throw new Error(`Cloud invoice update failed: ${invErr.message}`);
+
+      if (items && items.length > 0) {
+        await supabase.from('invoice_items').delete().eq('invoice_id', id);
+        const cloudItems = items.map((itm, index) => ({
+          id: generateUUID(),
+          invoice_id: id,
+          service_name: (itm as any).service_name || (itm as any).description || 'Service Item',
+          description: itm.description || '',
+          quantity: itm.quantity || 1,
+          unit: (itm as any).unit || 'job',
+          rate: (itm as any).rate || (itm as any).unit_price || 0,
+          amount: itm.amount || 0,
+          sort_order: index
+        }));
+        const { error: itemErr } = await supabase.from('invoice_items').insert(cloudItems);
+        if (itemErr) throw new Error(`Cloud invoice items update failed: ${itemErr.message}`);
       }
     }
 
+    const idx = localStore.invoices.findIndex(i => i.id === id);
+    if (idx !== -1) {
+      localStore.invoices[idx] = updatedInvoice;
+    } else {
+      localStore.invoices.push(updatedInvoice);
+    }
+
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_invoice', 'invoices', id, null, updates);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'update_invoice', 'invoices', id, null, updates);
     return updatedInvoice;
   },
 
   submitForApproval: async (id: string): Promise<Invoice> => {
-    const list = localStore.invoices;
-    const idx = list.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from('invoices')
+        .update({
+          status: 'pending_approval',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id);
+      if (error) throw new Error(`Cloud invoice submit for approval failed: ${error.message}`);
+    }
 
-    const prevStatus = list[idx].status;
-    list[idx].status = 'pending_approval';
-    localStore.invoices = list;
+    let inv = localStore.invoices.find(i => i.id === id);
+    if (inv) {
+      inv.status = 'pending_approval';
+    } else if (isSupabaseConfigured && supabase) {
+      inv = await db.getInvoiceById(id);
+    }
+    if (!inv) throw new Error('Invoice not found');
 
     const user = await db.getCurrentUser();
-    const inv = list[idx];
     await db.notifyAction({
-      sender_name: user.full_name,
-      sender_role: user.role_name,
-      title: `Invoice Approval Requested: ${inv.project_name}`,
+      sender_name: user?.full_name || 'System',
+      sender_role: user?.role_name || 'Super Admin',
+      title: `Invoice Approval Requested: ${inv.project_name || 'Invoice'}`,
       message: `Invoice #${inv.invoice_number || inv.id} has been submitted for management review and final approval.`,
       category: 'approval_required',
       target_roles: ['Super Admin', 'Finance Admin'],
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user.id, 'submit_approval', 'invoices', id, { status: prevStatus }, { status: 'pending_approval' });
-    return list[idx];
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'submit_approval', 'invoices', id, { status: inv.status }, { status: 'pending_approval' });
+    return inv;
   },
 
   rejectInvoice: async (id: string, reason?: string): Promise<Invoice> => {
-    if (isSupabaseConfigured && supabase) {
-      const existing = localStore.invoices.find(i => i.id === id);
-      const existingNote = existing?.internal_note || '';
-      const updatedNote = reason?.trim() 
-        ? (existingNote ? `${existingNote}\n[Rejection Reason]: ${reason.trim()}` : `[Rejection Reason]: ${reason.trim()}`)
-        : existingNote;
+    let inv = localStore.invoices.find(i => i.id === id);
+    if (!inv && isSupabaseConfigured && supabase) {
+      inv = await db.getInvoiceById(id);
+    }
+    if (!inv) throw new Error('Invoice not found');
 
+    const existingNote = inv.internal_note || '';
+    const updatedNote = reason?.trim() 
+      ? (existingNote ? `${existingNote}\n[Rejection Reason]: ${reason.trim()}` : `[Rejection Reason]: ${reason.trim()}`)
+      : existingNote;
+
+    if (isSupabaseConfigured && supabase) {
       const { error } = await supabase
         .from('invoices')
         .update({
@@ -1993,19 +2018,10 @@ export const db = {
       if (error) throw new Error(`Cloud invoice rejection failed: ${error.message}`);
     }
 
-    const list = localStore.invoices;
-    const idx = list.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
-    const originalStatus = list[idx].status;
-    list[idx].status = 'rejected';
-    if (reason && reason.trim()) {
-      const existingNote = list[idx].internal_note || '';
-      list[idx].internal_note = existingNote ? `${existingNote}\n[Rejection Reason]: ${reason.trim()}` : `[Rejection Reason]: ${reason.trim()}`;
-    }
-    localStore.invoices = list;
+    inv.status = 'rejected';
+    inv.internal_note = updatedNote;
 
     const user = await db.getCurrentUser();
-    const inv = list[idx];
     await db.notifyAction({
       sender_name: user?.full_name || 'System',
       sender_role: user?.role_name || 'Super Admin',
@@ -2016,8 +2032,8 @@ export const db = {
       link_url: `/billing/invoices/${id}`
     });
 
-    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'reject_invoice', 'invoices', id, { status: originalStatus }, { status: 'rejected', reason });
-    return list[idx];
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'reject_invoice', 'invoices', id, { status: 'pending_approval' }, { status: 'rejected', reason });
+    return inv;
   },
 
   deleteInvoice: async (id: string): Promise<void> => {
@@ -2030,36 +2046,33 @@ export const db = {
 
     const list = localStore.invoices;
     const idx = list.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
-
-    const inv = list[idx];
-    if (inv.status !== 'draft' && inv.status !== 'rejected') {
-      throw new Error('Only draft or rejected invoices can be deleted');
+    if (idx !== -1) {
+      const inv = list[idx];
+      if (inv.status !== 'draft' && inv.status !== 'rejected') {
+        throw new Error('Only draft or rejected invoices can be deleted');
+      }
+      localStore.invoices = list.filter(i => i.id !== id);
+      localStore.items = localStore.items.filter(itm => itm.invoice_id !== id);
     }
 
-    localStore.invoices = list.filter(i => i.id !== id);
-    localStore.items = localStore.items.filter(itm => itm.invoice_id !== id);
-
     const user = await db.getCurrentUser();
-    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'delete_invoice', 'invoices', id, inv, null);
+    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'delete_invoice', 'invoices', id, null, null);
   },
 
   approveInvoice: async (id: string): Promise<Invoice> => {
-    const invoicesList = localStore.invoices;
-    const idx = invoicesList.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
+    let invoice = localStore.invoices.find(i => i.id === id);
+    if (!invoice && isSupabaseConfigured && supabase) {
+      invoice = await db.getInvoiceById(id);
+    }
+    if (!invoice) throw new Error('Invoice not found');
 
-    const invoice = invoicesList[idx];
     const user = await db.getCurrentUser();
-
-    // 1. Generate serial invoice number
-    const entity = localStore.entities.find(e => e.id === invoice.entity_id);
-    if (!entity) throw new Error('Entity not found');
+    const entities = await db.getEntities();
+    let entity = entities.find(e => e.id === invoice.entity_id) || entities[0];
     
-    const year = parseInt(invoice.issue_date.split('-')[0]) || new Date().getFullYear();
-    const entityPrefix = entity.entity_code;
+    const year = parseInt(invoice.issue_date?.split('-')[0] || '') || new Date().getFullYear();
+    const entityPrefix = entity?.entity_code || 'CLTD';
 
-    // Get sequence count from cloud first
     let nextSeq = 1;
     if (isSupabaseConfigured && supabase) {
       const { count, error: countErr } = await supabase
@@ -2070,16 +2083,11 @@ export const db = {
       if (!countErr && count !== null) {
         nextSeq = count + 1;
       }
-    } else {
-      const sequenceKey = `${entityPrefix}_${year}`;
-      nextSeq = Number(localStorage.getItem(`billing_seq_${sequenceKey}`) || '0') + 1;
-      localStorage.setItem(`billing_seq_${sequenceKey}`, nextSeq.toString());
     }
 
     const serialStr = nextSeq.toString().padStart(4, '0');
     const invoiceNumber = `${entityPrefix}-${invoice.currency}-${year}-${serialStr}`;
 
-    // 2. Compute static calculations
     const items = await db.getInvoiceItems(id);
     const clients = await db.getClients(); const client = clients.find(c => c.id === invoice.client_id);
     const banks = await db.getBankAccounts(); const bank = banks.find(b => b.entity_id === invoice.entity_id && b.is_active);
@@ -2093,12 +2101,11 @@ export const db = {
       payments: []
     });
 
-    // 3. Store static snapshot
     const newSnapshot: InvoiceSnapshot = {
       invoice_id: id,
-      entity_snapshot: entity,
+      entity_snapshot: entity || {},
       bank_snapshot: bank || {},
-      client_snapshot: client || { company_name: 'Fictional Client', contact_person: 'Fictional Client' } as any,
+      client_snapshot: client || { company_name: 'Client', contact_person: 'Client' } as any,
       totals_snapshot: {
         subtotal: totals.subtotal,
         discount_amount: totals.discountAmount,
@@ -2109,12 +2116,18 @@ export const db = {
     };
 
     if (isSupabaseConfigured && supabase) {
+      let validApprovedBy: string | null = user?.id || null;
+      if (validApprovedBy) {
+        const { data: p } = await supabase.from('profiles').select('id').eq('id', validApprovedBy).maybeSingle();
+        if (!p) validApprovedBy = null;
+      }
+
       const { error: invErr } = await supabase
         .from('invoices')
         .update({
           status: 'approved',
           invoice_number: invoiceNumber,
-          approved_by: user?.id || '00000000-0000-4000-8000-000000000000',
+          approved_by: validApprovedBy,
           approved_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -2123,7 +2136,7 @@ export const db = {
 
       const { error: snapErr } = await supabase
         .from('invoice_snapshots')
-        .insert({
+        .upsert({
           invoice_id: newSnapshot.invoice_id,
           entity_snapshot: newSnapshot.entity_snapshot,
           bank_snapshot: newSnapshot.bank_snapshot,
@@ -2133,16 +2146,10 @@ export const db = {
       if (snapErr) console.warn('Cloud snapshot insert warning:', snapErr);
     }
 
-    const snapshotsList = localStore.snapshots;
-    snapshotsList.push(newSnapshot);
-    localStore.snapshots = snapshotsList;
-
-    // 4. Update Invoice Status
     invoice.status = 'approved';
     invoice.invoice_number = invoiceNumber;
-    invoice.approved_by = user?.id || '00000000-0000-4000-8000-000000000000';
+    invoice.approved_by = user?.id || null as any;
     invoice.approved_at = new Date().toISOString();
-    localStore.invoices = invoicesList;
 
     await db.notifyAction({
       sender_name: user?.full_name || 'System',
@@ -2167,17 +2174,18 @@ export const db = {
       if (error) throw new Error(`Cloud void invoice failed: ${error.message}`);
     }
 
-    const list = localStore.invoices;
-    const idx = list.findIndex(i => i.id === id);
-    if (idx === -1) throw new Error('Invoice not found');
+    let inv = localStore.invoices.find(i => i.id === id);
+    if (!inv && isSupabaseConfigured && supabase) {
+      inv = await db.getInvoiceById(id);
+    }
+    if (!inv) throw new Error('Invoice not found');
 
-    const originalStatus = list[idx].status;
-    list[idx].status = 'void';
-    localStore.invoices = list;
+    const originalStatus = inv.status;
+    inv.status = 'void';
 
     const user = await db.getCurrentUser();
     db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'void_invoice', 'invoices', id, { status: originalStatus }, { status: 'void' });
-    return list[idx];
+    return inv;
   },
 
   // Payment Actions
