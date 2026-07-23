@@ -1593,7 +1593,7 @@ export const db = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('entity_bank_accounts').select('*');
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           localStore.bankAccounts = data;
           return data;
         }
@@ -1602,26 +1602,76 @@ export const db = {
     return localStore.bankAccounts;
   },
 
-  updateBankAccount: async (id: string, updates: Partial<BankAccount>): Promise<BankAccount> => {
+  saveBankAccount: async (entityId: string, bankData: Partial<BankAccount>, existingBankId?: string): Promise<BankAccount> => {
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase
+      let targetId = existingBankId;
+      if (!targetId) {
+        const { data: existing } = await supabase
+          .from('entity_bank_accounts')
+          .select('id')
+          .eq('entity_id', entityId)
+          .eq('is_active', true)
+          .maybeSingle();
+        if (existing?.id) {
+          targetId = existing.id;
+        }
+      }
+
+      const payload = {
+        id: targetId || crypto.randomUUID(),
+        entity_id: entityId,
+        bank_name: bankData.bank_name || 'Primary Bank',
+        account_holder: bankData.account_holder || '',
+        account_number: bankData.account_number || '',
+        branch: bankData.branch || '',
+        routing_number: bankData.routing_number || '',
+        swift_bic: bankData.swift_bic || '',
+        bank_address: bankData.bank_address || '',
+        is_active: bankData.is_active ?? true,
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
         .from('entity_bank_accounts')
-        .update({ ...updates, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      if (error) throw new Error(`Cloud bank account update failed: ${error.message}`);
+        .upsert(payload)
+        .select()
+        .single();
+
+      if (error) throw new Error(`Cloud bank account save failed: ${error.message}`);
+      if (data) {
+        const list = localStore.bankAccounts.filter(b => b.id !== data.id);
+        list.push(data);
+        localStore.bankAccounts = list;
+        const user = await db.getCurrentUser();
+        db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'save_bank', 'bank_accounts', data.id, null, bankData);
+        return data;
+      }
     }
 
+    const targetId = existingBankId || crypto.randomUUID();
+    const newBank: BankAccount = {
+      id: targetId,
+      entity_id: entityId,
+      bank_name: bankData.bank_name || 'Primary Bank',
+      account_holder: bankData.account_holder || '',
+      account_number: bankData.account_number || '',
+      branch: bankData.branch || '',
+      routing_number: bankData.routing_number || '',
+      swift_bic: bankData.swift_bic || '',
+      bank_address: bankData.bank_address || '',
+      is_active: bankData.is_active ?? true
+    };
+    const list = localStore.bankAccounts.filter(b => b.id !== targetId);
+    list.push(newBank);
+    localStore.bankAccounts = list;
+    return newBank;
+  },
+
+  updateBankAccount: async (id: string, updates: Partial<BankAccount>): Promise<BankAccount> => {
     const list = localStore.bankAccounts;
-    const idx = list.findIndex(b => b.id === id);
-    if (idx !== -1) {
-      const updated = { ...list[idx], ...updates };
-      list[idx] = updated;
-      localStore.bankAccounts = list;
-    }
-
-    const user = await db.getCurrentUser();
-    db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'update_bank', 'bank_accounts', id, null, updates);
-    return localStore.bankAccounts.find(b => b.id === id) || (updates as BankAccount);
+    const existing = list.find(b => b.id === id);
+    const entityId = existing?.entity_id || updates.entity_id || '11111111-1111-1111-1111-111111111111';
+    return db.saveBankAccount(entityId, updates, id);
   },
 
   // Client Actions
@@ -1787,11 +1837,31 @@ export const db = {
     }));
 
     if (isSupabaseConfigured && supabase) {
-      const { error: invErr } = await supabase.from('invoices').insert(newInvoice);
-      if (invErr) throw new Error(`Cloud invoice create failed: ${invErr.message}`);
-      if (newItems.length > 0) {
-        const { error: itemErr } = await supabase.from('invoice_items').insert(newItems);
-        if (itemErr) console.warn('Cloud invoice items insert warning:', itemErr);
+      let validCreatedBy: string | null = newInvoice.created_by;
+      if (validCreatedBy) {
+        const { data: p } = await supabase.from('profiles').select('id').eq('id', validCreatedBy).maybeSingle();
+        if (!p) {
+          validCreatedBy = null;
+        }
+      }
+
+      const payload = {
+        ...newInvoice,
+        created_by: validCreatedBy as any
+      };
+
+      const { error: rpcErr } = await supabase.rpc('create_invoice_with_items', {
+        p_invoice: payload,
+        p_items: newItems
+      });
+
+      if (rpcErr) {
+        const { error: invErr } = await supabase.from('invoices').insert(payload);
+        if (invErr) throw new Error(`Cloud invoice create failed: ${invErr.message}`);
+        if (newItems.length > 0) {
+          const { error: itemErr } = await supabase.from('invoice_items').insert(newItems);
+          if (itemErr) throw new Error(`Cloud invoice items insert failed: ${itemErr.message}`);
+        }
       }
     }
 

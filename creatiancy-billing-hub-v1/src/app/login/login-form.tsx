@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Lock, Mail, ArrowLeft } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { handleDatabaseError } from '@/lib/utils/db-error-handler';
-import { Eye, EyeOff, Lock, Mail, ArrowLeft } from 'lucide-react';
 
 export function LoginForm() {
   const router = useRouter();
@@ -27,29 +27,23 @@ export function LoginForm() {
     setError('');
 
     try {
-      const supabase = createClient();
-      const cleanEmail = email.trim();
-
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: cleanEmail,
-        password,
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: email.trim(), password }),
       });
 
-      if (authError) {
-        const handled = handleDatabaseError(authError, 'login');
-        setError(handled.userMessage || 'Invalid email or password. Please verify your credentials.');
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        setError(json.message || 'The username/email or password is incorrect.');
         setLoading(false);
         return;
       }
 
-      if (data?.session || data?.user) {
-        router.replace('/billing');
-      } else {
-        setError('Authentication failed. Please try again.');
-        setLoading(false);
-      }
+      router.replace(json.redirectTo || '/billing');
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred during sign in.');
+      setError('The application could not reach the cloud server. Check your internet connection and try again.');
       setLoading(false);
     }
   };
@@ -111,7 +105,7 @@ export function LoginForm() {
             <div className="space-y-4 rounded-md">
               <div>
                 <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
-                  Email Address
+                  Email or Username
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
@@ -120,13 +114,13 @@ export function LoginForm() {
                   <input
                     id="email"
                     name="email"
-                    type="email"
-                    autoComplete="email"
+                    type="text"
+                    autoComplete="username"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="block w-full rounded-lg border border-gray-200 bg-white py-3 pl-10 pr-3 text-sm text-[#1E1E1E] placeholder-gray-400 focus:border-[#9B1C22] focus:outline-none focus:ring-1 focus:ring-[#9B1C22]"
-                    placeholder="name@creatiancy.com"
+                    placeholder="name@creatiancy.com or username"
                   />
                 </div>
               </div>

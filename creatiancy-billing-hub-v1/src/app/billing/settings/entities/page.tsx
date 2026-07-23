@@ -148,26 +148,30 @@ export default function EntitySettingsPage() {
           corporate_tax_rate: corporateTaxRate
         });
 
-        // 2. Update Bank account details
-        let updatedBank = null;
-        if (bankId) {
-          updatedBank = await db.updateBankAccount(bankId, {
+        // 2. Save/Update Bank account details
+        const updatedBank = await db.saveBankAccount(
+          activeEnt.id,
+          {
             bank_name: bankName.trim(),
             account_holder: bankHolder.trim(),
             account_number: bankNumber.trim(),
             branch: bankBranch.trim(),
             routing_number: bankRouting.trim(),
             swift_bic: bankSwift.trim(),
-            bank_address: bankAddress.trim()
-          });
-        }
+            bank_address: bankAddress.trim(),
+            is_active: true
+          },
+          bankId || undefined
+        );
 
         // Sync local states
         const nextEnts = entities.map(e => e.id === activeEnt.id ? updatedEnt : e);
         setEntities(nextEnts);
         
         if (updatedBank) {
-          const nextBanks = bankAccounts.map(b => b.id === bankId ? updatedBank : b);
+          setBankId(updatedBank.id);
+          const nextBanks = bankAccounts.filter(b => b.id !== updatedBank.id);
+          nextBanks.push(updatedBank);
           setBankAccounts(nextBanks);
         }
 
