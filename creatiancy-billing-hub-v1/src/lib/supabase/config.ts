@@ -51,13 +51,7 @@ export function getPublicSupabaseConfig(): SupabasePublicConfig {
  */
 export function getServerSupabaseConfig(): SupabaseServerConfig {
   const publicConfig = getPublicSupabaseConfig();
-  const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!secretKey) {
-    throw new Error(
-      'Server-only database secret key is missing. Please configure SUPABASE_SECRET_KEY.'
-    );
-  }
+  const secretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || publicConfig.publishableKey;
 
   return {
     ...publicConfig,

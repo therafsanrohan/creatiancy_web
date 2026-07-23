@@ -1,4 +1,7 @@
-import 'server-only';
+if (typeof window !== 'undefined') {
+  throw new Error('createAdminClient is server-only and cannot be executed in a browser Client Component.');
+}
+
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { getServerSupabaseConfig } from './config';
 

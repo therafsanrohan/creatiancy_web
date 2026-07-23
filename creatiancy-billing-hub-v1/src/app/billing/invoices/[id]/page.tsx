@@ -27,6 +27,7 @@ import {
   X,
   Trash2
 } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export default function InvoiceDetailsPage() {
   const router = useRouter();
@@ -46,6 +47,13 @@ export default function InvoiceDetailsPage() {
   const [recordingPayment, setRecordingPayment] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Public Link & QR Code states
+  const [publicUrl, setPublicUrl] = useState<string>('');
+  const [publicToken, setPublicToken] = useState<string>('');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [linkActionLoading, setLinkActionLoading] = useState(false);
 
   // Form states for manual payment
   const [payDate, setPayDate] = useState(() => new Date().toISOString().split('T')[0]);
@@ -136,6 +144,20 @@ export default function InvoiceDetailsPage() {
         // Load gateway rates
         const rates = await db.getGatewayRates();
         setGatewayRates(rates);
+
+        // Fetch Public Signed Capability Link
+        if (inv.status !== 'draft' && inv.status !== 'rejected') {
+          try {
+            const res = await fetch(`/api/invoices/${id}/public-link`);
+            const data = await res.json();
+            if (data.success && data.url) {
+              setPublicUrl(data.url);
+              setPublicToken(data.token);
+            }
+          } catch {
+            // ignore fallback
+          }
+        }
 
       } catch (err) {
         console.error(err);
@@ -244,6 +266,62 @@ export default function InvoiceDetailsPage() {
       showNotif('Submission Failed', 'Submission failed.', 'error');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleCopyPublicLink = () => {
+    if (!publicUrl) return;
+    navigator.clipboard.writeText(publicUrl);
+    setCopiedLink(true);
+    showNotif('Link Copied', 'HMAC-signed public capability link copied to clipboard.', 'success');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const handleRotatePublicLink = async () => {
+    if (!confirm('Rotate public link? Old link signatures will be invalidated immediately.')) return;
+    setLinkActionLoading(true);
+    try {
+      const res = await fetch(`/api/invoices/${id}/public-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'rotate', reason: 'Admin UI Rotation' })
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        setPublicUrl(data.url);
+        setPublicToken(data.token);
+        showNotif('Link Rotated', 'Public link rotated successfully. Previous link signatures are now invalid.', 'success');
+      } else {
+        showNotif('Rotation Failed', data.error || 'Failed to rotate link.', 'error');
+      }
+    } catch (err: any) {
+      showNotif('Rotation Failed', err.message || 'Error rotating link.', 'error');
+    } finally {
+      setLinkActionLoading(false);
+    }
+  };
+
+  const handleRevokePublicLink = async () => {
+    if (!confirm('Revoke public link? Clients will no longer be able to view this invoice via public link.')) return;
+    setLinkActionLoading(true);
+    try {
+      const res = await fetch(`/api/invoices/${id}/public-link`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'revoke' })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setPublicUrl('');
+        setPublicToken('');
+        showNotif('Link Revoked', 'Public link revoked successfully.', 'info');
+      } else {
+        showNotif('Revocation Failed', data.error || 'Failed to revoke link.', 'error');
+      }
+    } catch (err: any) {
+      showNotif('Revocation Failed', err.message || 'Error revoking link.', 'error');
+    } finally {
+      setLinkActionLoading(false);
     }
   };
 
@@ -398,9 +476,9 @@ export default function InvoiceDetailsPage() {
         </div>
 
         {/* Public view shortcut link */}
-        {invoice.status !== 'draft' && (
+        {invoice.status !== 'draft' && publicUrl && (
           <Link
-            href={`/invoice/${invoice.secure_token}`}
+            href={publicUrl}
             target="_blank"
             className="text-xs font-bold text-[#9B1C22] flex items-center bg-[#9B1C22]/5 px-3 py-1.5 rounded-lg hover:bg-[#9B1C22]/10"
           >
@@ -608,6 +686,61 @@ export default function InvoiceDetailsPage() {
         {/* Action Controls Sidebar Panel (Right side) */}
         <div className="lg:col-span-4 space-y-6 no-print">
           
+          {/* Public Signed Link Management Card */}
+          {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
+            <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-xs uppercase tracking-wider text-gray-500">Secure Public Link</h3>
+                <span className="inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                  HMAC Signed
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={publicUrl || 'Generating secure link...'}
+                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 text-xs px-3 py-2.5 font-mono text-gray-600 truncate focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleCopyPublicLink}
+                  disabled={!publicUrl}
+                  className="rounded-xl bg-[#9B1C22] px-3.5 py-2.5 text-xs font-bold text-white hover:bg-[#80171C] transition cursor-pointer shrink-0"
+                >
+                  {copiedLink ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 pt-1 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setQrModalOpen(true)}
+                  className="flex-1 py-2 px-2 rounded-xl border border-gray-200 bg-gray-50 text-gray-700 font-semibold hover:bg-gray-100 transition text-center cursor-pointer"
+                >
+                  Show QR
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRotatePublicLink}
+                  disabled={linkActionLoading}
+                  className="py-2 px-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-800 font-semibold hover:bg-amber-100 transition cursor-pointer"
+                >
+                  Rotate
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRevokePublicLink}
+                  disabled={linkActionLoading}
+                  className="py-2 px-3 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-semibold hover:bg-rose-100 transition cursor-pointer"
+                >
+                  Revoke
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-[#FBFDF9] border border-gray-100 rounded-2xl p-6 space-y-4 shadow-sm">
             <h3 className="font-bold text-sm uppercase tracking-wider text-gray-400">Invoice Actions Panel</h3>
 
@@ -994,6 +1127,52 @@ export default function InvoiceDetailsPage() {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* QR Code Capability Modal */}
+      {qrModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 no-print">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center space-y-4 border border-gray-100">
+            <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+              <h3 className="font-bold text-sm text-gray-900">Secure QR Document Verification</h3>
+              <button
+                onClick={() => setQrModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 rounded-lg p-1"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 inline-block">
+              {publicUrl ? (
+                <QRCodeSVG value={publicUrl} size={180} level="H" />
+              ) : (
+                <div className="h-44 w-44 flex items-center justify-center text-xs text-gray-400">Loading QR...</div>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-500 font-mono text-center truncate">
+              {publicUrl}
+            </p>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCopyPublicLink}
+                className="flex-1 rounded-xl bg-[#9B1C22] py-2.5 text-xs font-bold text-white hover:bg-[#80171C] transition cursor-pointer"
+              >
+                Copy Link
+              </button>
+              <button
+                type="button"
+                onClick={() => setQrModalOpen(false)}
+                className="rounded-xl border border-gray-200 px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
