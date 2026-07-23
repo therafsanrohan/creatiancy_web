@@ -6,8 +6,9 @@ export async function proxy(request: NextRequest) {
   // Validate public invoice token routes to prevent path traversal / injection
   const pathname = request.nextUrl.pathname;
   if (pathname.startsWith('/invoice/')) {
-    const token = pathname.replace('/invoice/', '');
-    if (!token || !/^[a-zA-Z0-9_-]+$/.test(token)) {
+    const rawSegment = pathname.replace('/invoice/', '');
+    const token = decodeURIComponent(rawSegment.split('?')[0].split('/')[0]);
+    if (!token || !/^[a-zA-Z0-9_.-]+$/.test(token)) {
       return new NextResponse('Invalid or Malformed Secure Token', { status: 400 });
     }
   }

@@ -159,7 +159,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     // Fetch Entity
     const { data: dbEntity } = await supabase
       .from('business_entities')
-      .select('name, entity_code, address, tax_id')
+      .select('legal_name, entity_code, registered_address, tax_id')
       .eq('id', invoice.entity_id)
       .single();
 
@@ -225,9 +225,9 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
         taxNumber: clientSnap?.tax_number || undefined
       },
       entity: {
-        name: entitySnap?.name || (invoice.currency === 'USD' ? 'Creatiancy LLC' : 'Creatiancy Limited'),
+        name: entitySnap?.legal_name || entitySnap?.name || (invoice.currency === 'USD' ? 'Creatiancy LLC' : 'Creatiancy Limited'),
         code: entitySnap?.entity_code || (invoice.currency === 'USD' ? 'CLLC' : 'CLTD'),
-        address: entitySnap?.address || '',
+        address: entitySnap?.registered_address || entitySnap?.address || '',
         taxId: entitySnap?.tax_id || undefined
       },
       bankAccount: bankSnap?.bank_name ? {
@@ -269,16 +269,16 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     // Table may not exist yet
   }
 
-  // Fallback for legacy secure_token directly on invoices table if public links table not yet populated
+  // Fallback for direct secure_token, invoice ID, or invoice_number on invoices table
   const { data: legacyInv } = await supabase
     .from('invoices')
     .select('id, status')
-    .eq('secure_token', rawToken)
+    .or(`secure_token.eq.${rawToken},id.eq.${rawToken},invoice_number.eq.${rawToken}`)
     .maybeSingle();
 
   if (legacyInv && PUBLIC_VIEWABLE_STATUSES.includes(legacyInv.status)) {
-    const canonicalToken = createPublicInvoiceToken(legacyInv.id, legacyInv.id, 1, 1);
-    return { success: false, redirectTo: canonicalToken, error: 'REDIRECT' };
+    const { token } = await getOrGeneratePublicInvoiceToken(legacyInv.id);
+    return { success: false, redirectTo: token, error: 'REDIRECT' };
   }
 
   // If rawToken was not a valid signed token and had no legacy hash match

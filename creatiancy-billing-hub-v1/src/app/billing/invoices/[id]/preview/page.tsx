@@ -50,9 +50,21 @@ export default function InvoicePreviewPage() {
         }
         setInvoice(inv);
 
-        // Build verification URL from token
-        if (typeof window !== 'undefined' && inv.secure_token) {
-          setVerifyUrl(`${window.location.origin}/invoice/${inv.secure_token}`);
+        // Build verification URL from signed public link
+        if (typeof window !== 'undefined') {
+          try {
+            const res = await fetch(`/api/invoices/${id}/public-link`);
+            const data = await res.json();
+            if (data.success && data.url) {
+              setVerifyUrl(data.url);
+            } else if (inv.secure_token) {
+              setVerifyUrl(`${window.location.origin}/invoice/${inv.secure_token}`);
+            }
+          } catch {
+            if (inv.secure_token) {
+              setVerifyUrl(`${window.location.origin}/invoice/${inv.secure_token}`);
+            }
+          }
         }
         
         // Set document title for PDF print filename
