@@ -1346,8 +1346,9 @@ export default function ReserveManagementPage() {
                   onChange={(e) => setManualDepositForm({ ...manualDepositForm, entity_id: e.target.value })}
                   className="w-full border rounded-xl p-2 font-bold"
                 >
-                  <option value="ent-1">Creatiancy Limited (CLTD)</option>
-                  <option value="ent-2">Creatiancy LLC (CLLC)</option>
+                  {entities.map(e => (
+                    <option key={e.id} value={e.id}>{e.legal_name} ({e.entity_code})</option>
+                  ))}
                 </select>
               </div>
 

@@ -927,145 +927,10 @@ const MOCK_TAX_CALCULATIONS: TaxCalculation[] = [];
 const MOCK_TAX_AUDIT_LOGS: TaxAuditLog[] = [];
 
 // VAT Seed Data
-const MOCK_VAT_REGISTRATION_PROFILE: VatRegistrationProfile = {
-  id: '77777777-0000-4000-8000-000000000000',
-  company_id: '11111111-1111-4111-8111-111111111111',
-  business_name: 'Creatiancy Limited',
-  bin_number: '001234567-0101',
-  bin_status: 'VAT_REGISTERED',
-  registration_effective_date: '2021-07-01',
-  vat_circle: 'Banani Circle',
-  vat_division: 'Dhaka North Division',
-  registered_address: 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh',
-  default_return_frequency: 'MONTHLY',
-  default_currency: 'BDT',
-  status: 'ACTIVE',
-  updated_at: '2026-07-01T00:00:00Z'
-};
+const MOCK_VAT_REGISTRATION_PROFILE: any = null;
 
-const MOCK_VAT_CONFIGURATIONS: VatConfiguration[] = [
-  {
-    id: '99999999-0000-4000-8000-000000000000',
-    country_code: 'BD',
-    financial_year: '2026-2027',
-    configuration_name: 'NBR Standard VAT Configuration FY 2026-2027',
-    registration_type: 'VAT_REGISTERED',
-    return_frequency: 'MONTHLY',
-    effective_from: '2026-07-01',
-    status: 'ACTIVE',
-    version_number: 1,
-    change_summary: 'Configured standard Bangladesh VAT Act 2012 / Rules 2019 service category classifications.',
-    source_reference: 'NBR Value Added Tax and Supplementary Duty Act 2012',
-    created_by: '88888888-8888-4888-8888-888888888888',
-    created_at: '2026-07-01T00:00:00Z',
-    published_at: '2026-07-01T00:00:00Z'
-  }
-];
-
-const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [
-  {
-    id: 'a00000c0-0000-4000-8000-000000000001',
-    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
-    category_code: 'ADVERTISING_AGENCY',
-    category_name: 'Advertising Agency',
-    official_service_code: 'S007.00',
-    description: 'Digital advertising, campaign management, agency creative services',
-    vat_rate: 0.15,
-    vds_rate: 0.15,
-    is_vds_applicable: true,
-    is_input_credit_allowed: true,
-    is_zero_rated: false,
-    is_exempt: false,
-    is_custom_rate_allowed: true,
-    effective_from: '2026-07-01',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'a00000c0-0000-4000-8000-000000000002',
-    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
-    category_code: 'GRAPHIC_DESIGN',
-    category_name: 'Graphic Designer',
-    official_service_code: 'S050.20',
-    description: 'Visual identity, graphic assets, motion design',
-    vat_rate: 0.15,
-    vds_rate: 0.15,
-    is_vds_applicable: true,
-    is_input_credit_allowed: true,
-    is_zero_rated: false,
-    is_exempt: false,
-    is_custom_rate_allowed: true,
-    effective_from: '2026-07-01',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'a00000c0-0000-4000-8000-000000000003',
-    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
-    category_code: 'CONSULTANCY',
-    category_name: 'Consultancy',
-    official_service_code: 'S032.00',
-    description: 'Strategic management and tech advisory consulting',
-    vat_rate: 0.15,
-    vds_rate: 0.15,
-    is_vds_applicable: true,
-    is_input_credit_allowed: true,
-    is_zero_rated: false,
-    is_exempt: false,
-    is_custom_rate_allowed: true,
-    effective_from: '2026-07-01',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'a00000c0-0000-4000-8000-000000000004',
-    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
-    category_code: 'IT_ENABLED_SERVICE',
-    category_name: 'IT Enabled Service (ITES)',
-    official_service_code: 'S099.10',
-    description: 'Cloud hosting, SaaS, remote IT support, web development',
-    vat_rate: 0.05,
-    vds_rate: 0.05,
-    is_vds_applicable: true,
-    is_input_credit_allowed: true,
-    is_zero_rated: false,
-    is_exempt: false,
-    is_custom_rate_allowed: true,
-    effective_from: '2026-07-01',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'a00000c0-0000-4000-8000-000000000005',
-    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
-    category_code: 'MISCELLANEOUS_SERVICE',
-    category_name: 'Other Miscellaneous Service',
-    official_service_code: 'S099.20',
-    description: 'General professional services',
-    vat_rate: 0.15,
-    vds_rate: 0.15,
-    is_vds_applicable: true,
-    is_input_credit_allowed: true,
-    is_zero_rated: false,
-    is_exempt: false,
-    is_custom_rate_allowed: true,
-    effective_from: '2026-07-01',
-    status: 'ACTIVE'
-  },
-  {
-    id: 'a00000c0-0000-4000-8000-000000000006',
-    vat_configuration_id: '99999999-0000-4000-8000-000000000000',
-    category_code: 'ZERO_RATED_EXPORT_SERVICE',
-    category_name: 'Zero-Rated Export Service',
-    official_service_code: 'EXPORT-00',
-    description: 'Software development and IT export services to foreign clients',
-    vat_rate: 0.0,
-    vds_rate: 0.0,
-    is_vds_applicable: false,
-    is_input_credit_allowed: true,
-    is_zero_rated: true,
-    is_exempt: false,
-    is_custom_rate_allowed: false,
-    effective_from: '2026-07-01',
-    status: 'ACTIVE'
-  }
-];
+const MOCK_VAT_CONFIGURATIONS: VatConfiguration[] = [];
+const MOCK_VAT_SERVICE_CATEGORIES: VatServiceCategory[] = [];
 
 const MOCK_VAT_DOCUMENTS: VatDocument[] = [];
 const MOCK_INPUT_VAT_ENTRIES: InputVatEntry[] = [];
@@ -1095,7 +960,7 @@ class LocalStore {
   }
 
   get vatRegistrationProfile(): VatRegistrationProfile {
-    return this.getVal('vat_registration_profile', MOCK_VAT_REGISTRATION_PROFILE);
+    return this.getVal('vat_registration_profile', null);
   }
 
   set vatRegistrationProfile(val: VatRegistrationProfile) {
@@ -1103,7 +968,7 @@ class LocalStore {
   }
 
   get vatConfigurations(): VatConfiguration[] {
-    return this.getVal('vat_configurations', MOCK_VAT_CONFIGURATIONS);
+    return this.getVal('vat_configurations', []);
   }
 
   set vatConfigurations(val: VatConfiguration[]) {
@@ -1111,7 +976,7 @@ class LocalStore {
   }
 
   get vatServiceCategories(): VatServiceCategory[] {
-    return this.getVal('vat_service_categories', MOCK_VAT_SERVICE_CATEGORIES);
+    return this.getVal('vat_service_categories', []);
   }
 
   set vatServiceCategories(val: VatServiceCategory[]) {
@@ -1451,9 +1316,7 @@ export const db = {
           localStore.profiles = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getProfiles cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.profiles;
   },
@@ -1648,9 +1511,7 @@ export const db = {
           localStore.entities = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getEntities cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.entities;
   },
@@ -1686,9 +1547,7 @@ export const db = {
           localStore.bankAccounts = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getBankAccounts cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.bankAccounts;
   },
@@ -1724,9 +1583,7 @@ export const db = {
           localStore.clients = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getClients cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.clients;
   },
@@ -1798,9 +1655,7 @@ export const db = {
           localStore.invoices = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getInvoices cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.invoices;
   },
@@ -1829,9 +1684,7 @@ export const db = {
         if (!error && data) {
           return data;
         }
-      } catch (e) {
-        console.warn('getInvoiceItems cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.items.filter(item => item.invoice_id === invoiceId);
   },
@@ -1843,9 +1696,7 @@ export const db = {
         if (!error && data) {
           return data;
         }
-      } catch (e) {
-        console.warn('getSnapshotByInvoiceId cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.snapshots.find(s => s.invoice_id === invoiceId);
   },
@@ -1897,7 +1748,7 @@ export const db = {
     localStore.items = itemsList;
 
     const clients = await db.getClients();
-    const clientObj = clients.find(c => c.id === newInvoice.client_id);
+    const clientsList = await db.getClients(); const clientObj = clientsList.find(c => c.id === newInvoice.client_id);
     const clientName = clientObj ? (clientObj.company_name || clientObj.contact_person) : 'Client';
     await db.notifyAction({
       sender_name: user?.full_name || 'System',
@@ -2101,9 +1952,9 @@ export const db = {
     const invoiceNumber = `${entityPrefix}-${invoice.currency}-${year}-${serialStr}`;
 
     // 2. Compute static calculations
-    const items = localStore.items.filter(itm => itm.invoice_id === id);
-    const client = localStore.clients.find(c => c.id === invoice.client_id);
-    const bank = localStore.bankAccounts.find(b => b.entity_id === invoice.entity_id && b.is_active);
+    const items = await db.getInvoiceItems(id);
+    const clients = await db.getClients(); const client = clients.find(c => c.id === invoice.client_id);
+    const banks = await db.getBankAccounts(); const bank = banks.find(b => b.entity_id === invoice.entity_id && b.is_active);
 
     const totals = calculateTotals({
       items,
@@ -2210,9 +2061,7 @@ export const db = {
           localStore.payments = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getPayments cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.payments;
   },
@@ -2224,9 +2073,7 @@ export const db = {
         if (!error && data) {
           return data;
         }
-      } catch (e) {
-        console.warn('getPaymentsForInvoice cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.payments.filter(p => p.invoice_id === invoiceId);
   },
@@ -2268,9 +2115,7 @@ export const db = {
           localStore.expenses = data;
           return data;
         }
-      } catch (e) {
-        console.warn('getExpenses cloud fetch warning:', e);
-      }
+      } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.expenses;
   },
