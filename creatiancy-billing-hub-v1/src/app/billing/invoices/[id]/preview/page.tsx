@@ -223,7 +223,7 @@ export default function InvoicePreviewPage() {
         className="w-full max-w-[210mm] bg-white shadow-lg border border-gray-100 p-6 sm:p-10 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none box-border"
         style={{ minHeight: '297mm' }}
       >
-        <div className="print-watermark">Creatiancy Original</div>
+        <div className="print-watermark">Creatiancy</div>
         
         {/* Document Top */}
         <div>
@@ -478,7 +478,7 @@ export default function InvoicePreviewPage() {
                 </div>
                 <div className="hidden sm:block text-right">
                   <span className="text-[9px] font-bold uppercase text-[#9B1C22] bg-white border border-[#9B1C22]/20 px-2 py-0.5 rounded shadow-2xs">
-                    Creatiancy Original
+                    Creatiancy
                   </span>
                 </div>
               </div>
@@ -496,7 +496,7 @@ export default function InvoicePreviewPage() {
                 : 'All rates are inclusive of applicable taxes in accordance with the prevailing laws and regulations.'}
             </p>
             <div className="pt-1 border-t border-dashed border-gray-200 text-[8px] font-semibold text-gray-400">
-              Creatiancy Original Document • Computer-generated • No physical signature required.
+              Creatiancy Document • Computer-generated • No physical signature required.
             </div>
           </div>
         </div>

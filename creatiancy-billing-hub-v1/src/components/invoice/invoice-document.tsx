@@ -230,7 +230,7 @@ export default function InvoiceDocument({ document: doc }: Props) {
             </div>
             <div className="hidden sm:block text-right">
               <span className="text-[9px] font-extrabold uppercase text-[#9B1C22] bg-white border border-[#9B1C22]/20 px-2.5 py-1 rounded-md shadow-2xs">
-                Creatiancy Original
+                Creatiancy
               </span>
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function InvoiceDocument({ document: doc }: Props) {
             : 'All rates are inclusive of applicable taxes in accordance with the prevailing laws and regulations.'}
         </p>
         <div className="pt-1.5 border-t border-dashed border-gray-200 text-[9px] font-semibold text-gray-400">
-          Creatiancy Original Document • Computer-generated • No physical signature required.
+          Creatiancy Document • Computer-generated • No physical signature required.
         </div>
       </div>
 
