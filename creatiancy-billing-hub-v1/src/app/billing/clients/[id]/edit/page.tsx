@@ -58,7 +58,7 @@ export default function EditClientPage() {
         setTaxNumber(c.tax_number || '');
         setPreferredCurrency(c.preferred_currency);
         setDefaultPaymentTerms(c.default_payment_terms);
-        setAccountManagerId(c.account_manager_id);
+        setAccountManagerId(c.account_manager_id || '');
         setInternalNote(c.internal_note || '');
       } catch (err) {
         console.error(err);

@@ -133,7 +133,7 @@ export interface BillingClient {
   tax_number: string;
   preferred_currency: 'BDT' | 'USD';
   default_payment_terms: 'Due on Receipt' | '7 Days' | '15 Days' | '30 Days' | 'Custom';
-  account_manager_id: string;
+  account_manager_id: string | null;
   internal_note: string;
   status: 'active' | 'archived';
   bin_number?: string;
@@ -193,7 +193,7 @@ export interface Invoice {
   service_period: string;
   po_number: string;
   reference_number: string;
-  account_manager_id: string;
+  account_manager_id: string | null;
   discount_type: 'none' | 'fixed' | 'percentage';
   discount_value: number;
   vat_rate: number;
@@ -1511,6 +1511,56 @@ export const db = {
           localStore.entities = data;
           return data;
         }
+        
+        // Auto-seed default entities into Supabase if empty
+        const defaultEntities: BusinessEntity[] = [
+          {
+            id: '11111111-1111-1111-1111-111111111111',
+            legal_name: 'Creatiancy Limited',
+            entity_code: 'CLTD',
+            logo_url: '',
+            registered_address: 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh',
+            registration_number: 'C-CLTD-DHAKA-2026',
+            tax_id: 'TIN-BIN-CLTD-123456',
+            email: 'billing@creatiancy.com',
+            phone: '+880 1325 078 941',
+            website: 'www.creatiancy.com',
+            payment_instructions: 'Bank Transfer to Creatiancy Limited (CLTD)',
+            invoice_prefix: 'CLTD-BDT',
+            receipt_prefix: 'CLTD-REC',
+            vat_footer: 'All rates are inclusive of applicable VAT in accordance with prevailing laws.',
+            corporate_tax_rate: 30,
+            default_vat_rate: 15
+          },
+          {
+            id: '22222222-2222-2222-2222-222222222222',
+            legal_name: 'Creatiancy LLC',
+            entity_code: 'CLLC',
+            logo_url: '',
+            registered_address: '1619 Broadway, Suite 500, New York, NY 10019, USA',
+            registration_number: 'NY-CLLC-2026-98765',
+            tax_id: 'EIN-12-3456789',
+            email: 'billing@creatiancy.com',
+            phone: '+1 212 555 0199',
+            website: 'www.creatiancy.com',
+            payment_instructions: 'Bank Wire / ACH to Creatiancy LLC (CLLC)',
+            invoice_prefix: 'CLLC-USD',
+            receipt_prefix: 'CLLC-REC',
+            vat_footer: 'All rates are inclusive of applicable taxes.',
+            corporate_tax_rate: 21,
+            default_vat_rate: 0
+          }
+        ];
+
+        const { data: inserted, error: insertErr } = await supabase
+          .from('business_entities')
+          .insert(defaultEntities)
+          .select();
+
+        if (!insertErr && inserted && inserted.length > 0) {
+          localStore.entities = inserted;
+          return inserted;
+        }
       } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.entities;
@@ -1706,13 +1756,21 @@ export const db = {
     items: Omit<InvoiceItem, 'id' | 'invoice_id'>[]
   ): Promise<Invoice> => {
     const user = await db.getCurrentUser();
+    const entities = await db.getEntities();
+    let entityId = invoice.entity_id;
+    const matchedEntity = entities.find(e => e.id === entityId) || entities.find(e => (invoice.currency === 'USD' ? e.entity_code === 'CLLC' : e.entity_code === 'CLTD')) || entities[0];
+    if (matchedEntity) {
+      entityId = matchedEntity.id;
+    }
+
     const newInvoice: Invoice = {
       ...invoice,
+      entity_id: entityId,
       id: generateUUID(),
       secure_token: generateUUID(),
       invoice_number: null,
       status: 'draft',
-      created_by: user?.id || '00000000-0000-4000-8000-000000000000',
+      created_by: user?.id || '00000000-0000-0000-0000-000000000001',
       approved_by: null,
       approved_at: null,
       pdf_file_url: null,
@@ -2121,8 +2179,16 @@ export const db = {
   },
 
   addExpense: async (expense: Omit<Expense, 'id' | 'created_at'>): Promise<Expense> => {
+    const entities = await db.getEntities();
+    let entityId = expense.entity_id;
+    const matchedEntity = entities.find(e => e.id === entityId) || entities.find(e => (expense.currency === 'USD' ? e.entity_code === 'CLLC' : e.entity_code === 'CLTD')) || entities[0];
+    if (matchedEntity) {
+      entityId = matchedEntity.id;
+    }
+
     const newExpense: Expense = {
       ...expense,
+      entity_id: entityId,
       id: generateUUID(),
       created_at: new Date().toISOString()
     };
@@ -2232,7 +2298,7 @@ export const db = {
       if (allocatedReserveAmount > 0) {
         const reserveTxn: ReserveLedgerEntry = {
           id: generateUUID(),
-          entity_id: invoice.entity_id || '11111111-1111-4111-8111-111111111111',
+          entity_id: invoice.entity_id || '11111111-1111-1111-1111-111111111111',
           currency: newPayment.currency,
           transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
           amount: allocatedReserveAmount,
@@ -2277,7 +2343,7 @@ export const db = {
     if (!existingAllocation && allocatedReserveAmount > 0) {
       const reserveTxn: ReserveLedgerEntry = {
         id: `res-tx-${Date.now()}`,
-        entity_id: invoice.entity_id || '11111111-1111-4111-8111-111111111111',
+        entity_id: invoice.entity_id || '11111111-1111-1111-1111-111111111111',
         currency: newPayment.currency,
         transaction_type: 'AUTOMATIC_RESERVE_ALLOCATION',
         amount: allocatedReserveAmount,

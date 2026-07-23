@@ -7,6 +7,9 @@ import { calculateTotals, formatCurrency, fetchLiveMarketUsdRate } from '@/lib/c
 import { ArrowLeft, Plus, Trash2, Copy, Percent, DollarSign, FileText, CheckCircle2, Sparkles, Megaphone, X, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
+import { nullifyEmptyUUID } from '@/lib/utils/uuid';
+import { handleDatabaseError } from '@/lib/utils/db-error-handler';
+
 interface FormItem {
   service_name: string;
   description: string;
@@ -33,6 +36,9 @@ export default function NewInvoicePage() {
   const [issueDate, setIssueDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [paymentTerms, setPaymentTerms] = useState('30 Days');
   const [dueDate, setDueDate] = useState('');
+
+  // ... rest of component stays intact ...
+
   const [projectName, setProjectName] = useState('');
   const [servicePeriod, setServicePeriod] = useState('');
   const [poNumber, setPoNumber] = useState('');
@@ -105,13 +111,13 @@ export default function NewInvoicePage() {
           if (activeC) {
             setCurrency(activeC.preferred_currency);
             setPaymentTerms(activeC.default_payment_terms);
-            setAccountManagerId(activeC.account_manager_id);
+            setAccountManagerId(activeC.account_manager_id || '');
           }
         } else if (cls.length > 0) {
           setSelectedClientId(cls[0].id);
           setCurrency(cls[0].preferred_currency);
           setPaymentTerms(cls[0].default_payment_terms);
-          setAccountManagerId(cls[0].account_manager_id);
+          setAccountManagerId(cls[0].account_manager_id || '');
         }
 
         if (u) {
@@ -140,7 +146,7 @@ export default function NewInvoicePage() {
     if (client) {
       setCurrency(client.preferred_currency);
       setPaymentTerms(client.default_payment_terms);
-      setAccountManagerId(client.account_manager_id);
+      setAccountManagerId(client.account_manager_id || '');
     }
     if (clientId) {
       const rates = await db.getClientServiceRates(clientId);
@@ -284,6 +290,10 @@ export default function NewInvoicePage() {
       setError('Please select a client.');
       return;
     }
+    if (!activeEntity?.id) {
+      setError('The required billing entity is not configured in Supabase. Please ask an administrator to configure Creatiancy Limited (BDT) or Creatiancy LLC (USD).');
+      return;
+    }
     if (!projectName.trim()) {
       setError('Please enter a project name.');
       return;
@@ -300,7 +310,7 @@ export default function NewInvoicePage() {
       const inv = await db.createInvoice({
         client_id: selectedClientId,
         currency,
-        entity_id: activeEntity?.id || '',
+        entity_id: activeEntity.id,
         issue_date: issueDate,
         payment_terms: paymentTerms,
         due_date: dueDate,
@@ -308,7 +318,7 @@ export default function NewInvoicePage() {
         service_period: servicePeriod.trim(),
         po_number: poNumber.trim(),
         reference_number: referenceNumber.trim(),
-        account_manager_id: accountManagerId,
+        account_manager_id: nullifyEmptyUUID(accountManagerId),
         discount_type: discountType,
         discount_value: discountValue,
         vat_rate: currency === 'BDT' ? vatRate : 0,
@@ -317,7 +327,7 @@ export default function NewInvoicePage() {
         payment_instructions: paymentInstructions.trim(),
         terms_conditions: termsConditions.trim(),
         internal_note: internalNote.trim(),
-        created_by: currentUser?.id || ''
+        created_by: currentUser?.id || '00000000-0000-0000-0000-000000000001'
       }, items.map(i => ({
         service_name: i.service_name.trim(),
         description: i.description.trim(),
@@ -334,7 +344,8 @@ export default function NewInvoicePage() {
 
       router.push(`/billing/invoices/${inv.id}`);
     } catch (err: any) {
-      setError(err.message || 'Failed to save invoice.');
+      const handled = handleDatabaseError(err, 'createInvoice');
+      setError(handled.userMessage);
       setSaving(false);
     }
   };

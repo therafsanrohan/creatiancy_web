@@ -188,7 +188,7 @@ export default function EditInvoicePage() {
         setServicePeriod(inv.service_period);
         setPoNumber(inv.po_number);
         setReferenceNumber(inv.reference_number);
-        setAccountManagerId(inv.account_manager_id);
+        setAccountManagerId(inv.account_manager_id || '');
         setDiscountType(inv.discount_type);
         setDiscountValue(inv.discount_value);
         setVatRate(inv.vat_rate);
