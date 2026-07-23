@@ -193,7 +193,7 @@ export interface Invoice {
   usd_rate?: number;
   entity_id: string;
   invoice_number: string | null;
-  status: 'draft' | 'pending_approval' | 'approved' | 'sent' | 'viewed' | 'partially_paid' | 'paid' | 'overdue' | 'void' | 'rejected';
+  status: 'draft' | 'pending_approval' | 'approved' | 'sent' | 'viewed' | 'partially_paid' | 'paid' | 'overdue' | 'void' | 'rejected' | 'cancelled';
   issue_date: string;
   payment_terms: string;
   due_date: string;
@@ -237,6 +237,11 @@ export interface Invoice {
   archived_by?: string | null;
   archive_reason?: string | null;
   total_payable?: number;
+  subtotal?: number;
+  vat_amount?: number;
+  discount_amount?: number;
+  amount_paid?: number;
+  amount_due?: number;
   created_at: string;
   updated_at: string;
 }
@@ -300,6 +305,50 @@ export interface EmailLog {
   error_message: string | null;
   sent_by: string;
   sent_at: string;
+}
+
+
+export interface VatProfile {
+  id?: string;
+  company_id: string;
+  business_name: string;
+  bin_number: string;
+  bin_status: 'NOT_CONFIGURED' | 'REGISTRATION_PENDING' | 'VAT_REGISTERED' | 'TURNOVER_TAX_ENLISTED' | 'VOLUNTARILY_REGISTERED' | 'SUSPENDED' | 'CANCELLED';
+  vat_registration_type?: string;
+  registration_effective_date?: string | null;
+  registration_expiry_date?: string | null;
+  registered_business_activities?: string;
+  registered_service_codes?: string;
+  vat_circle?: string;
+  vat_division?: string;
+  registered_address?: string;
+  return_frequency?: 'Monthly' | 'Quarterly' | 'Half-Yearly' | 'Yearly';
+  status: 'NOT_CONFIGURED' | 'REGISTRATION_PENDING' | 'VAT_REGISTERED' | 'TURNOVER_TAX_ENLISTED' | 'VOLUNTARILY_REGISTERED' | 'SUSPENDED' | 'CANCELLED';
+  notes?: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface GatewayDeduction {
+  id?: string;
+  payment_id: string;
+  invoice_id: string;
+  gateway_name: string;
+  gross_payment_amount: number;
+  percentage_fee_rate: number;
+  percentage_fee_amount: number;
+  fixed_fee_amount: number;
+  tax_on_fee_amount: number;
+  currency_conversion_fee: number;
+  bank_charge: number;
+  total_gateway_deduction: number;
+  net_settlement_amount: number;
+  settlement_currency: string;
+  settlement_date?: string;
+  gateway_reference?: string;
+  created_at?: string;
 }
 
 export interface AuditLog {
@@ -1301,6 +1350,22 @@ class LocalStore {
   set financialAuditLogs(val: FinancialAuditLog[]) {
     this.setVal('financial_audit_logs', [...val]);
   }
+
+  get vatProfile(): VatProfile | null {
+    return this.getVal('vat_profile', null);
+  }
+
+  set vatProfile(val: VatProfile | null) {
+    this.setVal('vat_profile', val);
+  }
+
+  get gatewayDeductions(): GatewayDeduction[] {
+    return this.getVal('gateway_deductions', []);
+  }
+
+  set gatewayDeductions(val: GatewayDeduction[]) {
+    this.setVal('gateway_deductions', [...val]);
+  }
 }
 
 export const localStore = new LocalStore();
@@ -1744,7 +1809,7 @@ export const db = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('billing_clients').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           localStore.clients = data;
           return data;
         }
@@ -1811,17 +1876,72 @@ export const db = {
     return localStore.clients.find(c => c.id === id) || (updates as BillingClient);
   },
 
+
+  populateInvoicesTotalsBatch: async (invoicesList: Invoice[]): Promise<Invoice[]> => {
+    if (!invoicesList || invoicesList.length === 0) return [];
+    const invoiceIds = invoicesList.map(i => i.id);
+
+    let allItems: InvoiceItem[] = [];
+    let allPayments: Payment[] = [];
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: itemData } = await supabase.from('invoice_items').select('*').in('invoice_id', invoiceIds);
+        if (itemData) allItems = itemData;
+
+        const { data: payData } = await supabase.from('invoice_payments').select('*').in('invoice_id', invoiceIds);
+        if (payData) allPayments = payData;
+      } catch (e) {
+        console.warn('Batch totals fetch warning:', e);
+      }
+    } else {
+      allItems = localStore.items.filter(itm => invoiceIds.includes(itm.invoice_id));
+      allPayments = localStore.payments.filter(p => invoiceIds.includes(p.invoice_id));
+    }
+
+    return invoicesList.map(inv => {
+      const items = allItems.filter(itm => itm.invoice_id === inv.id);
+      const invPayments = allPayments.filter(p => p.invoice_id === inv.id);
+      const totals = calculateTotals({
+        items,
+        discountType: inv.discount_type,
+        discountValue: inv.discount_value,
+        vatRate: inv.vat_rate,
+        vatInclusive: inv.vat_inclusive,
+        payments: invPayments
+      });
+
+      return {
+        ...inv,
+        subtotal: totals.subtotal,
+        discount_amount: totals.discountAmount,
+        vat_amount: totals.vatAmount,
+        total_payable: totals.totalPayable,
+        amount_paid: totals.amountPaid,
+        amount_due: totals.amountDue
+      };
+    });
+  },
+
+  populateInvoiceTotals: async (invoice: Invoice): Promise<Invoice> => {
+    const list = await db.populateInvoicesTotalsBatch([invoice]);
+    return list[0] || invoice;
+  },
+
   // Invoice Actions
   getInvoices: async (): Promise<Invoice[]> => {
+    let raw: Invoice[] = [];
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
         if (!error && data) {
-          return data;
+          raw = data;
         }
       } catch (e: any) { throw new Error(e.message || String(e)); }
+    } else {
+      raw = localStore.invoices;
     }
-    return localStore.invoices;
+    return await db.populateInvoicesTotalsBatch(raw);
   },
 
   getInvoicesPaginated: async (options: {
@@ -1912,8 +2032,9 @@ export const db = {
         const { data, error, count } = await query;
         if (!error && data) {
           const total = count || 0;
+          const populated = await db.populateInvoicesTotalsBatch(data);
           return {
-            invoices: data,
+            invoices: populated,
             total,
             page,
             totalPages: Math.ceil(total / limit) || 1,
@@ -1958,9 +2079,10 @@ export const db = {
     const total = list.length;
     const totalPages = Math.ceil(total / limit) || 1;
     const paged = list.slice(offset, offset + limit);
+    const populated = await db.populateInvoicesTotalsBatch(paged);
 
     return {
-      invoices: paged,
+      invoices: populated,
       total,
       page,
       totalPages
@@ -2069,6 +2191,12 @@ export const db = {
         ...newInvoice,
         created_by: validCreatedBy as any
       };
+      delete (payload as any).total_payable;
+      delete (payload as any).subtotal;
+      delete (payload as any).vat_amount;
+      delete (payload as any).discount_amount;
+      delete (payload as any).amount_paid;
+      delete (payload as any).amount_due;
 
       const { error: rpcErr } = await supabase.rpc('create_invoice_with_items', {
         p_invoice: payload,
@@ -2295,13 +2423,23 @@ export const db = {
 
     let nextSeq = 1;
     if (isSupabaseConfigured && supabase) {
-      const { count, error: countErr } = await supabase
+      const prefixPattern = `${entityPrefix}-${invoice.currency}-${year}-%`;
+      const { data: existingInvs } = await supabase
         .from('invoices')
-        .select('*', { count: 'exact', head: true })
-        .eq('entity_id', invoice.entity_id)
-        .not('invoice_number', 'is', null);
-      if (!countErr && count !== null) {
-        nextSeq = count + 1;
+        .select('invoice_number')
+        .ilike('invoice_number', prefixPattern)
+        .order('invoice_number', { ascending: false });
+      
+      if (existingInvs && existingInvs.length > 0) {
+        let maxSerial = 0;
+        for (const invRow of existingInvs) {
+          if (invRow.invoice_number) {
+            const parts = invRow.invoice_number.split('-');
+            const num = parseInt(parts[parts.length - 1] || '0', 10);
+            if (!isNaN(num) && num > maxSerial) maxSerial = num;
+          }
+        }
+        nextSeq = maxSerial + 1;
       }
     }
 
@@ -2557,7 +2695,7 @@ export const db = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('invoice_payments').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           localStore.payments = data;
           return data;
         }
@@ -2741,9 +2879,19 @@ export const db = {
     const serialStr = nextSeq.toString().padStart(4, '0');
     const receiptNumber = `${receiptPrefix}-${year}-${serialStr}`;
 
+    let recordedByVal: string | null = payment.recorded_by || user?.id || null;
+    if (isSupabaseConfigured && supabase && recordedByVal) {
+      const { data: prof } = await supabase.from('profiles').select('id').eq('id', recordedByVal).maybeSingle();
+      if (!prof) {
+        const { data: defaultProf } = await supabase.from('profiles').select('id').limit(1);
+        recordedByVal = defaultProf && defaultProf[0] ? defaultProf[0].id : null;
+      }
+    }
+
     const newPayment: Payment = {
       ...payment,
       id: generateUUID(),
+      recorded_by: recordedByVal || '4b53b02d-8022-46ea-bd89-06c37e9e8ecf',
       receipt_number: receiptNumber,
       created_at: new Date().toISOString()
     };
@@ -4178,8 +4326,12 @@ export const db = {
   getVatRegistrationProfile: async (): Promise<VatRegistrationProfile> => {
     if (isSupabaseConfigured && supabase) {
       try {
-        const { data, error } = await supabase.from('vat_registration_profiles').select('*').limit(1).maybeSingle();
-        if (!error && data) {
+        let { data, error } = await supabase.from('vat_profiles').select('*').limit(1).maybeSingle();
+        if (error || !data) {
+          const res = await supabase.from('vat_registration_profiles').select('*').limit(1).maybeSingle();
+          if (!res.error && res.data) data = res.data;
+        }
+        if (data) {
           localStore.vatRegistrationProfile = data;
           return data;
         }
@@ -4191,7 +4343,7 @@ export const db = {
   saveVatRegistrationProfile: async (profile: Partial<VatRegistrationProfile>, user: Profile): Promise<VatRegistrationProfile> => {
     const current = await db.getVatRegistrationProfile();
     const profileId = sanitizeUUID(current?.id) || sanitizeUUID(profile?.id) || generateUUID();
-    const companyId = sanitizeUUID(profile?.company_id) || sanitizeUUID(current?.company_id) || 'a0000070-0000-4000-8000-000000000001';
+    const companyId = sanitizeUUID(profile?.company_id) || sanitizeUUID(current?.company_id) || '11111111-1111-1111-1111-111111111111';
 
     const updated: VatRegistrationProfile = {
       ...current,
@@ -4207,8 +4359,11 @@ export const db = {
         id: profileId,
         company_id: companyId
       };
-      const { error } = await supabase.from('vat_registration_profiles').upsert(payload);
-      if (error) throw new Error(`Cloud VAT profile update failed: ${error.message}`);
+      const { error: err1 } = await supabase.from('vat_profiles').upsert(payload);
+      if (err1) {
+        const { error: err2 } = await supabase.from('vat_registration_profiles').upsert(payload);
+        if (err2) console.warn('Cloud VAT profile update warning:', err1.message || err2.message);
+      }
     }
     localStore.vatRegistrationProfile = updated;
     await db.addVatAuditLog({
@@ -4640,5 +4795,158 @@ export const db = {
     }
     localStore.vatAuditLogs = [newLog, ...localStore.vatAuditLogs];
     return newLog;
-  }
+  },
+
+  getClientsFiltered: async (options: {
+    search?: string;
+    clientType?: string;
+    status?: string;
+    currency?: string;
+    country?: string;
+    projectStatus?: string;
+  } = {}): Promise<BillingClient[]> => {
+    let clients = await db.getClients();
+    let invoices = await db.getInvoices();
+
+    if (options.search && options.search.trim()) {
+      const s = options.search.trim().toLowerCase();
+      clients = clients.filter(c => 
+        (c.company_name && c.company_name.toLowerCase().includes(s)) ||
+        (c.contact_person && c.contact_person.toLowerCase().includes(s)) ||
+        (c.billing_email && c.billing_email.toLowerCase().includes(s)) ||
+        (c.phone && c.phone.toLowerCase().includes(s)) ||
+        (c.city && c.city.toLowerCase().includes(s)) ||
+        (c.country && c.country.toLowerCase().includes(s)) ||
+        (c.tax_number && c.tax_number.toLowerCase().includes(s))
+      );
+    }
+
+    if (options.clientType && options.clientType !== 'all') {
+      clients = clients.filter(c => c.client_type === options.clientType);
+    }
+
+    if (options.status && options.status !== 'all') {
+      clients = clients.filter(c => c.status === options.status);
+    }
+
+    if (options.currency && options.currency !== 'all') {
+      clients = clients.filter(c => c.preferred_currency === options.currency);
+    }
+
+    if (options.country && options.country !== 'all') {
+      clients = clients.filter(c => c.country === options.country);
+    }
+
+    if (options.projectStatus && options.projectStatus !== 'all') {
+      clients = clients.filter(c => {
+        const clientInvoices = invoices.filter(i => i.client_id === c.id && ['approved', 'issued', 'sent', 'partially_paid', 'overdue'].includes(i.status));
+        if (options.projectStatus === 'active_project') {
+          return clientInvoices.length > 0;
+        } else if (options.projectStatus === 'completed') {
+          return clientInvoices.length === 0;
+        }
+        return true;
+      });
+    }
+
+    return clients;
+  },
+
+  getVatProfile: async (companyId?: string): Promise<VatProfile> => {
+    const defaultProfile: VatProfile = {
+      company_id: companyId || '11111111-1111-1111-1111-111111111111',
+      business_name: 'Creatiancy Limited',
+      bin_number: '',
+      bin_status: 'NOT_CONFIGURED',
+      vat_registration_type: 'Standard',
+      status: 'NOT_CONFIGURED',
+      return_frequency: 'Monthly',
+      notes: ''
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        let query = supabase.from('vat_profiles').select('*');
+        if (companyId) {
+          query = query.eq('company_id', companyId);
+        }
+        const { data, error } = await query.limit(1);
+        if (!error && data && data.length > 0) {
+          localStore.vatProfile = data[0] as VatProfile;
+          return data[0] as VatProfile;
+        }
+      } catch (e) {
+        console.warn('getVatProfile notice:', e);
+      }
+    }
+    return localStore.vatProfile || defaultProfile;
+  },
+
+  saveVatProfile: async (profile: Partial<VatProfile>): Promise<VatProfile> => {
+    const existing = await db.getVatProfile(profile.company_id);
+    const updatedProfile: VatProfile = {
+      ...existing,
+      ...profile,
+      updated_at: new Date().toISOString()
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('vat_profiles')
+          .upsert({
+            ...updatedProfile,
+            id: updatedProfile.id || generateUUID()
+          })
+          .select()
+          .single();
+        if (!error && data) {
+          localStore.vatProfile = data as VatProfile;
+          return data as VatProfile;
+        }
+      } catch (e) {
+        console.warn('saveVatProfile cloud warning:', e);
+      }
+    }
+
+    localStore.vatProfile = updatedProfile;
+    return updatedProfile;
+  },
+
+  recordGatewayDeduction: async (deduction: GatewayDeduction): Promise<GatewayDeduction> => {
+    const newDeduction: GatewayDeduction = {
+      ...deduction,
+      id: deduction.id || generateUUID(),
+      created_at: new Date().toISOString()
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('gateway_deductions').insert(newDeduction);
+        if (error) console.warn('Cloud gateway deduction insert warning:', error.message);
+      } catch (e) {
+        console.warn('recordGatewayDeduction warning:', e);
+      }
+    }
+
+    const list = localStore.gatewayDeductions || [];
+    list.push(newDeduction);
+    localStore.gatewayDeductions = list;
+    return newDeduction;
+  },
+
+  getGatewayDeductions: async (): Promise<GatewayDeduction[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('gateway_deductions').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          localStore.gatewayDeductions = data as GatewayDeduction[];
+          return data as GatewayDeduction[];
+        }
+      } catch (e) {
+        console.warn('getGatewayDeductions notice:', e);
+      }
+    }
+    return localStore.gatewayDeductions || [];
+  },
 };

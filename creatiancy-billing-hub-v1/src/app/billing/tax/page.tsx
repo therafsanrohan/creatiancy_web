@@ -137,15 +137,14 @@ export default function TaxLedgerPage() {
   const showNotif = (title: string, message: string, type: 'success' | 'error' | 'info' = 'info') => setModalState({ isOpen: true, title, message, type });
 
   const openProfileModal = () => {
-    if (!vatProfile) return;
-    setProfBusinessName(vatProfile.business_name);
-    setProfBin(vatProfile.bin_number);
-    setProfBinStatus(vatProfile.bin_status);
-    setProfCircle(vatProfile.vat_circle);
-    setProfDivision(vatProfile.vat_division);
-    setProfAddress(vatProfile.registered_address);
-    setProfEffectiveDate(vatProfile.registration_effective_date);
-    setProfReturnFreq(vatProfile.default_return_frequency);
+    setProfBusinessName(vatProfile?.business_name || 'Creatiancy Limited');
+    setProfBin(vatProfile?.bin_number || '');
+    setProfBinStatus(vatProfile?.bin_status || 'VAT_REGISTERED');
+    setProfCircle(vatProfile?.vat_circle || '');
+    setProfDivision(vatProfile?.vat_division || '');
+    setProfAddress(vatProfile?.registered_address || '');
+    setProfEffectiveDate(vatProfile?.registration_effective_date || '');
+    setProfReturnFreq(vatProfile?.default_return_frequency || 'MONTHLY');
     setShowProfileModal(true);
   };
 

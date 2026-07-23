@@ -355,3 +355,48 @@ export function calculateBangladeshCorporateTax(input: BdCorporateTaxInput): BdC
     unadjustedTaxCredit
   };
 }
+
+export interface CalculateGatewayFeeInput {
+  grossPaymentAmount: number;
+  percentageFeeRate: number;
+  fixedFeeAmount?: number;
+  taxOnFeeAmount?: number;
+  currencyConversionFee?: number;
+  bankCharge?: number;
+}
+
+export interface GatewayFeeResult {
+  grossPaymentAmount: number;
+  percentageFeeAmount: number;
+  fixedFeeAmount: number;
+  taxOnFeeAmount: number;
+  currencyConversionFee: number;
+  bankCharge: number;
+  totalGatewayDeduction: number;
+  netSettlementAmount: number;
+}
+
+export function calculateGatewayDeduction(input: CalculateGatewayFeeInput): GatewayFeeResult {
+  const gross = Math.max(0, input.grossPaymentAmount);
+  const rate = Math.max(0, input.percentageFeeRate);
+  const percentageFeeAmount = roundToTwo((gross * rate) / 100);
+  const fixedFee = Math.max(0, input.fixedFeeAmount || 0);
+  const taxOnFee = Math.max(0, input.taxOnFeeAmount || 0);
+  const conversionFee = Math.max(0, input.currencyConversionFee || 0);
+  const bankCharge = Math.max(0, input.bankCharge || 0);
+
+  const totalGatewayDeduction = roundToTwo(percentageFeeAmount + fixedFee + taxOnFee + conversionFee + bankCharge);
+  const netSettlementAmount = Math.max(0, roundToTwo(gross - totalGatewayDeduction));
+
+  return {
+    grossPaymentAmount: gross,
+    percentageFeeAmount,
+    fixedFeeAmount: fixedFee,
+    taxOnFeeAmount: taxOnFee,
+    currencyConversionFee: conversionFee,
+    bankCharge,
+    totalGatewayDeduction,
+    netSettlementAmount
+  };
+}
+

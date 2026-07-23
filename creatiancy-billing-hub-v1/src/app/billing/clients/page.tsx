@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { db, BillingClient, Invoice, Payment, localStore } from '@/lib/db';
-import { calculateTotals, formatCurrency } from '@/lib/calculations';
+import { formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
-import { Plus, Search, Archive, UserCheck, Mail, Phone, MapPin, ArrowRight, FileText } from 'lucide-react';
+import { Plus, Search, Archive, UserCheck, Mail, Phone, MapPin, Filter, RotateCcw } from 'lucide-react';
 
 export default function ClientListPage() {
   const [clients, setClients] = useState<BillingClient[]>([]);
@@ -12,6 +12,10 @@ export default function ClientListPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'active' | 'archived' | 'all'>('active');
+  const [clientTypeFilter, setClientTypeFilter] = useState<string>('all');
+  const [currencyFilter, setCurrencyFilter] = useState<string>('all');
+  const [projectStatusFilter, setProjectStatusFilter] = useState<string>('all');
+  const [countryFilter, setCountryFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -51,21 +55,12 @@ export default function ClientListPage() {
 
     const clientInvoices = invoices.filter(i => i.client_id === clientId && i.status !== 'draft' && i.status !== 'void');
     clientInvoices.forEach(inv => {
-      const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
-      const invPayments = payments.filter(p => p.invoice_id === inv.id);
-      const totals = calculateTotals({
-        items,
-        discountType: inv.discount_type,
-        discountValue: inv.discount_value,
-        vatRate: inv.vat_rate,
-        vatInclusive: inv.vat_inclusive,
-        payments: invPayments
-      });
+      const amountDue = inv.amount_due !== undefined ? inv.amount_due : (inv.total_payable || 0);
 
       if (inv.currency === 'BDT') {
-        bdtDue += totals.amountDue;
+        bdtDue += amountDue;
       } else {
-        usdDue += totals.amountDue;
+        usdDue += amountDue;
       }
     });
 
@@ -83,17 +78,41 @@ export default function ClientListPage() {
     return { isOnline: false, label: 'Work Completed (Offline)', badgeBg: 'bg-gray-50 text-gray-500 border-gray-200', dot: 'bg-gray-400' };
   };
 
+  const countries = Array.from(new Set(clients.map(c => c.country).filter(Boolean)));
+
   const filteredClients = clients.filter(c => {
     const matchesSearch =
+      !search.trim() ||
       c.company_name?.toLowerCase().includes(search.toLowerCase()) ||
-      c.contact_person.toLowerCase().includes(search.toLowerCase()) ||
-      c.billing_email.toLowerCase().includes(search.toLowerCase());
+      c.contact_person?.toLowerCase().includes(search.toLowerCase()) ||
+      c.billing_email?.toLowerCase().includes(search.toLowerCase()) ||
+      c.phone?.toLowerCase().includes(search.toLowerCase()) ||
+      c.city?.toLowerCase().includes(search.toLowerCase()) ||
+      c.country?.toLowerCase().includes(search.toLowerCase()) ||
+      c.tax_number?.toLowerCase().includes(search.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all' || c.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+    const matchesType = clientTypeFilter === 'all' || c.client_type === clientTypeFilter;
+    const matchesCurrency = currencyFilter === 'all' || c.preferred_currency === currencyFilter;
+    const matchesCountry = countryFilter === 'all' || c.country === countryFilter;
 
-    return matchesSearch && matchesStatus;
+    const projStatus = getClientProjectStatus(c.id);
+    const matchesProjectStatus =
+      projectStatusFilter === 'all' ||
+      (projectStatusFilter === 'active_project' && projStatus.isOnline) ||
+      (projectStatusFilter === 'completed' && !projStatus.isOnline);
+
+    return matchesSearch && matchesStatus && matchesType && matchesCurrency && matchesCountry && matchesProjectStatus;
   });
+
+  const resetFilters = () => {
+    setSearch('');
+    setStatusFilter('active');
+    setClientTypeFilter('all');
+    setCurrencyFilter('all');
+    setProjectStatusFilter('all');
+    setCountryFilter('all');
+  };
 
   if (loading) {
     return (
@@ -116,41 +135,107 @@ export default function ClientListPage() {
         </div>
         <Link
           href="/billing/clients/new"
-          className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#9B1C22]/90 shadow-md transition"
+          className="flex items-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#9B1C22]/90 shadow-md transition cursor-pointer"
         >
           <Plus className="h-4 w-4" />
           <span>New Client Profile</span>
         </Link>
       </div>
 
-      {/* Search and Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="sm:col-span-2 relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search clients by company name, contact person or email..."
-            className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none shadow-xs"
-          />
+      {/* Search and Advanced Filters */}
+      <div className="bg-white border border-gray-200 p-4 rounded-2xl space-y-3 shadow-xs">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <div className="md:col-span-6 relative">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search clients by company name, contact person, email, phone, city..."
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2 pl-10 pr-4 text-xs text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none"
+            />
+          </div>
+
+          <div className="md:col-span-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs font-semibold text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none cursor-pointer"
+            >
+              <option value="active">Active Clients Only</option>
+              <option value="archived">Archived Clients Only</option>
+              <option value="all">All Statuses</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-3">
+            <select
+              value={clientTypeFilter}
+              onChange={(e) => setClientTypeFilter(e.target.value)}
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs font-semibold text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Client Types</option>
+              <option value="company">Corporate / Company</option>
+              <option value="individual">Individual</option>
+            </select>
+          </div>
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as any)}
-          className="block w-full rounded-lg border border-gray-200 bg-white py-2 px-3 text-sm text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none cursor-pointer"
-        >
-          <option value="active">Active Clients Only</option>
-          <option value="archived">Archived Clients Only</option>
-          <option value="all">All Clients</option>
-        </select>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-3 pt-2 border-t border-gray-100">
+          <div className="md:col-span-4">
+            <select
+              value={currencyFilter}
+              onChange={(e) => setCurrencyFilter(e.target.value)}
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Billing Currencies</option>
+              <option value="BDT">BDT (৳) Billing</option>
+              <option value="USD">USD ($) Billing</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-4">
+            <select
+              value={projectStatusFilter}
+              onChange={(e) => setProjectStatusFilter(e.target.value)}
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Project Statuses</option>
+              <option value="active_project">Active Project (Open Invoices)</option>
+              <option value="completed">Work Completed (Offline)</option>
+            </select>
+          </div>
+
+          <div className="md:col-span-3">
+            <select
+              value={countryFilter}
+              onChange={(e) => setCountryFilter(e.target.value)}
+              className="block w-full rounded-xl border border-gray-200 bg-white py-2 px-3 text-xs text-[#1E1E1E] focus:border-[#9B1C22] focus:outline-none cursor-pointer"
+            >
+              <option value="all">All Countries</option>
+              {countries.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="md:col-span-1 flex items-center justify-end">
+            <button
+              onClick={resetFilters}
+              className="p-2 border border-gray-200 hover:bg-gray-50 rounded-xl text-gray-500 hover:text-[#9B1C22] transition cursor-pointer"
+              title="Reset Filters"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Grid List */}
       {filteredClients.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center text-sm text-gray-450">
-          No clients found matching the selected criteria.
+        <div className="rounded-2xl border border-dashed border-gray-200 p-12 text-center text-sm text-gray-450 space-y-2">
+          <p className="font-semibold text-gray-700">No clients found matching the selected criteria.</p>
+          <button onClick={resetFilters} className="text-xs text-[#9B1C22] underline font-bold cursor-pointer">Reset Filters</button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -161,7 +246,7 @@ export default function ClientListPage() {
             return (
               <div
                 key={client.id}
-                className={`rounded-2xl border bg-white p-6 shadow-sm flex flex-col justify-between transition hover:shadow-md ${
+                className={`rounded-2xl border bg-white p-6 shadow-xs flex flex-col justify-between transition hover:shadow-md ${
                   client.status === 'archived'
                     ? 'border-gray-200 border-dashed bg-gray-50/50'
                     : 'border-gray-100'
@@ -232,7 +317,7 @@ export default function ClientListPage() {
                   <div className="flex items-center gap-2 pt-3 border-t border-gray-50">
                     <Link
                       href={`/billing/clients/${client.id}`}
-                      className="flex-1 text-center bg-gray-50 hover:bg-gray-100 text-gray-800 text-xs font-semibold py-2 px-3 rounded-lg transition"
+                      className="flex-1 text-center bg-gray-50 hover:bg-gray-100 text-gray-800 text-xs font-semibold py-2 px-3 rounded-lg transition cursor-pointer"
                     >
                       View Profile
                     </Link>
