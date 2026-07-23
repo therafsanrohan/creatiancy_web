@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { db, Invoice, BillingClient, InvoiceItem, Payment, BankAccount, BusinessEntity } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
-import { ArrowLeft, Printer, Send, Loader2, Building2, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Printer, Send, Loader2, Building2, ShieldCheck } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import NotificationModal from '@/components/NotificationModal';
 
@@ -207,15 +207,6 @@ export default function InvoicePreviewPage() {
         </div>
       </div>
 
-      {/* Mobile Horizontal Slide Hint */}
-      <div className="max-w-[210mm] mx-auto mb-2 text-center block sm:hidden no-print">
-        <span className="inline-flex items-center space-x-1.5 text-[11px] font-bold text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1 shadow-xs">
-          <ChevronLeft className="h-3.5 w-3.5 text-gray-400" />
-          <span>Slide horizontally to view full invoice</span>
-          <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
-        </span>
-      </div>
-
       {/* A4 Canvas Container */}
       <div className="w-full flex justify-center pb-6">
       <div
@@ -223,8 +214,6 @@ export default function InvoicePreviewPage() {
         className="w-full max-w-[210mm] bg-white shadow-lg border border-gray-100 p-6 sm:p-10 text-[#1E1E1E] flex flex-col justify-between font-sans relative select-none box-border"
         style={{ minHeight: '297mm' }}
       >
-        <div className="print-watermark">Creatiancy</div>
-        
         {/* Document Top */}
         <div>
           {/* Header block */}
