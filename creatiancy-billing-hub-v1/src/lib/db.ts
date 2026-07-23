@@ -3846,6 +3846,13 @@ export const db = {
   },
 
   clearAllNotifications: async (): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('system_notifications').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      } catch (e: any) {
+        console.warn('Cloud clearAllNotifications error:', e);
+      }
+    }
     localStore.systemNotifications = [];
   },
 

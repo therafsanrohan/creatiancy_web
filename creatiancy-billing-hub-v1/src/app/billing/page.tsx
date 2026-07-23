@@ -44,6 +44,7 @@ export default function DashboardPage() {
 
   const getInvoiceTotal = (inv: Invoice) => {
     const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
+    if (items.length === 0) return inv.total_payable || 0;
     const totals = calculateTotals({
       items,
       discountType: inv.discount_type,
@@ -52,7 +53,7 @@ export default function DashboardPage() {
       vatInclusive: inv.vat_inclusive,
       payments: []
     });
-    return totals.totalPayable;
+    return totals.totalPayable || inv.total_payable || 0;
   };
 
   useEffect(() => {
@@ -127,25 +128,33 @@ export default function DashboardPage() {
 
       const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
       const invPayments = payments.filter(p => p.invoice_id === inv.id);
-      const totals = calculateTotals({
-        items,
-        discountType: inv.discount_type,
-        discountValue: inv.discount_value,
-        vatRate: inv.vat_rate,
-        vatInclusive: inv.vat_inclusive,
-        payments: invPayments
-      });
+      const paidSum = invPayments.reduce((s, p) => s + (p.amount || 0), 0);
+      let invTotal = inv.total_payable || 0;
+      let amountDue = Math.max(0, invTotal - paidSum);
 
-      const isOverdue = new Date(inv.due_date) < now && inv.status !== 'paid';
+      if (items.length > 0) {
+        const totals = calculateTotals({
+          items,
+          discountType: inv.discount_type,
+          discountValue: inv.discount_value,
+          vatRate: inv.vat_rate,
+          vatInclusive: inv.vat_inclusive,
+          payments: invPayments
+        });
+        invTotal = totals.totalPayable;
+        amountDue = totals.amountDue;
+      }
+
+      const isOverdue = new Date(inv.due_date) < now && inv.status !== 'paid' && amountDue > 0;
 
       if (inv.currency === 'BDT') {
-        bdtInvoiced += totals.totalPayable;
-        bdtOutstanding += totals.amountDue;
-        if (isOverdue) bdtOverdue += totals.amountDue;
+        bdtInvoiced += invTotal;
+        bdtOutstanding += amountDue;
+        if (isOverdue) bdtOverdue += amountDue;
       } else {
-        usdInvoiced += totals.totalPayable;
-        usdOutstanding += totals.amountDue;
-        if (isOverdue) usdOverdue += totals.amountDue;
+        usdInvoiced += invTotal;
+        usdOutstanding += amountDue;
+        if (isOverdue) usdOverdue += amountDue;
       }
     });
 
