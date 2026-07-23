@@ -11,6 +11,13 @@ export function generateUUID(): string {
   });
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export function sanitizeUUID(id?: string | null): string | null {
+  if (!id) return null;
+  if (UUID_REGEX.test(id)) return id;
+  return null;
+}
+
 export interface Profile {
   id: string;
   full_name: string;
@@ -2579,11 +2586,11 @@ export const db = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('expenses').select('*').order('expense_date', { ascending: false });
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           localStore.expenses = data;
           return data;
         }
-      } catch (e: any) { throw new Error(e.message || String(e)); }
+      } catch (e: any) { console.warn('getExpenses cloud warning:', e); }
     }
     return localStore.expenses;
   },
@@ -2604,12 +2611,45 @@ export const db = {
     };
 
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('expenses').insert(newExpense);
-      if (error) throw new Error(`Cloud expense create failed: ${error.message}`);
+      let recordedByVal: string | null = sanitizeUUID(expense.recorded_by);
+      if (recordedByVal) {
+        const { data: profData } = await supabase.from('profiles').select('id').eq('id', recordedByVal).maybeSingle();
+        if (!profData) {
+          recordedByVal = null;
+        }
+      }
+
+      let entityIdVal: string | null = sanitizeUUID(entityId);
+      if (entityIdVal) {
+        const { data: entData } = await supabase.from('business_entities').select('id').eq('id', entityIdVal).maybeSingle();
+        if (!entData) {
+          entityIdVal = matchedEntity?.id ? sanitizeUUID(matchedEntity.id) : null;
+        }
+      }
+
+      const insertPayload = {
+        id: newExpense.id,
+        entity_id: entityIdVal,
+        category: newExpense.category,
+        description: newExpense.description,
+        amount: newExpense.amount,
+        currency: newExpense.currency,
+        expense_date: newExpense.expense_date,
+        vendor: newExpense.vendor,
+        invoice_ref: newExpense.invoice_ref && newExpense.invoice_ref.trim() ? newExpense.invoice_ref.trim() : null,
+        recorded_by: recordedByVal,
+        created_at: newExpense.created_at
+      };
+
+      const { error } = await supabase.from('expenses').insert(insertPayload);
+      if (error) {
+        console.error('Cloud expense insert error:', error);
+        throw new Error(`Cloud expense create failed: ${error.message}`);
+      }
     }
 
     const list = localStore.expenses;
-    list.push(newExpense);
+    list.unshift(newExpense);
     localStore.expenses = list;
     db.logAudit(expense.recorded_by, 'add_expense', 'expenses', newExpense.id, null, newExpense);
     return newExpense;
@@ -2892,7 +2932,14 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('reserve_ledger').insert(newEntry);
+      const payload = {
+        ...newEntry,
+        entity_id: sanitizeUUID(newEntry.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        payment_id: sanitizeUUID(newEntry.payment_id),
+        invoice_id: sanitizeUUID(newEntry.invoice_id),
+        client_id: sanitizeUUID(newEntry.client_id)
+      };
+      const { error } = await supabase.from('reserve_ledger').insert(payload);
       if (error) throw new Error(`Failed to add reserve ledger entry: ${error.message}`);
     }
     
@@ -2932,7 +2979,12 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('fdr_accounts').insert(newFdr);
+      const payload = {
+        ...newFdr,
+        entity_id: sanitizeUUID(newFdr.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        created_by: sanitizeUUID(user?.id) || user?.full_name || 'User'
+      };
+      const { error } = await supabase.from('fdr_accounts').insert(payload);
       if (error) throw new Error(`Failed to create FDR account: ${error.message}`);
     }
     
@@ -3127,7 +3179,12 @@ export const db = {
     }
 
     if (isSupabaseConfigured && supabase) {
-      const { error: dpsErr } = await supabase.from('dps_accounts').insert(newDps);
+      const dpsPayload = {
+        ...newDps,
+        entity_id: sanitizeUUID(newDps.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        created_by: sanitizeUUID(user?.id) || user?.full_name || 'User'
+      };
+      const { error: dpsErr } = await supabase.from('dps_accounts').insert(dpsPayload);
       if (dpsErr) throw new Error(`Failed to create DPS account: ${dpsErr.message}`);
       
       const { error: instErr } = await supabase.from('dps_installments').insert(installments);
@@ -3358,7 +3415,13 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('reserve_withdrawal_requests').insert(newReq);
+      const payload = {
+        ...newReq,
+        entity_id: sanitizeUUID(newReq.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        requested_by: sanitizeUUID(newReq.requested_by) || sanitizeUUID(user?.id) || user?.full_name || 'User',
+        approved_by: sanitizeUUID(newReq.approved_by)
+      };
+      const { error } = await supabase.from('reserve_withdrawal_requests').insert(payload);
       if (error) throw new Error(`Failed to submit withdrawal request: ${error.message}`);
     }
     
