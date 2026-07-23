@@ -41,7 +41,7 @@ export async function updateSession(request: NextRequest) {
   const isBillingRoute = request.nextUrl.pathname.startsWith('/billing');
   const isLoginPage = request.nextUrl.pathname === '/login';
 
-  if (isBillingRoute && !user && process.env.NODE_ENV === 'production') {
+  if (isBillingRoute && !user) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

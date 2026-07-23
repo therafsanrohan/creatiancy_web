@@ -1,108 +1,49 @@
-# Creatiancy Billing Desk V1
+# Creatiancy Billing Hub V1 — Cloud SaaS Platform
 
-Creatiancy Billing Desk V1 is an enterprise-grade, multi-entity financial management, invoicing, tax/VAT accounting, and cashflow tracking platform built for **Creatiancy Limited** (Bangladesh / BDT) and **Creatiancy LLC** (United States / USD).
+Creatiancy Billing Hub V1 is a multi-tenant, cloud-native SaaS platform built for financial management, corporate billing, 20% automated emergency reserve allocation, FDR/DPS investment tracking, and tax/VAT compliance across **Creatiancy Limited** (Bangladesh / BDT) and **Creatiancy LLC** (United States / USD).
 
 ---
 
-## 🌟 Core Modules & Capabilities
+## 🌟 Core Architecture & Capabilities
 
-### 1. Multi-Entity Corporate Billing
-- **Dual Entity Management**: Native support for **Creatiancy Limited (CLTD - BDT)** and **Creatiancy LLC (CLLC - USD)**.
-- **Dynamic Entity Mapping**: Invoice legal entities, prefixes, registered addresses, tax IDs, and payment instructions update dynamically when modified in Entity Settings.
-- **Atomic Serial Numbering**: Sequential numbering per entity and calendar year (e.g. `CLTD-BDT-2026-0001`, `CLLC-USD-2026-0001`).
-- **A4 PDF Export & Sharing**: Live-scaled A4 print previews, client share links (`/invoice/[secureToken]`), and PDF generation.
+### 1. 100% Cloud-Native Database Architecture
+- **Supabase PostgreSQL Single Source of Truth**: All organization data (invoices, payments, clients, reserve, FDR, DPS, tax, audit logs) is stored in Supabase PostgreSQL.
+- **Zero Browser Caching**: No business data is saved to or read from `localStorage`, `sessionStorage`, or in-memory mock stores.
+- **Cross-Device Sync**: Any data created on desktop instantly appears on mobile, tablet, and across all authorized browser sessions.
 
-### 2. Cashflow & P&L Module (`/billing/expenses`)
-- **Expense Tracking**: Categorized expense recording (Payroll, Rent, Software, Utilities, Marketing, etc.).
-- **Net Margin & P&L Dashboard**: Real-time gross margin, incoming net revenue (minus gateway cutoffs), total operational expenses, and net taxable profit.
+### 2. Multi-Entity Corporate Billing & Atomic Reserve
+- **Dual Entity Management**: Support for **Creatiancy Limited (CLTD - BDT)** and **Creatiancy LLC (CLLC - USD)**.
+- **Atomic 20% Reserve Allocation**: Automated PostgreSQL RPC transaction (`record_payment_and_allocate_reserve`) splits incoming payments into 20% emergency reserve and 80% operating cash.
+- **FDR & DPS Investment Tracking**: Managed internal asset transfers with strict Row Level Security (RLS).
 
-### 3. Tax & VAT Ledger (`/billing/tax`)
-- **Dual Regional Tax Rates**: Distinct corporate tax and VAT/Sales tax rates for BDT and USD entities.
-- **Govt Exchequer Challan Tracking**: Track corporate tax accruals and recorded treasury payment challans (`TC-2026-XXXX`).
-
-### 4. Role-Based Access Control (RBAC)
-- **Granular Permissions**:
-  - `Super Admin`: Full system access, team management, audit logs, entity rate configurations.
-  - `Admin`: Full operational access and financial management.
-  - `Finance Admin`: Access to Cashflow, Invoices, Payments, and Tax Ledgers.
-  - `Client Service`: Manage clients and draft/submit invoices.
-  - `Project Manager`: Project invoice creation and status tracking.
-
-### 5. Full Mobile Responsiveness
-- Optimized layouts with responsive grid cards (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4`) and adaptive mobile card views for all financial ledgers.
+### 3. Canonical Role-Based Access Control (RBAC) & Confidential Financial Access
+- **Canonical Roles**: `super_admin`, `admin`, `finance`, `client_service`, `project_manager`, `viewer`.
+- **Confidential Module Security**: Reserve balances, FDR accounts, DPS records, and company savings are strictly guarded by PostgreSQL RLS policies and accessible only to `super_admin`, `admin`, and `finance`.
 
 ---
 
 ## 🌐 Server Routing & Access URLs
 
-When hosted on server or domain (e.g., Vercel / custom domain):
-
-- **Main Dashboard / Entry URL**: `https://billing.creatiancy.com` or `https://creatiancy.com/billing` (or domain path `/billing`).
-- **Authentication**: Visiting `/` automatically routes to `/login`, where authorized team members sign in to access `/billing`.
-- **Public Client Invoice View**: `https://your-domain.com/invoice/[secureToken]` (Allows client to view & download invoice without requiring login).
+- **Main Dashboard / Entry URL**: `https://billing.creatiancy.com` or `https://creatiancy.com/billing` (path `/billing`).
+- **Server-Side Session Guard**: Unauthenticated requests to `/billing/*` are redirected to `/login` via Next.js SSR middleware (`src/middleware.ts`).
+- **Public Client Invoice View**: `https://your-domain.com/invoice/[secureToken]`.
+- **Super Admin Cloud Migration Route**: `/billing/settings/cloud-migration` (Reconcile & import legacy backups).
 
 ---
 
 ## 🛠️ Technology Stack
 
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript
+- **Database & Auth**: Supabase PostgreSQL + `@supabase/ssr` + Supabase Auth
 - **Styling**: Vanilla CSS + TailwindCSS 4
-- **Database & Auth**: Supabase Cloud Postgres (`@supabase/supabase-js`) with client-side LocalStore fallback engine
 - **Icons**: Lucide React
 - **PDF & Export**: `html2pdf.js`
 
 ---
 
-## 🚀 Deployment Guide (Vercel)
+## 🚀 Quick Setup & Deployment
 
-### Step 1: Push Repository to GitHub
-Ensure the project is pushed to GitHub repository (`therafsanrohan/creatiancy_web`).
-
-### Step 2: Import into Vercel
-1. Log into [Vercel Dashboard](https://vercel.com).
-2. Click **Add New Project** and select `therafsanrohan/creatiancy_web`.
-3. Set **Root Directory** to `creatiancy-billing-hub-v1`.
-4. Framework Preset will auto-detect as **Next.js**.
-
-### Step 3: Configure Environment Variables in Vercel
-In Vercel Project Settings -> **Environment Variables**, add:
-
-```env
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-
-# Email Provider Configuration
-RESEND_API_KEY=your_resend_api_key_here
-SENDER_EMAIL=billing@creatiancy.com
-
-# Server & App URL
-NEXT_PUBLIC_APP_URL=https://billing.creatiancy.com
-```
-
-### Step 4: Database Setup (Supabase)
-1. Go to your Supabase project SQL Editor.
-2. Run migration scripts from `supabase/migrations/20260721000000_initial_schema.sql` and `20260721000001_functions_and_policies.sql`.
-3. Seed production defaults using `supabase/seed.sql`.
-
----
-
-## 💻 Local Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run dev server
-npm run dev
-
-# Run TypeScript build check
-npx tsc --noEmit
-```
-
----
-
-## 🔒 Confidentiality & Security
-- Security headers (CSP, HSTS, X-Frame-Options, X-SS-Protection) enforced via `next.config.ts`.
-- No confidential passwords, API keys, or tokens are committed in repository source code.
+See:
+- [SETUP_GUIDE.md](SETUP_GUIDE.md) — Step-by-step local setup & Super Admin creation.
+- [DEPLOYMENT_AND_BACKUP.md](DEPLOYMENT_AND_BACKUP.md) — Vercel deployment, database backups, and rollback procedures.
+- [CLOUD_SAAS_MIGRATION_AUDIT.md](CLOUD_SAAS_MIGRATION_AUDIT.md) — Technical migration audit blueprint.

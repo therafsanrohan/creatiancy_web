@@ -252,8 +252,8 @@ export default function LoginPage() {
           </form>
         )}
 
-        {/* Developer Sandbox Quick Login (Disabled in Production) */}
-        {process.env.NODE_ENV !== 'production' && (
+        {/* Developer Sandbox Quick Login (Disabled in Production & Preview) */}
+        {process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_ENABLE_DEV_SANDBOX_LOGIN === 'true' && (
           <div className="mt-8 border-t border-gray-100 pt-6">
             <div className="flex items-center justify-center space-x-2 text-xs font-semibold uppercase tracking-wider text-gray-500 mb-4">
               <Terminal className="h-3 w-3" />

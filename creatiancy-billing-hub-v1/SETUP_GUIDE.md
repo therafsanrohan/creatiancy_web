@@ -1,48 +1,90 @@
-# Setup and Development Guide
+# Creatiancy Billing Hub — Setup Guide
 
-This guide details how to set up the database and environment variables for local testing, live Supabase cloud database sync, and Vercel production deployment.
+This guide details local environment setup, database migrations, and the first Super Admin account configuration.
 
 ---
 
-## 1. Environment Configurations
+## 1. Project Directory & Environment Configuration
 
-Copy the `.env.example` file to create `.env.local`:
+Always run commands inside the application directory:
 ```bash
-cp .env.example .env.local
+cd creatiancy-billing-hub-v1
 ```
 
-Configure these parameters:
-* `NEXT_PUBLIC_SUPABASE_URL`: Found in Supabase Project Settings > API.
-* `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: Found in Supabase Project Settings > API.
-* `SUPABASE_SERVICE_ROLE_KEY`: Service role key for server-only admin actions.
-* `RESEND_API_KEY`: API key from Resend for sending invoice emails.
+### Environment Variables (`.env.local`)
+Create `.env.local` inside `creatiancy-billing-hub-v1/`:
+
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+
+# App URL
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional Local Developer Quick Login Flag (Keep false in Production)
+NEXT_PUBLIC_ENABLE_DEV_SANDBOX_LOGIN=false
+```
 
 ---
 
-## 2. Supabase Database Migration Sequence
+## 2. Database Migrations Order
 
-To deploy all SQL schemas, procedures, and RLS policies to your Supabase project, execute the migration scripts in the **SQL Editor** in this exact sequential order:
+Apply database migrations in the Supabase Dashboard **SQL Editor** in this exact order:
 
-1. `supabase/migrations/20260721000000_initial_schema.sql` (Initial tables for profiles, clients, invoices, items)
-2. `supabase/migrations/20260721000001_functions_and_policies.sql` (Invoice sequence generator and initial RLS)
-3. `supabase/migrations/20260722000000_vat_and_tax_tables.sql` (VAT registration profiles, Mushak 6.3/6.6, Tax tables)
-4. `supabase/migrations/20260723000000_company_reserve_and_savings.sql` (Company reserve, FDR, DPS, withdrawals)
-5. `supabase/migrations/20260724000000_cloud_migration_functions_and_rls.sql` (Atomic payment stored procedure & RLS)
-6. `supabase/migrations/20260725000000_fix_cloud_persistence_and_auth.sql` (Auth signup trigger and canonical roles)
-
----
-
-## 3. Legacy LocalStorage Cloud Migration Tool
-
-Super Admins can migrate existing browser data to the cloud at:
-`/billing/admin/migrate`
+1. `supabase/migrations/20260721000000_initial_schema.sql`
+2. `supabase/migrations/20260721000001_functions_and_policies.sql`
+3. `supabase/migrations/20260722000000_vat_and_tax_tables.sql`
+4. `supabase/migrations/20260723000000_company_reserve_and_savings.sql`
+5. `supabase/migrations/20260724000000_cloud_migration_functions_and_rls.sql`
+6. `supabase/migrations/20260725000000_fix_cloud_persistence_and_auth.sql`
+7. `supabase/migrations/20260726000000_fix_all_rls_recursion.sql`
+8. `supabase/migrations/20260727000000_missing_tables.sql`
+9. `supabase/migrations/20260728000000_fix_saas_cloud_persistence.sql`
 
 ---
 
-## 4. Local Verification & Build
+## 3. First Super Admin Setup Instructions
 
-Run calculation unit tests and build check:
+For non-technical project owners, follow these exact steps to create your first Super Admin account:
+
+1. Open your **Supabase Project Dashboard** (`https://supabase.com/dashboard`).
+2. Navigate to **Authentication** -> **Users**.
+3. Click **Add User** -> **Create User**.
+4. Enter your email (e.g. `owner@creatiancy.com`) and a strong password. Click **Create User**.
+5. Copy the newly created user's **User UID** (a UUID string like `e1b2c3d4-...`).
+6. Navigate to **SQL Editor** in the left menu and run this snippet (replace `<USER_UID>` and `<YOUR_EMAIL>`):
+
+```sql
+INSERT INTO public.profiles (id, full_name, email, role_name, is_active, organization_id)
+VALUES (
+    '<USER_UID>',
+    'Super Admin Owner',
+    '<YOUR_EMAIL>',
+    'super_admin',
+    true,
+    '00000000-0000-4000-8000-000000000001'
+)
+ON CONFLICT (id) DO UPDATE SET 
+    role_name = 'super_admin',
+    is_active = true;
+```
+
+7. You can now log into `https://creatiancy-web.vercel.app/login` with your email and password.
+
+---
+
+## 4. Local Development
+
 ```bash
-npx tsx tests/calculations.test.ts
-npm run build
+# Install dependencies
+npm install
+
+# Run local development server
+npm run dev
+
+# Run TypeScript typechecks
+npx tsc --noEmit
 ```

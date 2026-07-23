@@ -1,46 +1,76 @@
-# Deployment, DNS, Cloud Migration, and Backup Guidelines
+# Deployment, Backup & Rollback Guide
 
-This guide details the deployment flow to Vercel, legacy localStorage data migration, connecting `billing.creatiancy.com`, and database backups.
-
----
-
-## 1. Hosting Deployment (Vercel)
-
-To deploy the billing application to Vercel:
-
-1. In Vercel, set **Root Directory** to: `creatiancy-billing-hub-v1`
-2. Configure **Environment Variables** for Preview & Production:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-3. Click **Deploy**.
+This document details Vercel production deployment, Supabase Auth URL configuration, legacy data backup/restore, and database rollback procedures.
 
 ---
 
-## 2. Legacy LocalStorage Cloud Migration Flow
+## 1. Vercel Production Deployment
 
-To migrate existing browser `localStorage` records to Supabase PostgreSQL:
+### Project Settings
+- **GitHub Repository**: `therafsanrohan/creatiancy_web`
+- **Root Directory**: `creatiancy-billing-hub-v1`
+- **Framework Preset**: Next.js
 
-1. Sign in as a **Super Admin**.
-2. Navigate to: `/billing/admin/migrate`
-3. Click **Export JSON Backup** to save a local backup copy of existing browser storage.
-4. Click **Start Cloud Migration** to upload clients, invoices, payments, and reserve records to Supabase.
-5. Review the financial reconciliation summary and click **Clear Legacy Local Storage** once confirmed.
+### Required Vercel Environment Variables
+Set these in Vercel -> Project Settings -> **Environment Variables**:
 
----
-
-## 3. DNS Connection for billing.creatiancy.com
-
-1. In the Vercel project dashboard, navigate to **Settings > Domains**.
-2. Type `billing.creatiancy.com` and click **Add**.
-3. Add the provided CNAME record to your domain DNS settings:
-   - **Record Type**: `CNAME`
-   - **Name/Host**: `billing`
-   - **Value/Target**: `cname.vercel-dns.com`
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_key_here
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
+NEXT_PUBLIC_APP_URL=https://creatiancy-web.vercel.app
+NEXT_PUBLIC_ENABLE_DEV_SANDBOX_LOGIN=false
+```
 
 ---
 
-## 4. Supabase Backup and Recovery Guide
+## 2. Supabase Auth Redirect URLs
 
-- **Automatic Daily Backups**: Managed in Supabase Dashboard > Database > Backups.
-- **Manual Migration Backup**: Download JSON backup directly from `/billing/admin/migrate`.
+In **Supabase Dashboard** -> **Authentication** -> **URL Configuration**:
+
+- **Site URL**: `https://creatiancy-web.vercel.app`
+- **Redirect URLs**:
+  - `https://creatiancy-web.vercel.app/billing`
+  - `https://creatiancy-web.vercel.app/login`
+  - `https://creatiancy-web.vercel.app/reset-password`
+  - `http://localhost:3000/billing`
+
+---
+
+## 3. Legacy Data Export & Reconciliation
+
+If team members have historical records stored in browser `localStorage`:
+
+1. Log in as Super Admin.
+2. Navigate to **Settings** -> **Cloud Migration** (`/billing/settings/cloud-migration`).
+3. Click **Export Device JSON Backup** to save a timestamped backup JSON file.
+4. On any new device, click **Import Backup File** to validate and reconcile records into Supabase PostgreSQL.
+5. After verifying records in Supabase, type `CLEAR LEGACY DATA` to clear local browser storage.
+
+---
+
+## 4. Cross-Device Acceptance Verification
+
+To confirm cross-device cloud persistence:
+
+1. Log in on Desktop (`https://creatiancy-web.vercel.app/login`).
+2. Create a Client named `Cloud Verification Client`.
+3. Log in on Mobile with the same account.
+4. Verify `Cloud Verification Client` appears on mobile immediately.
+5. Record a BDT 100,000 payment from mobile.
+6. Verify BDT 20,000 is automatically allocated to Reserve and BDT 80,000 to Operating Cash on desktop.
+7. Clear browser storage on mobile and refresh. Verify all records remain intact in Supabase PostgreSQL.
+
+---
+
+## 5. Database Backup & Rollback Process
+
+### Manual PostgreSQL Backup
+In Supabase Dashboard -> **Database** -> **Backups**:
+- Click **Take Backup Now** prior to running major schema updates.
+
+### Rollback Process
+If a migration needs to be rolled back:
+1. Restore the latest automated point-in-time snapshot from Supabase Dashboard.
+2. Re-apply verified migration scripts up to `20260728000000_fix_saas_cloud_persistence.sql`.
