@@ -225,6 +225,10 @@ export interface Invoice {
   created_by: string;
   approved_by: string | null;
   approved_at: string | null;
+  archived_at?: string | null;
+  archived_by?: string | null;
+  archive_reason?: string | null;
+  total_payable?: number;
   created_at: string;
   updated_at: string;
 }
@@ -1751,13 +1755,121 @@ export const db = {
     if (isSupabaseConfigured && supabase) {
       try {
         const { data, error } = await supabase.from('invoices').select('*').order('created_at', { ascending: false });
-        if (!error && data && data.length > 0) {
-          localStore.invoices = data;
+        if (!error && data) {
           return data;
         }
       } catch (e: any) { throw new Error(e.message || String(e)); }
     }
     return localStore.invoices;
+  },
+
+  getInvoicesPaginated: async (options: {
+    page?: number;
+    limit?: number;
+    sort?: string;
+    preset?: 'active' | 'void' | 'archived' | 'all';
+    status?: string;
+    currency?: string;
+    entityId?: string;
+    clientId?: string;
+    search?: string;
+  } = {}): Promise<{ invoices: Invoice[]; total: number; page: number; totalPages: number }> => {
+    const page = options.page || 1;
+    const limit = options.limit || 20;
+    const offset = (page - 1) * limit;
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        let query = supabase.from('invoices').select('*', { count: 'exact' });
+
+        const preset = options.preset || 'active';
+        if (preset === 'active') {
+          query = query.is('archived_at', null);
+        } else if (preset === 'void') {
+          query = query.eq('status', 'void').is('archived_at', null);
+        } else if (preset === 'archived') {
+          query = query.not('archived_at', 'is', null);
+        }
+
+        if (options.status && options.status !== 'all') {
+          query = query.eq('status', options.status);
+        }
+
+        if (options.currency && options.currency !== 'all') {
+          query = query.eq('currency', options.currency);
+        }
+
+        if (options.entityId && options.entityId !== 'all') {
+          query = query.eq('entity_id', options.entityId);
+        }
+
+        if (options.clientId && options.clientId !== 'all') {
+          query = query.eq('client_id', options.clientId);
+        }
+
+        if (options.search && options.search.trim()) {
+          const s = options.search.trim();
+          query = query.or(`invoice_number.ilike.%${s}%,project_name.ilike.%${s}%,reference_number.ilike.%${s}%`);
+        }
+
+        const sort = options.sort || 'latest_created';
+        switch (sort) {
+          case 'latest_created':
+            query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
+            break;
+          case 'oldest_created':
+            query = query.order('created_at', { ascending: true }).order('id', { ascending: true });
+            break;
+          case 'latest_issued':
+            query = query.order('issue_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+            break;
+          case 'oldest_issued':
+            query = query.order('issue_date', { ascending: true, nullsFirst: false }).order('created_at', { ascending: true });
+            break;
+          case 'due_soonest':
+            query = query.order('due_date', { ascending: true, nullsFirst: false });
+            break;
+          case 'due_latest':
+            query = query.order('due_date', { ascending: false, nullsFirst: false });
+            break;
+          case 'highest_amount':
+            query = query.order('total_payable', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+            break;
+          case 'lowest_amount':
+            query = query.order('total_payable', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
+            break;
+          case 'recently_updated':
+            query = query.order('updated_at', { ascending: false }).order('id', { ascending: false });
+            break;
+          default:
+            query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
+            break;
+        }
+
+        query = query.range(offset, offset + limit - 1);
+
+        const { data, error, count } = await query;
+        if (!error && data) {
+          const total = count || 0;
+          return {
+            invoices: data,
+            total,
+            page,
+            totalPages: Math.ceil(total / limit) || 1,
+          };
+        }
+      } catch (e: any) {
+        console.error('getInvoicesPaginated error:', e);
+      }
+    }
+
+    const list = [...localStore.invoices];
+    return {
+      invoices: list.slice(offset, offset + limit),
+      total: list.length,
+      page: 1,
+      totalPages: 1
+    };
   },
 
   getInvoiceById: async (id: string): Promise<Invoice | undefined> => {
@@ -2186,6 +2298,126 @@ export const db = {
     const user = await db.getCurrentUser();
     db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'void_invoice', 'invoices', id, { status: originalStatus }, { status: 'void' });
     return inv;
+  },
+
+  archiveInvoice: async (id: string, reason?: string): Promise<{ success: boolean; message: string }> => {
+    const user = await db.getCurrentUser();
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.rpc('archive_invoice', {
+        p_invoice_id: id,
+        p_reason: reason || null,
+        p_user_id: user?.id || null
+      });
+      if (error) {
+        // Fallback update
+        const { error: updateErr } = await supabase
+          .from('invoices')
+          .update({
+            archived_at: new Date().toISOString(),
+            archived_by: user?.id || null,
+            archive_reason: reason || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+        if (updateErr) throw new Error(`Archive invoice failed: ${updateErr.message}`);
+        db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'invoice_archived', 'invoices', id, null, { archived_at: new Date().toISOString(), reason });
+        return { success: true, message: 'Invoice archived successfully.' };
+      }
+      return data;
+    }
+    const inv = localStore.invoices.find(i => i.id === id);
+    if (inv) {
+      inv.archived_at = new Date().toISOString();
+      inv.archived_by = user?.id || null;
+      inv.archive_reason = reason || null;
+    }
+    return { success: true, message: 'Invoice archived locally.' };
+  },
+
+  restoreArchivedInvoice: async (id: string): Promise<{ success: boolean; message: string }> => {
+    const user = await db.getCurrentUser();
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.rpc('restore_archived_invoice', {
+        p_invoice_id: id,
+        p_user_id: user?.id || null
+      });
+      if (error) {
+        const { error: updateErr } = await supabase
+          .from('invoices')
+          .update({
+            archived_at: null,
+            archived_by: null,
+            archive_reason: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+        if (updateErr) throw new Error(`Restore archived invoice failed: ${updateErr.message}`);
+        db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'invoice_restored', 'invoices', id, null, { restored_at: new Date().toISOString() });
+        return { success: true, message: 'Archived invoice restored successfully.' };
+      }
+      return data;
+    }
+    const inv = localStore.invoices.find(i => i.id === id);
+    if (inv) {
+      inv.archived_at = null;
+      inv.archived_by = null;
+      inv.archive_reason = null;
+    }
+    return { success: true, message: 'Archived invoice restored locally.' };
+  },
+
+  checkVoidInvoiceEligibility: async (id: string): Promise<{
+    eligible: boolean;
+    reasons: string[];
+    invoice_number?: string;
+    client_name?: string;
+    total_amount?: number;
+    currency?: string;
+    void_date?: string;
+  }> => {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.rpc('check_void_invoice_delete_eligibility', { p_invoice_id: id });
+      if (!error && data) {
+        return data;
+      }
+    }
+    const inv = await db.getInvoiceById(id);
+    if (!inv) return { eligible: false, reasons: ['Invoice not found'] };
+    if (inv.status !== 'void') return { eligible: false, reasons: [`Status is ${inv.status}, must be void`] };
+    const payments = await db.getPaymentsForInvoice(id);
+    if (payments.length > 0) return { eligible: false, reasons: [`Invoice has ${payments.length} payment records`] };
+    const client = inv.client_id ? await db.getClientById(inv.client_id) : null;
+    return {
+      eligible: true,
+      reasons: [],
+      invoice_number: inv.invoice_number || 'DRAFT',
+      client_name: client ? (client.company_name || client.contact_person) : 'Client',
+      total_amount: inv.total_payable || 0,
+      currency: inv.currency,
+      void_date: inv.updated_at || inv.created_at
+    };
+  },
+
+  permanentlyDeleteVoidInvoice: async (id: string, reason: string): Promise<{ success: boolean; message: string }> => {
+    const user = await db.getCurrentUser();
+    if (!user || user.role_name !== 'Super Admin') {
+      throw new Error('Only Super Admin can permanently delete void invoices.');
+    }
+    if (!reason || !reason.trim()) {
+      throw new Error('A deletion reason is required for permanent deletion.');
+    }
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase.rpc('permanently_delete_void_invoice', {
+        p_invoice_id: id,
+        p_reason: reason.trim(),
+        p_user_id: user.id
+      });
+      if (error) {
+        throw new Error(error.message || 'Permanent deletion failed server-side.');
+      }
+      return data;
+    }
+    throw new Error('Permanent deletion is only supported when connected to Supabase.');
   },
 
   // Payment Actions

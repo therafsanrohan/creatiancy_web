@@ -12,9 +12,9 @@
 }
 
 .dark {
-  --bg: #FBFDF9;      /* Lotion */
-  --text: #1E1E1E;    /* Eerie Black */
-  --ruby-red: #9B1C22; /* Ruby Red Accent */
+  --bg: #FBFDF9;
+  --text: #1E1E1E;
+  --ruby-red: #9B1C22;
   --accent: #9B1C22;
   --muted: #EAEAEA;
   --muted-fg: #666666;
@@ -78,7 +78,7 @@
   background: var(--muted-fg);
 }
 
-/* Print CSS to isolate invoice and remove everything else */
+/* Print CSS to isolate invoice document and remove shell UI */
 @page {
   size: A4 portrait;
   margin: 6mm;
@@ -145,31 +145,8 @@
     display: none !important;
   }
 
-  /* Ensure correct colors on prints */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
-
-  /* Print watermark overlay */
-  .print-watermark {
-    display: block !important;
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%) rotate(-35deg);
-    font-size: 3.5rem;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    color: rgba(155, 28, 34, 0.04) !important;
-    text-transform: uppercase;
-    white-space: nowrap;
-    z-index: 0;
-    pointer-events: none;
-    user-select: none;
-  }
-}
-
-.print-watermark {
-  display: none;
 }
