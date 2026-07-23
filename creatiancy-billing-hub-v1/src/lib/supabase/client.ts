@@ -1,4 +1,5 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { getPublicSupabaseConfig } from './config';
 
 let browserClient: ReturnType<typeof createBrowserClient> | undefined;
 
@@ -7,14 +8,8 @@ export function createClient() {
     return browserClient;
   }
 
-  const supabaseUrl =
-    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nefnjnngviaywjteduhm.supabase.co';
-  const supabaseAnonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    'sb_publishable_WwFaeFNaO5DRUGYa3FXWDw_SnsvbW9V';
-
-  browserClient = createBrowserClient(supabaseUrl, supabaseAnonKey);
+  const { supabaseUrl, publishableKey } = getPublicSupabaseConfig();
+  browserClient = createBrowserClient(supabaseUrl, publishableKey);
   return browserClient;
 }
 

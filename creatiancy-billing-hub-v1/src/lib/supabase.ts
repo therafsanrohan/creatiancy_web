@@ -1,14 +1,19 @@
 import { createBrowserClient } from '@supabase/ssr';
+import { getPublicSupabaseConfig } from './supabase/config';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://nefnjnngviaywjteduhm.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_WwFaeFNaO5DRUGYa3FXWDw_SnsvbW9V';
+let isConfigured = false;
+let client: ReturnType<typeof createBrowserClient> | null = null;
 
-export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
-  supabaseUrl !== 'https://your-project-id.supabase.co' &&
-  supabaseAnonKey
-);
+try {
+  const { supabaseUrl, publishableKey } = getPublicSupabaseConfig();
+  if (supabaseUrl && publishableKey) {
+    client = createBrowserClient(supabaseUrl, publishableKey);
+    isConfigured = true;
+  }
+} catch {
+  isConfigured = false;
+  client = null;
+}
 
-export const supabase = isSupabaseConfigured
-  ? createBrowserClient(supabaseUrl, supabaseAnonKey)
-  : null;
+export const isSupabaseConfigured = isConfigured;
+export const supabase = client;
