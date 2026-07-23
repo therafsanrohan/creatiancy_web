@@ -3137,9 +3137,10 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
+      const canonicalEntity = newEntry.currency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111';
       const payload = {
         ...newEntry,
-        entity_id: sanitizeUUID(newEntry.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        entity_id: sanitizeUUID(newEntry.entity_id) || canonicalEntity,
         payment_id: sanitizeUUID(newEntry.payment_id),
         invoice_id: sanitizeUUID(newEntry.invoice_id),
         client_id: sanitizeUUID(newEntry.client_id)
@@ -3184,9 +3185,10 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
+      const canonicalEntity = newFdr.currency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111';
       const payload = {
         ...newFdr,
-        entity_id: sanitizeUUID(newFdr.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        entity_id: sanitizeUUID(newFdr.entity_id) || canonicalEntity,
         created_by: sanitizeUUID(user?.id) || user?.full_name || 'User'
       };
       const { error } = await supabase.from('fdr_accounts').insert(payload);
@@ -3384,9 +3386,10 @@ export const db = {
     }
 
     if (isSupabaseConfigured && supabase) {
+      const canonicalEntity = newDps.currency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111';
       const dpsPayload = {
         ...newDps,
-        entity_id: sanitizeUUID(newDps.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        entity_id: sanitizeUUID(newDps.entity_id) || canonicalEntity,
         created_by: sanitizeUUID(user?.id) || user?.full_name || 'User'
       };
       const { error: dpsErr } = await supabase.from('dps_accounts').insert(dpsPayload);
@@ -3620,9 +3623,10 @@ export const db = {
     };
     
     if (isSupabaseConfigured && supabase) {
+      const canonicalEntity = newReq.currency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111';
       const payload = {
         ...newReq,
-        entity_id: sanitizeUUID(newReq.entity_id) || 'a0000070-0000-4000-8000-000000000001',
+        entity_id: sanitizeUUID(newReq.entity_id) || canonicalEntity,
         requested_by: sanitizeUUID(newReq.requested_by) || sanitizeUUID(user?.id) || user?.full_name || 'User',
         approved_by: sanitizeUUID(newReq.approved_by)
       };
@@ -3817,13 +3821,13 @@ export const db = {
 
   // Reserve Dashboard Aggregated Summary Engine
   getReserveDashboardSummary: async (entityFilter?: string, currencyFilter?: 'BDT' | 'USD') => {
-    const settings = localStore.reserveSettings;
-    const ledger = localStore.reserveLedger;
-    const fdrs = localStore.fdrAccounts;
-    const dpsList = localStore.dpsAccounts;
-    const installments = localStore.dpsInstallments;
-    const expenses = localStore.expenses;
-    const payments = localStore.payments;
+    const settings = await db.getReserveSettings();
+    const ledger = await db.getReserveLedger();
+    const fdrs = await db.getFdrAccounts();
+    const dpsList = await db.getDpsAccounts();
+    const installments = await db.getDpsInstallments();
+    const expenses = await db.getExpenses();
+    const payments = await db.getPayments();
 
     // Filter by entity & currency
     const filteredLedger = ledger.filter(l => {

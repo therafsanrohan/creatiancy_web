@@ -230,6 +230,70 @@ export default function ReserveManagementPage() {
     );
   }
 
+  // Modal Open Helpers (Syncing Currency and Entity ID)
+  const openManualDepositModal = () => {
+    const defaultEntity = entities.find(e => e.entity_code === (selectedCurrency === 'USD' ? 'CLLC' : 'CLTD'))?.id || (selectedCurrency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111');
+    setManualDepositForm({
+      entity_id: defaultEntity,
+      currency: selectedCurrency,
+      amount: selectedCurrency === 'USD' ? 1000 : 100000,
+      source: 'BANK_TRANSFER',
+      reason: 'Corporate reserve deposit'
+    });
+    setModalType('manual_deposit');
+  };
+
+  const openCreateFdrModal = () => {
+    const defaultEntity = entities.find(e => e.entity_code === (selectedCurrency === 'USD' ? 'CLLC' : 'CLTD'))?.id || (selectedCurrency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111');
+    setFdrForm({
+      entity_id: defaultEntity,
+      bank_name: selectedCurrency === 'USD' ? 'JP Morgan Chase / Standard Chartered' : 'City Bank PLC',
+      branch_name: 'Corporate Branch',
+      account_title: `Creatiancy Corporate ${selectedCurrency} Reserve FDR`,
+      fdr_reference_number: `FDR-${selectedCurrency}-${Date.now().toString().slice(-4)}`,
+      principal_amount: selectedCurrency === 'USD' ? 5000 : 500000,
+      currency: selectedCurrency,
+      interest_rate: selectedCurrency === 'USD' ? 5.5 : 8.5,
+      tenure_months: 12,
+      auto_renewal: true,
+      funding_source: 'Company Emergency Reserve',
+      notes: 'Fixed deposit asset for corporate reserve yield.'
+    });
+    setModalType('create_fdr');
+  };
+
+  const openCreateDpsModal = () => {
+    const defaultEntity = entities.find(e => e.entity_code === (selectedCurrency === 'USD' ? 'CLLC' : 'CLTD'))?.id || (selectedCurrency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111');
+    setDpsForm({
+      entity_id: defaultEntity,
+      bank_name: selectedCurrency === 'USD' ? 'Citibank / HSBC' : 'BRAC Bank PLC',
+      branch_name: 'Corporate Branch',
+      account_title: `Creatiancy Corporate ${selectedCurrency} DPS`,
+      dps_account_number: `DPS-${selectedCurrency}-${Date.now().toString().slice(-4)}`,
+      currency: selectedCurrency,
+      installment_amount: selectedCurrency === 'USD' ? 250 : 25000,
+      total_installments: 36,
+      start_date: new Date().toISOString().split('T')[0],
+      funding_source: 'Company Emergency Reserve',
+      notes: 'Monthly corporate DPS investment scheme.'
+    });
+    setModalType('create_dps');
+  };
+
+  const openRequestWithdrawalModal = () => {
+    const defaultEntity = entities.find(e => e.entity_code === (selectedCurrency === 'USD' ? 'CLLC' : 'CLTD'))?.id || (selectedCurrency === 'USD' ? '22222222-2222-2222-2222-222222222222' : '11111111-1111-1111-1111-111111111111');
+    setWithdrawalForm({
+      entity_id: defaultEntity,
+      currency: selectedCurrency,
+      requested_amount: selectedCurrency === 'USD' ? 1000 : 100000,
+      purpose: 'Emergency Server Infrastructure Upgrade',
+      detailed_reason: 'Unforeseen cloud hardware replacement needed immediately.',
+      emergency_category: 'EMERGENCY_OPERATIONS' as any,
+      destination_account: selectedCurrency === 'USD' ? 'Creatiancy LLC USD Operating Account' : 'City Bank BDT Operating Account'
+    });
+    setModalType('request_withdrawal');
+  };
+
   // Action Handlers
   const handleCreateManualDeposit = async () => {
     if (!currentUser) return;
@@ -616,7 +680,7 @@ export default function ReserveManagementPage() {
           </div>
 
           <button
-            onClick={() => setModalType('manual_deposit')}
+            onClick={openManualDepositModal}
             className="flex items-center space-x-1.5 bg-[#9B1C22] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition shadow-xs cursor-pointer"
           >
             <Plus className="h-4 w-4" />
@@ -917,7 +981,7 @@ export default function ReserveManagementPage() {
               <p className="text-xs text-gray-500">Create, manage, edit, and track corporate FDR assets and maturity proceeds.</p>
             </div>
             <button
-              onClick={() => setModalType('create_fdr')}
+              onClick={openCreateFdrModal}
               className="flex items-center space-x-1.5 bg-[#9B1C22] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer"
             >
               <Plus className="h-4 w-4" />
@@ -933,7 +997,7 @@ export default function ReserveManagementPage() {
                 No fixed deposit receipts are currently active. Click below to add a new corporate FDR asset.
               </p>
               <button
-                onClick={() => setModalType('create_fdr')}
+                onClick={openCreateFdrModal}
                 className="inline-flex items-center space-x-1.5 bg-[#9B1C22] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer mt-2"
               >
                 <Plus className="h-4 w-4" />
@@ -1034,7 +1098,7 @@ export default function ReserveManagementPage() {
               <p className="text-xs text-gray-500">Manage monthly DPS accounts, pay installments with instant ledger updates, edit or delete schemes.</p>
             </div>
             <button
-              onClick={() => setModalType('create_dps')}
+              onClick={openCreateDpsModal}
               className="flex items-center space-x-1.5 bg-[#9B1C22] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer"
             >
               <Plus className="h-4 w-4" />
@@ -1050,7 +1114,7 @@ export default function ReserveManagementPage() {
                 No corporate DPS savings accounts are currently created. Click below to start a new DPS scheme.
               </p>
               <button
-                onClick={() => setModalType('create_dps')}
+                onClick={openCreateDpsModal}
                 className="inline-flex items-center space-x-1.5 bg-[#9B1C22] text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer mt-2"
               >
                 <Plus className="h-4 w-4" />
@@ -1172,7 +1236,7 @@ export default function ReserveManagementPage() {
               <p className="text-xs text-gray-500">Formal multi-step approval before releasing emergency reserve funds.</p>
             </div>
             <button
-              onClick={() => setModalType('request_withdrawal')}
+              onClick={openRequestWithdrawalModal}
               className="flex items-center space-x-1.5 bg-[#9B1C22] text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] transition cursor-pointer"
             >
               <Plus className="h-4 w-4" />
