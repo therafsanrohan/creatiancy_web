@@ -95,7 +95,7 @@ export default function TaxLedgerPage() {
   const [vcfgSummary, setVcfgSummary] = useState('Updated VAT service category rules');
   const [publishVatToNotice, setPublishVatToNotice] = useState(true);
 
-  // VAT Registration Profile Editor Modal
+  // VAT & Income Tax Registration Profile Editor Modal
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profBusinessName, setProfBusinessName] = useState('');
   const [profBin, setProfBin] = useState('');
@@ -105,6 +105,11 @@ export default function TaxLedgerPage() {
   const [profAddress, setProfAddress] = useState('');
   const [profEffectiveDate, setProfEffectiveDate] = useState('');
   const [profReturnFreq, setProfReturnFreq] = useState<VatRegistrationProfile['default_return_frequency']>('MONTHLY');
+  const [profTin, setProfTin] = useState('');
+  const [profTaxZone, setProfTaxZone] = useState('');
+  const [profTaxCircle, setProfTaxCircle] = useState('');
+  const [profTaxAssessmentYear, setProfTaxAssessmentYear] = useState('');
+  const [profCorporateTaxRate, setProfCorporateTaxRate] = useState('30.00');
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [showDocModal, setShowDocModal] = useState(false);
@@ -145,6 +150,11 @@ export default function TaxLedgerPage() {
     setProfAddress(vatProfile?.registered_address || '');
     setProfEffectiveDate(vatProfile?.registration_effective_date || '');
     setProfReturnFreq(vatProfile?.default_return_frequency || 'MONTHLY');
+    setProfTin(vatProfile?.tin_number || '');
+    setProfTaxZone(vatProfile?.tax_zone || '');
+    setProfTaxCircle(vatProfile?.tax_circle || '');
+    setProfTaxAssessmentYear(vatProfile?.tax_assessment_year || '2025-2026');
+    setProfCorporateTaxRate((vatProfile?.corporate_tax_rate ?? 30.0).toString());
     setShowProfileModal(true);
   };
 
@@ -165,13 +175,18 @@ export default function TaxLedgerPage() {
         registered_address: profAddress,
         registration_effective_date: profEffectiveDate,
         default_return_frequency: profReturnFreq,
+        tin_number: profTin.trim(),
+        tax_zone: profTaxZone.trim(),
+        tax_circle: profTaxCircle.trim(),
+        tax_assessment_year: profTaxAssessmentYear.trim(),
+        corporate_tax_rate: parseFloat(profCorporateTaxRate) || 30.0,
         status: 'ACTIVE'
       }, currentUser);
       setVatProfile(updated);
       setShowProfileModal(false);
-      showNotif('VAT Profile Updated', `BIN ${updated.bin_number} — ${updated.vat_circle}, ${updated.vat_division} saved successfully.`, 'success');
+      showNotif('Tax Profile Updated', `BIN ${updated.bin_number} & TIN ${updated.tin_number || 'N/A'} saved successfully.`, 'success');
     } catch (e) {
-      showNotif('Error', 'Failed to save VAT registration profile.', 'error');
+      showNotif('Error', 'Failed to save Tax registration profile.', 'error');
     } finally {
       setSavingProfile(false);
     }
@@ -594,11 +609,11 @@ export default function TaxLedgerPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-2xs space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold uppercase tracking-wider text-gray-400 text-[10px]">VAT Registration Profile</span>
+                  <span className="font-extrabold uppercase tracking-wider text-gray-400 text-[10px]">Tax & VAT Profile</span>
                   {canManageTax && (
                     <button
                       onClick={openProfileModal}
-                      title="Edit VAT Registration Profile"
+                      title="Edit Tax & VAT Registration Profile"
                       className="flex items-center gap-1 text-[10px] font-bold text-[#9B1C22] bg-red-50 border border-red-100 hover:bg-red-100 px-2 py-0.5 rounded-lg transition cursor-pointer"
                     >
                       <Pencil className="h-3 w-3" /> Edit Profile
@@ -606,9 +621,9 @@ export default function TaxLedgerPage() {
                   )}
                 </div>
                 <p className="font-extrabold text-gray-900 text-sm">{vatProfile?.business_name || '—'}</p>
-                <p className="text-gray-600">BIN: <strong className="font-mono text-gray-900">{vatProfile?.bin_number || 'Not Configured'}</strong></p>
-                <p className="text-gray-500">{vatProfile?.vat_circle || '—'} · {vatProfile?.vat_division || '—'}</p>
-                <p className="text-gray-400 text-[10px]">Effective: {vatProfile?.registration_effective_date || '—'} · {vatProfile?.default_return_frequency} Returns</p>
+                <p className="text-gray-600 text-[11px]">BIN: <strong className="font-mono text-gray-900">{vatProfile?.bin_number || 'Not Configured'}</strong> · TIN: <strong className="font-mono text-gray-900">{vatProfile?.tin_number || 'Not Configured'}</strong></p>
+                <p className="text-gray-500 text-[11px]">VAT Circle: {vatProfile?.vat_circle || '—'} · Tax Zone: {vatProfile?.tax_zone || '—'} (Circle {vatProfile?.tax_circle || '—'})</p>
+                <p className="text-gray-400 text-[10px]">Assessment: {vatProfile?.tax_assessment_year || '2025-2026'} · Corporate Tax Rate: {vatProfile?.corporate_tax_rate ?? 30.0}%</p>
                 <span className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
                   vatProfile?.bin_status === 'VAT_REGISTERED' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                   vatProfile?.bin_status === 'SUSPENDED' ? 'bg-red-50 text-red-700 border-red-200' :
@@ -1306,7 +1321,70 @@ export default function TaxLedgerPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              {/* Tax & TIN Details */}
+              <div className="border-t border-gray-100 pt-3">
+                <h4 className="font-extrabold text-gray-900 text-xs mb-3 flex items-center gap-1.5">
+                  <ShieldCheck className="h-4 w-4 text-[#9B1C22]" /> Income Tax & TIN Configuration
+                </h4>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">TIN Number (Taxpayer ID)</label>
+                    <input
+                      type="text"
+                      value={profTin}
+                      onChange={e => setProfTin(e.target.value)}
+                      placeholder="e.g. 123456789012"
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-mono text-gray-900 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Tax Assessment Year</label>
+                    <input
+                      type="text"
+                      value={profTaxAssessmentYear}
+                      onChange={e => setProfTaxAssessmentYear(e.target.value)}
+                      placeholder="e.g. 2025-2026"
+                      className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-gray-900 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Tax Zone (NBR)</label>
+                    <input
+                      type="text"
+                      value={profTaxZone}
+                      onChange={e => setProfTaxZone(e.target.value)}
+                      placeholder="e.g. Zone 15, Dhaka"
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-gray-900 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Tax Circle (NBR)</label>
+                    <input
+                      type="text"
+                      value={profTaxCircle}
+                      onChange={e => setProfTaxCircle(e.target.value)}
+                      placeholder="e.g. Circle 320"
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-gray-900 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Tax Rate (%)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={profCorporateTaxRate}
+                      onChange={e => setProfCorporateTaxRate(e.target.value)}
+                      placeholder="30.00"
+                      className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-gray-900 focus:outline-none font-bold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 border-t border-gray-100 pt-3">
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">VAT Circle (NBR)</label>
                   <input

@@ -111,6 +111,12 @@ export interface Expense {
   input_credit_status?: 'ELIGIBLE_INPUT_CREDIT' | 'PARTIALLY_ELIGIBLE' | 'INELIGIBLE' | 'CLAIMED' | 'REJECTED';
   verification_status?: 'PENDING' | 'APPROVED' | 'REJECTED';
   tax_period?: string;
+  deletion_status?: 'ACTIVE' | 'DELETION_PENDING' | 'ARCHIVED';
+  deletion_reason?: string;
+  deletion_requested_by?: string;
+  deletion_requested_at?: string;
+  deletion_approved_by?: string;
+  deletion_approved_at?: string;
   created_at: string;
 }
 
@@ -476,6 +482,11 @@ export interface VatRegistrationProfile {
   registered_address: string;
   default_return_frequency: 'MONTHLY' | 'QUARTERLY' | 'FOUR_MONTHLY' | 'ANNUAL';
   default_currency: 'BDT';
+  tin_number?: string;
+  tax_zone?: string;
+  tax_circle?: string;
+  tax_assessment_year?: string;
+  corporate_tax_rate?: number;
   status: 'ACTIVE' | 'INACTIVE';
   updated_at: string;
 }
@@ -1475,6 +1486,10 @@ export const db = {
   },
 
   updateProfileRole: async (userId: string, newRole: Profile['role_name']): Promise<Profile> => {
+    const user = await db.getCurrentUser();
+    if (newRole === 'Super Admin' && user?.role_name !== 'Super Admin') {
+      throw new Error('Only Super Admins have permission to assign the Super Admin role.');
+    }
     // 1. Update Supabase cloud if connected
     if (isSupabaseConfigured && supabase) {
       const { error } = await supabase
@@ -1490,14 +1505,21 @@ export const db = {
     const oldRole = list[idx].role_name;
     list[idx].role_name = newRole;
     localStore.profiles = list;
-    const user = await db.getCurrentUser();
     db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'change_user_role', 'users', userId, { role: oldRole }, { role: newRole });
     return list[idx];
   },
 
   deleteProfile: async (userId: string): Promise<void> => {
+    const targetProfile = localStore.profiles.find(p => p.id === userId);
+    if (targetProfile?.role_name === 'Super Admin') {
+      throw new Error('Super Admin accounts are permanently protected and cannot be deleted.');
+    }
     // 1. Delete from Supabase cloud if connected
     if (isSupabaseConfigured && supabase) {
+      const { data: cloudProf } = await supabase.from('profiles').select('role_name').eq('id', userId).maybeSingle();
+      if (cloudProf?.role_name === 'Super Admin') {
+        throw new Error('Super Admin accounts are permanently protected and cannot be deleted.');
+      }
       const { error } = await supabase
         .from('profiles')
         .delete()
@@ -2850,13 +2872,166 @@ export const db = {
     return newExpense;
   },
 
-  deleteExpense: async (id: string): Promise<void> => {
-    if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from('expenses').delete().eq('id', id);
-      if (error) throw new Error(`Cloud expense delete failed: ${error.message}`);
+  requestExpenseDeletion: async (id: string, reason: string, user: Profile): Promise<Expense> => {
+    if (!reason || !reason.trim()) {
+      throw new Error('A reason for deletion is mandatory.');
     }
-    const list = localStore.expenses.filter(e => e.id !== id);
+    const list = localStore.expenses;
+    const idx = list.findIndex(e => e.id === id);
+    if (idx === -1) throw new Error('Expense record not found.');
+
+    const targetExpense = list[idx];
+    const nowStr = new Date().toISOString();
+    const isSuperAdmin = user.role_name === 'Super Admin';
+    const newStatus = isSuperAdmin ? 'ARCHIVED' : 'DELETION_PENDING';
+
+    const updates = {
+      deletion_status: newStatus as any,
+      deletion_reason: reason.trim(),
+      deletion_requested_by: user.id,
+      deletion_requested_at: nowStr,
+      ...(isSuperAdmin ? { deletion_approved_by: user.id, deletion_approved_at: nowStr } : {})
+    };
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { error } = await supabase.from('expenses').update({
+          deletion_status: newStatus,
+          deletion_reason: reason.trim(),
+          deletion_requested_by: sanitizeUUID(user.id) || null,
+          deletion_requested_at: nowStr,
+          ...(isSuperAdmin ? { deletion_approved_by: sanitizeUUID(user.id) || null, deletion_approved_at: nowStr } : {})
+        }).eq('id', id);
+        if (error) {
+          console.warn('Cloud expense deletion update warning (migration may be required):', error.message);
+        }
+      } catch (err: any) {
+        console.warn('Cloud expense deletion update warning:', err.message);
+      }
+    }
+
+    const updatedExpense = { ...targetExpense, ...updates };
+    list[idx] = updatedExpense;
     localStore.expenses = list;
+
+    await db.logFinancialAudit({
+      user_id: user.id,
+      user_role: user.role_name,
+      action: isSuperAdmin ? 'ARCHIVE_EXPENSE' : 'REQUEST_EXPENSE_DELETION',
+      module: 'EXPENSES',
+      record_id: id,
+      previous_value: targetExpense,
+      new_value: {
+        deletion_status: newStatus,
+        deletion_reason: reason.trim(),
+        deletion_requested_by: user.full_name,
+        deletion_requested_at: nowStr
+      }
+    });
+
+    if (!isSuperAdmin) {
+      await db.notifyAction({
+        sender_name: user.full_name,
+        sender_role: user.role_name,
+        title: `Expense Deletion Request: ${targetExpense.currency === 'BDT' ? '৳' : '$'}${targetExpense.amount.toLocaleString()}`,
+        message: `Expense deletion requested by ${user.full_name} (${user.role_name}) for vendor "${targetExpense.vendor}". Reason: ${reason.trim()}`,
+        category: 'approval_required',
+        target_roles: ['Super Admin'],
+        link_url: `/billing/expenses`
+      });
+    }
+
+    return updatedExpense;
+  },
+
+  approveExpenseDeletion: async (id: string, action: 'APPROVE_DELETE' | 'REJECT_RESTORE', user: Profile, adminNotes?: string): Promise<void> => {
+    if (user.role_name !== 'Super Admin') {
+      throw new Error('Only Super Admin can approve or reject expense deletion requests.');
+    }
+    const list = localStore.expenses;
+    const idx = list.findIndex(e => e.id === id);
+    if (idx === -1) throw new Error('Expense record not found.');
+
+    const targetExpense = list[idx];
+    const nowStr = new Date().toISOString();
+
+    if (action === 'APPROVE_DELETE') {
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.from('expenses').delete().eq('id', id);
+        if (error) console.warn('Cloud expense permanent deletion warning:', error.message);
+      }
+      localStore.expenses = list.filter(e => e.id !== id);
+
+      await db.logFinancialAudit({
+        user_id: user.id,
+        user_role: user.role_name,
+        action: 'PERMANENTLY_DELETE_EXPENSE',
+        module: 'EXPENSES',
+        record_id: id,
+        previous_value: targetExpense,
+        new_value: { status: 'PERMANENTLY_DELETED', admin_notes: adminNotes || 'Approved deletion request' }
+      });
+    } else {
+      const updates = {
+        deletion_status: 'ACTIVE' as const,
+        deletion_reason: undefined,
+        deletion_requested_by: undefined,
+        deletion_requested_at: undefined
+      };
+
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { error } = await supabase.from('expenses').update({
+            deletion_status: 'ACTIVE',
+            deletion_reason: null,
+            deletion_requested_by: null,
+            deletion_requested_at: null
+          }).eq('id', id);
+          if (error) console.warn('Cloud expense restore warning:', error.message);
+        } catch (e: any) {
+          console.warn('Cloud expense restore error:', e.message);
+        }
+      }
+
+      list[idx] = { ...targetExpense, ...updates };
+      localStore.expenses = list;
+
+      await db.logFinancialAudit({
+        user_id: user.id,
+        user_role: user.role_name,
+        action: 'REJECT_EXPENSE_DELETION',
+        module: 'EXPENSES',
+        record_id: id,
+        previous_value: targetExpense,
+        new_value: { status: 'ACTIVE', admin_notes: adminNotes || 'Rejected deletion request and restored expense' }
+      });
+    }
+  },
+
+  deleteExpense: async (id: string, reason?: string, user?: Profile): Promise<void> => {
+    const activeUser = user || (await db.getCurrentUser());
+    if (!activeUser) throw new Error('Authentication required.');
+
+    if (activeUser.role_name === 'Super Admin') {
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.from('expenses').delete().eq('id', id);
+        if (error) throw new Error(`Cloud expense delete failed: ${error.message}`);
+      }
+      const prevExpense = localStore.expenses.find(e => e.id === id);
+      localStore.expenses = localStore.expenses.filter(e => e.id !== id);
+
+      await db.logFinancialAudit({
+        user_id: activeUser.id,
+        user_role: activeUser.role_name,
+        action: 'PERMANENTLY_DELETE_EXPENSE',
+        module: 'EXPENSES',
+        record_id: id,
+        previous_value: prevExpense,
+        new_value: { reason: reason || 'Direct Super Admin deletion' }
+      });
+    } else {
+      await db.requestExpenseDeletion(id, reason || 'Deletion requested by team member', activeUser);
+    }
   },
 
   recordPayment: async (payment: Omit<Payment, 'id' | 'receipt_number' | 'created_at'>): Promise<Payment> => {

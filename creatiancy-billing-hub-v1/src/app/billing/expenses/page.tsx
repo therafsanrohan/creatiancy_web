@@ -129,9 +129,13 @@ export default function ExpensesPage() {
     return { totalInvoiced, grossCollected, vatCollected, netIncomingRevenue };
   };
 
-  // Filter expenses
-  const filteredExpenses = expenses.filter(e => e.currency === currencyTab && matchesFilter(e.expense_date));
-  const totalExpenses = filteredExpenses.reduce((s, e) => s + e.amount, 0);
+  // Filter expenses (separate active from pending deletion / archive)
+  const baseFilteredExpenses = expenses.filter(e => e.currency === currencyTab && matchesFilter(e.expense_date));
+  const activeExpensesList = baseFilteredExpenses.filter(e => !e.deletion_status || e.deletion_status === 'ACTIVE');
+  const pendingDeletionExpensesList = baseFilteredExpenses.filter(e => e.deletion_status === 'DELETION_PENDING' || e.deletion_status === 'ARCHIVED');
+  const filteredExpenses = tabFilter === 'active' ? activeExpensesList : pendingDeletionExpensesList;
+
+  const totalExpenses = activeExpensesList.reduce((s, e) => s + e.amount, 0);
   const { totalInvoiced, grossCollected, vatCollected, netIncomingRevenue } = getInflow(currencyTab);
   
   // Profit = Net Incoming Revenue (Excl VAT) - Operating Expenses
@@ -201,12 +205,50 @@ export default function ExpensesPage() {
     finally { setSaving(false); }
   };
 
-  const handleDelete = async (id: string) => {
-    await db.deleteExpense(id);
-    const refreshed = await db.getExpenses();
-    setExpenses(refreshed);
-    setConfirmDeleteId(null);
-    showNotif('Deleted', 'Expense record removed.', 'info');
+  const [tabFilter, setTabFilter] = useState<'active' | 'pending_deletion'>('active');
+  const [deleteReason, setDeleteReason] = useState('');
+
+  const handleDeleteRequest = async (id: string) => {
+    if (!deleteReason.trim()) {
+      showNotif('Reason Required', 'Please enter a reason for deleting this expense.', 'error');
+      return;
+    }
+    try {
+      setSaving(true);
+      await db.deleteExpense(id, deleteReason.trim(), currentUser!);
+      const refreshed = await db.getExpenses();
+      setExpenses(refreshed);
+      setConfirmDeleteId(null);
+      setDeleteReason('');
+      if (currentUser?.role_name === 'Super Admin') {
+        showNotif('Expense Archived', 'Expense record moved to archive with audit log saved.', 'info');
+      } else {
+        showNotif('Deletion Requested', 'Expense deletion request submitted for Super Admin approval.', 'success');
+      }
+    } catch (e: any) {
+      showNotif('Error', e.message || 'Failed to process expense deletion.', 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleApproveRestore = async (id: string, action: 'APPROVE_DELETE' | 'REJECT_RESTORE') => {
+    if (!currentUser) return;
+    try {
+      setSaving(true);
+      await db.approveExpenseDeletion(id, action, currentUser);
+      const refreshed = await db.getExpenses();
+      setExpenses(refreshed);
+      showNotif(
+        action === 'APPROVE_DELETE' ? 'Expense Permanently Deleted' : 'Expense Restored',
+        action === 'APPROVE_DELETE' ? 'The expense record was permanently purged from the system.' : 'The expense record was restored to active status.',
+        'success'
+      );
+    } catch (e: any) {
+      showNotif('Error', e.message || 'Action failed.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // CSV Export
@@ -426,23 +468,51 @@ export default function ExpensesPage() {
 
         {/* Expense Ledger Table */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-gray-100 gap-4">
             <div>
-              <h2 className="text-sm font-bold text-gray-900">Expense Ledger</h2>
-              <p className="text-xs text-gray-400 mt-0.5">{filteredExpenses.length} records for the selected period.</p>
+              <h2 className="text-sm font-bold text-gray-900">Expense Ledger & Audit System</h2>
+              <p className="text-xs text-gray-400 mt-0.5">{filteredExpenses.length} records for the selected view.</p>
             </div>
-            <button onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-1.5 bg-[#9B1C22] text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-[#7d1219] shadow-sm transition cursor-pointer">
-              <PlusCircle className="h-3.5 w-3.5" /> Add
-            </button>
+            
+            <div className="flex items-center gap-3">
+              <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-bold">
+                <button
+                  onClick={() => setTabFilter('active')}
+                  className={`px-3 py-1.5 rounded-lg transition ${tabFilter === 'active' ? 'bg-[#9B1C22] text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  Active ({activeExpensesList.length})
+                </button>
+                <button
+                  onClick={() => setTabFilter('pending_deletion')}
+                  className={`px-3 py-1.5 rounded-lg transition flex items-center gap-1 ${tabFilter === 'pending_deletion' ? 'bg-[#9B1C22] text-white shadow-xs' : 'text-gray-600 hover:text-gray-900'}`}
+                >
+                  <span>Archive & Deletion Requests</span>
+                  {pendingDeletionExpensesList.length > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${tabFilter === 'pending_deletion' ? 'bg-white text-[#9B1C22]' : 'bg-amber-500 text-white'}`}>
+                      {pendingDeletionExpensesList.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              <button onClick={() => setShowAddModal(true)}
+                className="flex items-center gap-1.5 bg-[#9B1C22] text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-[#7d1219] shadow-sm transition cursor-pointer">
+                <PlusCircle className="h-3.5 w-3.5" /> Add Expense
+              </button>
+            </div>
           </div>
+
           {filteredExpenses.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <Receipt className="h-10 w-10 text-gray-200 mb-3" />
-              <p className="text-sm font-semibold text-gray-400">No expenses recorded for this period</p>
-              <button onClick={() => setShowAddModal(true)} className="mt-3 text-xs font-bold text-[#9B1C22] hover:underline cursor-pointer">
-                Record your first expense →
-              </button>
+              <p className="text-sm font-semibold text-gray-400">
+                {tabFilter === 'active' ? 'No active expenses recorded for this period' : 'No pending expense deletion requests or archived expenses'}
+              </p>
+              {tabFilter === 'active' && (
+                <button onClick={() => setShowAddModal(true)} className="mt-3 text-xs font-bold text-[#9B1C22] hover:underline cursor-pointer">
+                  Record your first expense →
+                </button>
+              )}
             </div>
           ) : (
             <>
@@ -455,7 +525,9 @@ export default function ExpensesPage() {
                     <th className="py-3 px-4">Description</th>
                     <th className="py-3 px-4">Vendor</th>
                     <th className="py-3 px-4 text-right">Amount</th>
-                    <th className="py-3 px-4"></th>
+                    {tabFilter === 'pending_deletion' && <th className="py-3 px-4">Deletion Reason</th>}
+                    {tabFilter === 'pending_deletion' && <th className="py-3 px-4">Status</th>}
+                    <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -466,17 +538,56 @@ export default function ExpensesPage() {
                       <td className="py-3 px-4 text-sm text-gray-700 max-w-[200px] truncate">{exp.description}</td>
                       <td className="py-3 px-4 text-sm text-gray-500">{exp.vendor}</td>
                       <td className="py-3 px-4 text-sm font-extrabold text-gray-900 text-right">{formatCurrency(exp.amount, exp.currency)}</td>
+                      {tabFilter === 'pending_deletion' && (
+                        <td className="py-3 px-4 text-xs text-rose-700 italic max-w-[200px] truncate">
+                          {exp.deletion_reason || 'No reason provided'}
+                        </td>
+                      )}
+                      {tabFilter === 'pending_deletion' && (
+                        <td className="py-3 px-4">
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                            exp.deletion_status === 'DELETION_PENDING' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-gray-100 text-gray-600 border-gray-200'
+                          }`}>
+                            {exp.deletion_status === 'DELETION_PENDING' ? 'DELETION PENDING' : 'ARCHIVED'}
+                          </span>
+                        </td>
+                      )}
                       <td className="py-3 px-4 text-right">
-                        <button onClick={() => setConfirmDeleteId(exp.id)}
-                          className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition cursor-pointer">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        {tabFilter === 'active' ? (
+                          <button
+                            onClick={() => { setConfirmDeleteId(exp.id); setDeleteReason(''); }}
+                            className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition cursor-pointer p-1"
+                            title="Request Expense Deletion"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          currentUser?.role_name === 'Super Admin' ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleApproveRestore(exp.id, 'APPROVE_DELETE')}
+                                className="bg-red-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg hover:bg-red-700 transition cursor-pointer"
+                              >
+                                Purge Permanently
+                              </button>
+                              <button
+                                onClick={() => handleApproveRestore(exp.id, 'REJECT_RESTORE')}
+                                className="bg-gray-100 text-gray-700 border border-gray-200 text-[11px] font-bold px-2.5 py-1 rounded-lg hover:bg-gray-200 transition cursor-pointer"
+                              >
+                                Restore
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-gray-400 italic">Pending Super Admin Review</span>
+                          )
+                        )}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+
             {/* Mobile Card View */}
             <div className="md:hidden divide-y divide-gray-50">
               {[...filteredExpenses].sort((a, b) => b.expense_date.localeCompare(a.expense_date)).map(exp => (
@@ -485,6 +596,9 @@ export default function ExpensesPage() {
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-semibold text-gray-800 truncate">{exp.description}</p>
                       <p className="text-xs text-gray-400 mt-0.5">{exp.vendor}</p>
+                      {exp.deletion_reason && (
+                        <p className="text-xs text-rose-600 italic mt-1">Reason: {exp.deletion_reason}</p>
+                      )}
                     </div>
                     <div className="text-right ml-3 shrink-0">
                       <p className="text-sm font-extrabold text-gray-900">{formatCurrency(exp.amount, exp.currency)}</p>
@@ -493,10 +607,19 @@ export default function ExpensesPage() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${CATEGORY_COLORS[exp.category]}`}>{exp.category}</span>
-                    <button onClick={() => setConfirmDeleteId(exp.id)}
-                      className="text-red-400 hover:text-red-600 transition cursor-pointer p-1">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
+                    {tabFilter === 'active' ? (
+                      <button onClick={() => { setConfirmDeleteId(exp.id); setDeleteReason(''); }}
+                        className="text-red-400 hover:text-red-600 transition cursor-pointer p-1">
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      currentUser?.role_name === 'Super Admin' && (
+                        <div className="flex gap-2">
+                          <button onClick={() => handleApproveRestore(exp.id, 'APPROVE_DELETE')} className="text-xs font-bold text-red-600">Purge</button>
+                          <button onClick={() => handleApproveRestore(exp.id, 'REJECT_RESTORE')} className="text-xs font-bold text-gray-600">Restore</button>
+                        </div>
+                      )
+                    )}
                   </div>
                 </div>
               ))}
@@ -585,18 +708,54 @@ export default function ExpensesPage() {
         </div>
       )}
 
-      {/* Confirm Delete Modal */}
+      {/* Confirm Deletion Request Modal with Mandatory Reason */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <Trash2 className="h-8 w-8 text-red-500 mx-auto mb-3" />
-            <h3 className="text-base font-bold text-gray-900">Delete Expense?</h3>
-            <p className="text-sm text-gray-400 mt-1 mb-5">This action cannot be undone.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmDeleteId(null)}
-                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 cursor-pointer">Cancel</button>
-              <button onClick={() => handleDelete(confirmDeleteId)}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 cursor-pointer">Delete</button>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 text-left space-y-4">
+            <div className="flex items-center gap-3 border-b border-gray-100 pb-3">
+              <div className="p-2.5 rounded-full bg-red-50 text-red-600">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">
+                  {currentUser?.role_name === 'Super Admin' ? 'Archive Expense Record' : 'Request Expense Deletion'}
+                </h3>
+                <p className="text-xs text-gray-400">
+                  {currentUser?.role_name === 'Super Admin'
+                    ? 'State the reason for archiving this expense. Audit log will be generated.'
+                    : 'Submit a deletion request for Super Admin review & approval.'}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 mb-1">
+                Reason for Deletion <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                rows={3}
+                value={deleteReason}
+                onChange={e => setDeleteReason(e.target.value)}
+                placeholder="State the detailed reason for deleting this expense record..."
+                className="w-full rounded-xl border border-gray-200 p-3 text-xs focus:outline-none focus:ring-2 focus:ring-[#9B1C22]/20 font-medium"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => { setConfirmDeleteId(null); setDeleteReason(''); }}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-xs font-bold text-gray-600 hover:bg-gray-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteRequest(confirmDeleteId)}
+                disabled={saving || !deleteReason.trim()}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                <span>{currentUser?.role_name === 'Super Admin' ? 'Archive Expense' : 'Submit Deletion Request'}</span>
+              </button>
             </div>
           </div>
         </div>

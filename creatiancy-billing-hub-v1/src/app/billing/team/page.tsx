@@ -130,6 +130,10 @@ export default function TeamManagementPage() {
 
   const requestRoleChange = (userId: string, userName: string, oldRole: Profile['role_name'], newRole: Profile['role_name']) => {
     if (oldRole === newRole) return;
+    if (newRole === 'Super Admin' && currentUser?.role_name !== 'Super Admin') {
+      showModal('Action Forbidden', 'Only Super Admins have permission to assign the Super Admin role.', 'error');
+      return;
+    }
     setRoleChangeModal({ userId, userName, oldRole, newRole });
   };
 
@@ -151,9 +155,9 @@ export default function TeamManagementPage() {
   };
 
   const handleDeleteProfile = async (userId: string, userName: string, targetRole: Profile['role_name']) => {
-    // Admin cannot remove Super Admin accounts
-    if (currentUser?.role_name === 'Admin' && targetRole === 'Super Admin') {
-      showModal('Action Forbidden', 'Admins are not authorized to delete Super Admin accounts.', 'error');
+    // Super Admin accounts are protected from deletion
+    if (targetRole === 'Super Admin') {
+      showModal('Action Forbidden', 'Super Admin accounts are permanently protected and cannot be deleted.', 'error');
       return;
     }
 
