@@ -100,11 +100,16 @@ export default function ReportsPage() {
       if (!filterByDate(inv.issue_date)) return;
       statusCounts[inv.status] = (statusCounts[inv.status] || 0) + 1;
       if (inv.status === 'draft' || inv.status === 'pending_approval') return;
-      const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
       const invPays = payments.filter(p => p.invoice_id === inv.id);
-      const totals = calculateTotals({ items, discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: invPays });
-      if (inv.currency === 'BDT') { bdtInv += totals.totalPayable; bdtPaid += totals.amountPaid; }
-      else { usdInv += totals.totalPayable; usdPaid += totals.amountPaid; }
+      const paidSum = invPays.reduce((acc, p) => acc + (p.amount || 0), 0);
+      const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
+      let invTotal = inv.total_payable || 0;
+      if (items.length > 0) {
+        const totals = calculateTotals({ items, discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: invPays });
+        invTotal = totals.totalPayable;
+      }
+      if (inv.currency === 'BDT') { bdtInv += invTotal; bdtPaid += paidSum; }
+      else { usdInv += invTotal; usdPaid += paidSum; }
     });
 
     let bdtFee = 0, usdFee = 0;
@@ -133,8 +138,12 @@ export default function ReportsPage() {
     const headers = ['Invoice Number', 'Client Company', 'Project Name', 'Issue Date', 'Due Date', 'Status', 'Currency', 'Total Amount'];
     const rows = invoices.map(inv => {
       const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
-      const totals = calculateTotals({ items, discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: [] });
-      return [inv.invoice_number || 'Draft', `"${getClientName(inv.client_id).replace(/"/g, '""')}"`, `"${inv.project_name.replace(/"/g, '""')}"`, inv.issue_date, inv.due_date, inv.status, inv.currency, totals.totalPayable.toFixed(2)];
+      let invTotal = inv.total_payable || 0;
+      if (items.length > 0) {
+        const totals = calculateTotals({ items, discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: [] });
+        invTotal = totals.totalPayable;
+      }
+      return [inv.invoice_number || 'Draft', `"${getClientName(inv.client_id).replace(/"/g, '""')}"`, `"${inv.project_name.replace(/"/g, '""')}"`, inv.issue_date, inv.due_date, inv.status, inv.currency, invTotal.toFixed(2)];
     });
     const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
@@ -145,8 +154,12 @@ export default function ReportsPage() {
     const headers = ['Invoice Number', 'Client Company', 'Project Name', 'Issue Date', 'Due Date', 'Status', 'Currency', 'Total Amount'];
     const rows = invoices.map(inv => {
       const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
-      const totals = calculateTotals({ items, discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: [] });
-      return [inv.invoice_number || 'Draft', getClientName(inv.client_id), inv.project_name, inv.issue_date, inv.due_date, inv.status, inv.currency, totals.totalPayable.toFixed(2)];
+      let invTotal = inv.total_payable || 0;
+      if (items.length > 0) {
+        const totals = calculateTotals({ items, discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: [] });
+        invTotal = totals.totalPayable;
+      }
+      return [inv.invoice_number || 'Draft', getClientName(inv.client_id), inv.project_name, inv.issue_date, inv.due_date, inv.status, inv.currency, invTotal.toFixed(2)];
     });
     const content = [headers.join('\t'), ...rows.map(r => r.join('\t'))].join('\n');
     const url = URL.createObjectURL(new Blob([content], { type: 'application/vnd.ms-excel;charset=utf-8;' }));

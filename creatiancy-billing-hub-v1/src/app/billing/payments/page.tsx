@@ -101,21 +101,25 @@ export default function PaymentsPage() {
     });
   };
 
-  const handleInvoiceChange = (invId: string) => {
+  const handleInvoiceChange = async (invId: string) => {
     setSelectedInvoiceId(invId);
     const inv = invoices.find(i => i.id === invId);
     if (inv) {
-      const items = localStore.items.filter(itm => itm.invoice_id === inv.id);
-      const invPays = payments.filter(p => p.invoice_id === inv.id);
-      const totals = calculateTotals({
-        items,
-        discountType: inv.discount_type,
-        discountValue: inv.discount_value,
-        vatRate: inv.vat_rate,
-        vatInclusive: inv.vat_inclusive,
-        payments: invPays
-      });
-      setPayAmount(totals.amountDue);
+      try {
+        const items = await db.getInvoiceItems(inv.id);
+        const invPays = await db.getPaymentsForInvoice(inv.id);
+        const totals = calculateTotals({
+          items,
+          discountType: inv.discount_type,
+          discountValue: inv.discount_value,
+          vatRate: inv.vat_rate,
+          vatInclusive: inv.vat_inclusive,
+          payments: invPays
+        });
+        setPayAmount(totals.amountDue > 0 ? totals.amountDue : (inv.total_payable || 0));
+      } catch {
+        setPayAmount(inv.total_payable || 0);
+      }
     }
   };
 

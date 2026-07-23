@@ -337,7 +337,7 @@ export default function InvoiceListPage() {
       {/* Quick Filter Preset Tabs */}
       <div className="flex items-center border-b border-gray-200 overflow-x-auto gap-2 text-xs font-semibold text-gray-600 no-scrollbar">
         <button
-          onClick={() => { setPresetTab('active'); setCurrentPage(1); }}
+          onClick={() => { setPresetTab('active'); setStatusFilter('all'); setCurrentPage(1); }}
           className={`pb-3 px-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
             presetTab === 'active' ? 'border-[#9B1C22] text-[#9B1C22] font-bold' : 'border-transparent hover:text-gray-900'
           }`}
@@ -345,7 +345,7 @@ export default function InvoiceListPage() {
           Active Records
         </button>
         <button
-          onClick={() => { setPresetTab('void'); setCurrentPage(1); }}
+          onClick={() => { setPresetTab('void'); setStatusFilter('all'); setCurrentPage(1); }}
           className={`pb-3 px-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
             presetTab === 'void' ? 'border-[#9B1C22] text-[#9B1C22] font-bold' : 'border-transparent hover:text-gray-900'
           }`}
@@ -353,7 +353,7 @@ export default function InvoiceListPage() {
           Void Invoices
         </button>
         <button
-          onClick={() => { setPresetTab('archived'); setCurrentPage(1); }}
+          onClick={() => { setPresetTab('archived'); setStatusFilter('all'); setCurrentPage(1); }}
           className={`pb-3 px-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
             presetTab === 'archived' ? 'border-[#9B1C22] text-[#9B1C22] font-bold' : 'border-transparent hover:text-gray-900'
           }`}
@@ -361,7 +361,7 @@ export default function InvoiceListPage() {
           Archived Invoices
         </button>
         <button
-          onClick={() => { setPresetTab('all'); setCurrentPage(1); }}
+          onClick={() => { setPresetTab('all'); setStatusFilter('all'); setCurrentPage(1); }}
           className={`pb-3 px-3 border-b-2 whitespace-nowrap transition cursor-pointer ${
             presetTab === 'all' ? 'border-[#9B1C22] text-[#9B1C22] font-bold' : 'border-transparent hover:text-gray-900'
           }`}

@@ -1485,17 +1485,59 @@ export const db = {
 
   // Gateway Rates
   getGatewayRates: async (): Promise<GatewayRates> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('billing_settings')
+          .select('value')
+          .eq('key', 'gateway_rates')
+          .maybeSingle();
+        if (!error && data && data.value) {
+          localStore.gatewayRates = data.value as GatewayRates;
+          return data.value as GatewayRates;
+        }
+      } catch (e) {
+        console.warn('Failed to load gateway rates from cloud:', e);
+      }
+    }
     return localStore.gatewayRates;
   },
 
   setGatewayRates: async (rates: GatewayRates): Promise<void> => {
     localStore.gatewayRates = rates;
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_gateway_rates', 'settings', 'gateway_rates', null, rates);
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase
+          .from('billing_settings')
+          .upsert({ key: 'gateway_rates', value: rates, updated_at: new Date().toISOString() });
+      } catch (e: any) {
+        console.warn('Failed to save gateway rates to cloud:', e);
+      }
+    }
+    db.logAudit(user?.id || 'system', 'update_gateway_rates', 'settings', 'gateway_rates', null, rates);
   },
 
   // From Email
   getFromEmail: async (): Promise<string> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('billing_settings')
+          .select('value')
+          .eq('key', 'from_email')
+          .maybeSingle();
+        if (!error && data && data.value) {
+          const email = typeof data.value === 'string' ? data.value : (data.value as any).email;
+          if (email) {
+            localStore.fromEmail = email;
+            return email;
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to load from email from cloud:', e);
+      }
+    }
     return localStore.fromEmail;
   },
 
@@ -1503,7 +1545,16 @@ export const db = {
     const old = localStore.fromEmail;
     localStore.fromEmail = email;
     const user = await db.getCurrentUser();
-    db.logAudit(user.id, 'update_from_email', 'settings', 'from_email', { email: old }, { email });
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase
+          .from('billing_settings')
+          .upsert({ key: 'from_email', value: { email }, updated_at: new Date().toISOString() });
+      } catch (e: any) {
+        console.warn('Failed to save from email to cloud:', e);
+      }
+    }
+    db.logAudit(user?.id || 'system', 'update_from_email', 'settings', 'from_email', { email: old }, { email });
   },
 
   // Business Entities
@@ -1784,9 +1835,9 @@ export const db = {
 
         const preset = options.preset || 'active';
         if (preset === 'active') {
-          query = query.is('archived_at', null);
+          query = query.neq('status', 'void').is('archived_at', null);
         } else if (preset === 'void') {
-          query = query.eq('status', 'void').is('archived_at', null);
+          query = query.eq('status', 'void');
         } else if (preset === 'archived') {
           query = query.not('archived_at', 'is', null);
         }
@@ -1863,12 +1914,46 @@ export const db = {
       }
     }
 
-    const list = [...localStore.invoices];
+    let list = [...localStore.invoices];
+    const preset = options.preset || 'active';
+    if (preset === 'active') {
+      list = list.filter(i => !i.archived_at && i.status !== 'void');
+    } else if (preset === 'void') {
+      list = list.filter(i => i.status === 'void');
+    } else if (preset === 'archived') {
+      list = list.filter(i => Boolean(i.archived_at));
+    }
+
+    if (options.status && options.status !== 'all') {
+      list = list.filter(i => i.status === options.status);
+    }
+    if (options.currency && options.currency !== 'all') {
+      list = list.filter(i => i.currency === options.currency);
+    }
+    if (options.entityId && options.entityId !== 'all') {
+      list = list.filter(i => i.entity_id === options.entityId);
+    }
+    if (options.clientId && options.clientId !== 'all') {
+      list = list.filter(i => i.client_id === options.clientId);
+    }
+    if (options.search && options.search.trim()) {
+      const s = options.search.trim().toLowerCase();
+      list = list.filter(i => 
+        (i.invoice_number && i.invoice_number.toLowerCase().includes(s)) ||
+        (i.project_name && i.project_name.toLowerCase().includes(s)) ||
+        (i.reference_number && i.reference_number.toLowerCase().includes(s))
+      );
+    }
+
+    const total = list.length;
+    const totalPages = Math.ceil(total / limit) || 1;
+    const paged = list.slice(offset, offset + limit);
+
     return {
-      invoices: list.slice(offset, offset + limit),
-      total: list.length,
-      page: 1,
-      totalPages: 1
+      invoices: paged,
+      total,
+      page,
+      totalPages
     };
   },
 
@@ -2447,18 +2532,33 @@ export const db = {
   },
 
   getTaxPayments: async (): Promise<TaxPayment[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('tax_payments').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          localStore.taxPayments = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getTaxPayments error:', e); }
+    }
     return localStore.taxPayments;
   },
 
   recordTaxPayment: async (payment: Omit<TaxPayment, 'id' | 'created_at'>): Promise<TaxPayment> => {
-    const list = localStore.taxPayments;
     const user = await db.getCurrentUser();
     const newPayment: TaxPayment = {
       ...payment,
       id: generateUUID(),
       created_at: new Date().toISOString()
     };
-    list.push(newPayment);
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('tax_payments').insert(newPayment);
+      if (error) throw new Error(`Cloud tax payment insert failed: ${error.message}`);
+    }
+
+    const list = localStore.taxPayments;
+    list.unshift(newPayment);
     localStore.taxPayments = list;
 
     await db.notifyAction({
@@ -2529,11 +2629,15 @@ export const db = {
     const user = await db.getCurrentUser();
 
     // Generate receipt number e.g. CLTD-REC-2026-0001
-    const invoice = localStore.invoices.find(i => i.id === payment.invoice_id);
+    const invoice = (await db.getInvoiceById(payment.invoice_id)) || localStore.invoices.find(i => i.id === payment.invoice_id);
     if (!invoice) throw new Error('Invoice not found');
 
-    const entity = localStore.entities.find(e => e.id === invoice.entity_id);
+    const entities = await db.getEntities();
+    const entity = entities.find(e => e.id === invoice.entity_id) || localStore.entities.find(e => e.id === invoice.entity_id) || entities[0];
     if (!entity) throw new Error('Entity not found');
+
+    const items = await db.getInvoiceItems(invoice.id);
+    const existingPayments = await db.getPaymentsForInvoice(invoice.id);
 
     const year = new Date(payment.payment_date).getFullYear();
     const receiptPrefix = entity.receipt_prefix;
@@ -2565,12 +2669,12 @@ export const db = {
     };
 
     const totals = calculateTotals({
-      items: localStore.items.filter(itm => itm.invoice_id === invoice.id),
+      items,
       discountType: invoice.discount_type,
       discountValue: invoice.discount_value,
       vatRate: invoice.vat_rate,
       vatInclusive: invoice.vat_inclusive,
-      payments: [...list.filter(p => p.invoice_id === invoice.id), newPayment]
+      payments: [...existingPayments.filter(p => p.id !== newPayment.id), newPayment]
     });
 
     const reserveSettings = localStore.reserveSettings;
@@ -3962,16 +4066,29 @@ export const db = {
 
   // Configurable Financial-Year Based VAT System DB API
   getVatRegistrationProfile: async (): Promise<VatRegistrationProfile> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('vat_registration_profiles').select('*').limit(1).maybeSingle();
+        if (!error && data) {
+          localStore.vatRegistrationProfile = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getVatRegistrationProfile error:', e); }
+    }
     return localStore.vatRegistrationProfile;
   },
 
   saveVatRegistrationProfile: async (profile: Partial<VatRegistrationProfile>, user: Profile): Promise<VatRegistrationProfile> => {
-    const current = localStore.vatRegistrationProfile;
+    const current = await db.getVatRegistrationProfile();
     const updated: VatRegistrationProfile = {
       ...current,
       ...profile,
       updated_at: new Date().toISOString()
     };
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('vat_registration_profiles').upsert(updated);
+      if (error) throw new Error(`Cloud VAT profile update failed: ${error.message}`);
+    }
     localStore.vatRegistrationProfile = updated;
     await db.addVatAuditLog({
       entity_type: 'vat_configuration',
@@ -3986,11 +4103,20 @@ export const db = {
   },
 
   getVatConfigurations: async (): Promise<VatConfiguration[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('vat_configurations').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          localStore.vatConfigurations = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getVatConfigurations error:', e); }
+    }
     return localStore.vatConfigurations;
   },
 
   getActiveVatConfiguration: async (financialYear?: string): Promise<VatConfiguration | null> => {
-    const list = localStore.vatConfigurations;
+    const list = await db.getVatConfigurations();
     if (financialYear) {
       const found = list.find(c => c.financial_year === financialYear && c.status === 'ACTIVE');
       if (found) return found;
@@ -4003,7 +4129,7 @@ export const db = {
     configData: Partial<VatConfiguration> & { financial_year: string; configuration_name: string },
     user: Profile
   ): Promise<VatConfiguration> => {
-    const list = localStore.vatConfigurations;
+    const list = await db.getVatConfigurations();
     const now = new Date().toISOString();
     const existingIdx = list.findIndex(c => c.id === configData.id || c.financial_year === configData.financial_year);
     
@@ -4027,7 +4153,7 @@ export const db = {
         });
       }
       savedConfig = {
-        id: configData.id || `vat-cfg-${Date.now()}`,
+        id: configData.id || generateUUID(),
         country_code: 'BD',
         financial_year: configData.financial_year,
         configuration_name: configData.configuration_name,
@@ -4045,6 +4171,11 @@ export const db = {
         published_at: configData.status === 'ACTIVE' ? now : undefined
       };
       list.unshift(savedConfig);
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('vat_configurations').upsert(savedConfig);
+      if (error) throw new Error(`Cloud VAT configuration save failed: ${error.message}`);
     }
 
     localStore.vatConfigurations = list;
@@ -4078,6 +4209,17 @@ export const db = {
   },
 
   getVatServiceCategories: async (configId?: string): Promise<VatServiceCategory[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        let q = supabase.from('vat_service_categories').select('*').order('category_code', { ascending: true });
+        if (configId) q = q.eq('vat_configuration_id', configId);
+        const { data, error } = await q;
+        if (!error && data && data.length > 0) {
+          localStore.vatServiceCategories = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getVatServiceCategories error:', e); }
+    }
     const list = localStore.vatServiceCategories;
     if (!configId) return list;
     return list.filter(c => c.vat_configuration_id === configId);
@@ -4094,7 +4236,7 @@ export const db = {
       list[idx] = saved;
     } else {
       saved = {
-        id: `vsc-${Date.now()}`,
+        id: category.id || generateUUID(),
         vat_configuration_id: category.vat_configuration_id || '99999999-0000-4000-8000-000000000000',
         category_code: category.category_code,
         category_name: category.category_name || category.category_code,
@@ -4112,21 +4254,35 @@ export const db = {
       };
       list.push(saved);
     }
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('vat_service_categories').upsert(saved);
+      if (error) throw new Error(`Cloud VAT category save failed: ${error.message}`);
+    }
     localStore.vatServiceCategories = list;
     return saved;
   },
 
   getVatDocuments: async (type?: VatDocument['document_type']): Promise<VatDocument[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        let q = supabase.from('vat_documents').select('*').order('created_at', { ascending: false });
+        if (type) q = q.eq('document_type', type);
+        const { data, error } = await q;
+        if (!error && data) {
+          localStore.vatDocuments = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getVatDocuments error:', e); }
+    }
     const list = localStore.vatDocuments;
     if (!type) return list;
     return list.filter(d => d.document_type === type);
   },
 
   saveVatDocument: async (docData: Omit<VatDocument, 'id' | 'created_at'> & { id?: string }, user: Profile): Promise<VatDocument> => {
-    const list = localStore.vatDocuments;
+    const list = await db.getVatDocuments();
     const now = new Date().toISOString();
 
-    // Duplicate Mushak 6.6 prevention check
     if (docData.document_type === 'MUSHAK_6_6') {
       const duplicate = list.find(d => 
         d.id !== docData.id &&
@@ -4143,16 +4299,20 @@ export const db = {
 
     if (idx >= 0 && docData.id) {
       savedDoc = { ...list[idx], ...docData };
-      list[idx] = savedDoc;
     } else {
       savedDoc = {
         ...docData,
-        id: `vat-doc-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        id: docData.id || generateUUID(),
         created_at: now
       };
-      list.unshift(savedDoc);
     }
-    localStore.vatDocuments = list;
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('vat_documents').upsert(savedDoc);
+      if (error) throw new Error(`Cloud VAT document save failed: ${error.message}`);
+    }
+
+    localStore.vatDocuments = [savedDoc, ...localStore.vatDocuments.filter(d => d.id !== savedDoc.id)];
 
     await db.addVatAuditLog({
       entity_type: docData.document_type === 'MUSHAK_6_6' ? 'vds_certificate' : 'mushak_document',
@@ -4168,7 +4328,7 @@ export const db = {
   },
 
   verifyVatDocument: async (docId: string, status: VatDocument['verification_status'], user: Profile): Promise<VatDocument> => {
-    const list = localStore.vatDocuments;
+    const list = await db.getVatDocuments();
     const idx = list.findIndex(d => d.id === docId);
     if (idx === -1) throw new Error('VAT Document record not found.');
 
@@ -4180,8 +4340,17 @@ export const db = {
       verified_at: new Date().toISOString()
     };
 
-    list[idx] = updated;
-    localStore.vatDocuments = list;
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('vat_documents').update({
+        verification_status: status,
+        verified_by: updated.verified_by,
+        verified_at: updated.verified_at
+      }).eq('id', docId);
+      if (error) throw new Error(`Cloud VAT document verification failed: ${error.message}`);
+    }
+
+    const localIdx = localStore.vatDocuments.findIndex(d => d.id === docId);
+    if (localIdx >= 0) localStore.vatDocuments[localIdx] = updated;
 
     await db.addVatAuditLog({
       entity_type: prev.document_type === 'MUSHAK_6_6' ? 'vds_certificate' : 'mushak_document',
@@ -4197,27 +4366,40 @@ export const db = {
   },
 
   getInputVatEntries: async (): Promise<InputVatEntry[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('input_vat_entries').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          localStore.inputVatEntries = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getInputVatEntries error:', e); }
+    }
     return localStore.inputVatEntries;
   },
 
   saveInputVatEntry: async (entryData: Omit<InputVatEntry, 'id' | 'created_at'> & { id?: string }, user: Profile): Promise<InputVatEntry> => {
-    const list = localStore.inputVatEntries;
+    const list = await db.getInputVatEntries();
     const now = new Date().toISOString();
     const idx = list.findIndex(e => e.id === entryData.id);
     let saved: InputVatEntry;
 
     if (idx >= 0 && entryData.id) {
       saved = { ...list[idx], ...entryData };
-      list[idx] = saved;
     } else {
       saved = {
         ...entryData,
-        id: `ive-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        id: entryData.id || generateUUID(),
         created_at: now
       };
-      list.unshift(saved);
     }
-    localStore.inputVatEntries = list;
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('input_vat_entries').upsert(saved);
+      if (error) throw new Error(`Cloud Input VAT entry save failed: ${error.message}`);
+    }
+
+    localStore.inputVatEntries = [saved, ...localStore.inputVatEntries.filter(e => e.id !== saved.id)];
 
     await db.addVatAuditLog({
       entity_type: 'input_vat',
@@ -4233,7 +4415,7 @@ export const db = {
   },
 
   approveInputVatEntry: async (entryId: string, approvedVatAmount: number, status: InputVatEntry['eligibility_status'], user: Profile): Promise<InputVatEntry> => {
-    const list = localStore.inputVatEntries;
+    const list = await db.getInputVatEntries();
     const idx = list.findIndex(e => e.id === entryId);
     if (idx === -1) throw new Error('Input VAT record not found.');
 
@@ -4246,8 +4428,18 @@ export const db = {
       approved_by: user.full_name || user.email
     };
 
-    list[idx] = updated;
-    localStore.inputVatEntries = list;
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('input_vat_entries').update({
+        approved_input_vat: approvedVatAmount,
+        eligibility_status: status,
+        verification_status: updated.verification_status,
+        approved_by: updated.approved_by
+      }).eq('id', entryId);
+      if (error) throw new Error(`Cloud Input VAT approval failed: ${error.message}`);
+    }
+
+    const localIdx = localStore.inputVatEntries.findIndex(e => e.id === entryId);
+    if (localIdx >= 0) localStore.inputVatEntries[localIdx] = updated;
 
     await db.addVatAuditLog({
       entity_type: 'input_vat',
@@ -4263,44 +4455,69 @@ export const db = {
   },
 
   getVatReturns: async (): Promise<VatReturn[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('vat_returns').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          localStore.vatReturns = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getVatReturns error:', e); }
+    }
     return localStore.vatReturns;
   },
 
   saveVatReturn: async (returnData: Omit<VatReturn, 'id' | 'created_at' | 'updated_at'> & { id?: string }, user: Profile): Promise<VatReturn> => {
-    const list = localStore.vatReturns;
+    const list = await db.getVatReturns();
     const now = new Date().toISOString();
     const idx = list.findIndex(r => r.id === returnData.id);
     let saved: VatReturn;
 
     if (idx >= 0 && returnData.id) {
       saved = { ...list[idx], ...returnData, updated_at: now };
-      list[idx] = saved;
     } else {
       saved = {
         ...returnData,
-        id: `vr-${Date.now()}`,
+        id: returnData.id || generateUUID(),
         created_at: now,
         updated_at: now
       };
-      list.unshift(saved);
     }
-    localStore.vatReturns = list;
+
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase.from('vat_returns').upsert(saved);
+      if (error) throw new Error(`Cloud VAT return save failed: ${error.message}`);
+    }
+
+    localStore.vatReturns = [saved, ...localStore.vatReturns.filter(r => r.id !== saved.id)];
     return saved;
   },
 
   getVatAuditLogs: async (): Promise<VatAuditLog[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('vat_audit_logs').select('*').order('performed_at', { ascending: false });
+        if (!error && data) {
+          localStore.vatAuditLogs = data;
+          return data;
+        }
+      } catch (e: any) { console.warn('getVatAuditLogs error:', e); }
+    }
     return localStore.vatAuditLogs;
   },
 
   addVatAuditLog: async (log: Omit<VatAuditLog, 'id' | 'performed_at'>): Promise<VatAuditLog> => {
-    const list = localStore.vatAuditLogs;
     const newLog: VatAuditLog = {
       ...log,
-      id: `vat-audit-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: generateUUID(),
       performed_at: new Date().toISOString()
     };
-    list.unshift(newLog);
-    localStore.vatAuditLogs = list;
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('vat_audit_logs').insert(newLog);
+      } catch (e: any) { console.warn('addVatAuditLog cloud error:', e); }
+    }
+    localStore.vatAuditLogs = [newLog, ...localStore.vatAuditLogs];
     return newLog;
   }
 };
