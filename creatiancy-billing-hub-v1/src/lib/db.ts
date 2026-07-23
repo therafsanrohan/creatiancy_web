@@ -868,32 +868,7 @@ const MOCK_CLIENT_SERVICE_RATES: ClientServiceRate[] = [
   { id: 'a0000080-0000-4000-8000-000000000004', client_id: 'a0000080-0000-4000-8000-000000000002', service_name: 'Full Stack Web Development', unit_price: 45000, unit: 'project', updated_at: '2026-07-01T00:00:00Z' }
 ];
 
-const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [
-  {
-    id: 'a0000000-0000-4000-8000-000000000001',
-    sender_name: 'Rafsan Rohan',
-    sender_role: 'Super Admin',
-    title: 'Security Compliance & Data Protection Policy Active',
-    message: 'All team members must ensure billing records adhere to legal entity and verification standards.',
-    category: 'emergency',
-    target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
-    link_url: '/billing/team',
-    timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-    read_by: []
-  },
-  {
-    id: 'a0000000-0000-4000-8000-000000000002',
-    sender_name: 'Finance Executive',
-    sender_role: 'Finance Admin',
-    title: 'Custom Payment Gateway Fee Rates Updated',
-    message: 'Platform processing fee cutoffs can now be set dynamically under Gateway Rates setting page.',
-    category: 'broadcast',
-    target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
-    link_url: '/billing/settings/gateway-rates',
-    timestamp: new Date(Date.now() - 3600000 * 5).toISOString(),
-    read_by: []
-  }
-];
+const MOCK_SYSTEM_NOTIFICATIONS: SystemNotification[] = [];
 
 const MOCK_TAX_CONFIGURATIONS: TaxConfiguration[] = [
   {
@@ -3673,31 +3648,35 @@ export const db = {
     localStore.clientServiceRates = list;
   },
 
-  // Dynamic Role-Based System Notifications & 48-Hour Purge Engine
+  // Dynamic Role-Based System Notifications & Realtime Synchronization Engine
   getSystemNotifications: async (userRole?: string, userId?: string): Promise<SystemNotification[]> => {
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('system_notifications').select('*').order('timestamp', { ascending: false });
-      if (!error && data) {
-        localStore.systemNotifications = data;
-        if (!userRole) return data;
-        return data.filter(n => 
-          n.target_roles.includes('all') || 
-          n.target_roles.includes(userRole) ||
-          (userId && n.read_by.includes(userId))
-        );
+      try {
+        const { data, error } = await supabase
+          .from('system_notifications')
+          .select('*')
+          .order('timestamp', { ascending: false });
+        if (!error && data) {
+          localStore.systemNotifications = data;
+          if (!userRole) return data;
+          return data.filter(n => 
+            (n.target_roles && (n.target_roles.includes('all') || n.target_roles.includes(userRole))) ||
+            (userId && n.read_by && n.read_by.includes(userId))
+          );
+        }
+      } catch (e) {
+        console.error('Cloud getSystemNotifications error:', e);
       }
     }
     const list = localStore.systemNotifications;
     if (!userRole) return list;
     return list.filter(n => 
-      n.target_roles.includes('all') || 
-      n.target_roles.includes(userRole) ||
-      (userId && n.read_by.includes(userId))
+      (n.target_roles && (n.target_roles.includes('all') || n.target_roles.includes(userRole))) ||
+      (userId && n.read_by && n.read_by.includes(userId))
     );
   },
 
   notifyAction: async (notif: Omit<SystemNotification, 'id' | 'timestamp' | 'read_by'>): Promise<SystemNotification> => {
-    const list = localStore.systemNotifications;
     const newNotif: SystemNotification = {
       ...notif,
       id: generateUUID(),
@@ -3710,24 +3689,40 @@ export const db = {
       if (error) console.warn('Cloud notification insert warning:', error);
     }
     
-    list.unshift(newNotif);
+    const list = [newNotif, ...localStore.systemNotifications];
     localStore.systemNotifications = list;
     return newNotif;
   },
 
   markNotificationRead: async (notifId: string, userId: string): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data: notif } = await supabase.from('system_notifications').select('read_by').eq('id', notifId).single();
+        if (notif) {
+          const currentReadBy: string[] = notif.read_by || [];
+          if (!currentReadBy.includes(userId)) {
+            const updatedReadBy = [...currentReadBy, userId];
+            await supabase.from('system_notifications').update({ read_by: updatedReadBy }).eq('id', notifId);
+          }
+        }
+      } catch (e) {
+        console.warn('markNotificationRead cloud error:', e);
+      }
+    }
+
     const list = localStore.systemNotifications;
     const idx = list.findIndex(n => n.id === notifId);
-    if (idx !== -1) {
-      if (!list[idx].read_by.includes(userId)) {
-        list[idx].read_by.push(userId);
-        
-        if (isSupabaseConfigured && supabase) {
-          const { error } = await supabase.from('system_notifications').update({ read_by: list[idx].read_by }).eq('id', notifId);
-          if (error) console.warn('Cloud notification read warning:', error);
-        }
-        
-        localStore.systemNotifications = list;
+    if (idx !== -1 && !list[idx].read_by.includes(userId)) {
+      list[idx].read_by.push(userId);
+      localStore.systemNotifications = list;
+    }
+  },
+
+  markAllNotificationsRead: async (userId: string, userRole?: string): Promise<void> => {
+    const notifs = await db.getSystemNotifications(userRole, userId);
+    for (const notif of notifs) {
+      if (!notif.read_by.includes(userId)) {
+        await db.markNotificationRead(notif.id, userId);
       }
     }
   },
@@ -3741,7 +3736,13 @@ export const db = {
     localStore.systemNotifications = list;
   },
 
-  clearAllNotifications: async (): Promise<void> => {
+  clearAllNotifications: async (userRole?: string, userId?: string): Promise<void> => {
+    if (isSupabaseConfigured && supabase) {
+      const notifs = await db.getSystemNotifications(userRole, userId);
+      for (const n of notifs) {
+        await supabase.from('system_notifications').delete().eq('id', n.id);
+      }
+    }
     localStore.systemNotifications = [];
   },
 

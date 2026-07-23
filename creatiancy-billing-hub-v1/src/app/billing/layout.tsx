@@ -26,6 +26,8 @@ import {
   Landmark
 } from 'lucide-react';
 
+import HeaderNotificationCenter from '@/components/HeaderNotificationCenter';
+
 export default function BillingLayout({
   children,
 }: {
@@ -135,24 +137,22 @@ export default function BillingLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-[#FBFDF9] text-[#1E1E1E]">
-      
-
-
       <div className="flex flex-1">
         
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r border-gray-100 bg-[#FBFDF9] p-4 space-y-6 no-print">
-          <div className="flex flex-col items-start space-y-2 px-2 py-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logos/Creatiancy logo.svg"
-              alt="Creatiancy Logo"
-              className="h-8 w-auto object-contain"
-              onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
-            />
-            <div className="min-w-0">
+          <div className="flex items-center justify-between px-2 py-4 border-b border-gray-100">
+            <div className="flex flex-col items-start space-y-1">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logos/Creatiancy logo.svg"
+                alt="Creatiancy Logo"
+                className="h-8 w-auto object-contain"
+                onError={(e) => { (e.target as HTMLImageElement).src = '/logos/Creatiancy%20logo.svg'; }}
+              />
               <span className="text-md font-bold tracking-tight block leading-tight text-gray-500">Billing Desk</span>
             </div>
+            <HeaderNotificationCenter currentUser={currentUser} />
           </div>
 
           <nav className="flex-1 space-y-1">
@@ -209,6 +209,7 @@ export default function BillingLayout({
             </div>
             
             <div className="flex items-center space-x-2">
+              <HeaderNotificationCenter currentUser={currentUser} />
               {/* Mobile Quick User Profile Dropdown */}
               <div className="relative">
                 <button
