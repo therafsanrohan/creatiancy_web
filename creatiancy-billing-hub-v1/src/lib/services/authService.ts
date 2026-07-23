@@ -35,7 +35,7 @@ export const authService = {
         return null;
       }
     }
-    return localStore.currentUser;
+    return null;
   },
 
   setCurrentUser: async (user: Profile): Promise<void> => {
