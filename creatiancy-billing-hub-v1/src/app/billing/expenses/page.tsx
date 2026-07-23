@@ -54,6 +54,8 @@ export default function ExpensesPage() {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [currencyTab, setCurrencyTab] = useState<CurrencyTab>('BDT');
+  const [tabFilter, setTabFilter] = useState<'active' | 'pending_deletion'>('active');
+  const [deleteReason, setDeleteReason] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -204,9 +206,6 @@ export default function ExpensesPage() {
     } catch (e) { showNotif('Error', 'Failed to save expense.', 'error'); }
     finally { setSaving(false); }
   };
-
-  const [tabFilter, setTabFilter] = useState<'active' | 'pending_deletion'>('active');
-  const [deleteReason, setDeleteReason] = useState('');
 
   const handleDeleteRequest = async (id: string) => {
     if (!deleteReason.trim()) {
