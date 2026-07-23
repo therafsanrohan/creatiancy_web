@@ -2090,8 +2090,18 @@ export const db = {
   },
 
   getInvoiceById: async (id: string): Promise<Invoice | undefined> => {
-    const list = await db.getInvoices();
-    return list.find(i => i.id === id);
+    if (isSupabaseConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('invoices').select('*').eq('id', id).maybeSingle();
+        if (!error && data) {
+          const populated = await db.populateInvoicesTotalsBatch([data]);
+          return populated[0];
+        }
+      } catch (e: any) { console.warn('getInvoiceById Supabase error:', e); }
+    }
+    const fromCache = localStore.invoices.find(i => i.id === id);
+    if (fromCache) return db.populateInvoiceTotals(fromCache);
+    return undefined;
   },
 
   getInvoiceByToken: async (token: string): Promise<Invoice | undefined> => {
@@ -2273,6 +2283,13 @@ export const db = {
         account_manager_id: validAccountManagerId,
         updated_at: new Date().toISOString()
       };
+      // Strip computed/virtual fields that don't exist as columns in Supabase
+      delete (invoicePayload as any).total_payable;
+      delete (invoicePayload as any).subtotal;
+      delete (invoicePayload as any).vat_amount;
+      delete (invoicePayload as any).discount_amount;
+      delete (invoicePayload as any).amount_paid;
+      delete (invoicePayload as any).amount_due;
 
       const { error: invErr } = await supabase.from('invoices').update(invoicePayload).eq('id', id);
       if (invErr) throw new Error(`Cloud invoice update failed: ${invErr.message}`);

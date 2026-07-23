@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { db, Invoice, BillingClient, BusinessEntity, Profile, InvoiceItem, Payment, EmailLog, GatewayRates, localStore } from '@/lib/db';
-import { calculateTotals, formatCurrency } from '@/lib/calculations';
+import { calculateTotals, calculateGatewayDeduction, formatCurrency } from '@/lib/calculations';
 import NotificationModal from '@/components/NotificationModal';
 import Link from 'next/link';
 import {
@@ -376,14 +376,39 @@ export default function InvoiceDetailsPage() {
         processing_fee: pFee,
         internal_note: payNote.trim(),
         proof_url: null,
-        recorded_by: currentUser.id
+        recorded_by: currentUser?.id || '4b53b02d-8022-46ea-bd89-06c37e9e8ecf'
       });
+
+      if (pFee > 0 && p && p.id) {
+        const deduction = calculateGatewayDeduction({
+          grossPaymentAmount: payAmount,
+          percentageFeeRate: feeRate
+        });
+        await db.recordGatewayDeduction({
+          payment_id: p.id,
+          invoice_id: id,
+          gateway_name: feePreset.toUpperCase(),
+          gross_payment_amount: payAmount,
+          percentage_fee_rate: feeRate,
+          percentage_fee_amount: deduction.percentageFeeAmount,
+          fixed_fee_amount: deduction.fixedFeeAmount,
+          tax_on_fee_amount: deduction.taxOnFeeAmount,
+          currency_conversion_fee: deduction.currencyConversionFee,
+          bank_charge: deduction.bankCharge,
+          total_gateway_deduction: deduction.totalGatewayDeduction,
+          net_settlement_amount: deduction.netSettlementAmount,
+          settlement_currency: invoice.currency,
+          settlement_date: payDate,
+          gateway_reference: payRef.trim()
+        });
+      }
       
-      setPayments([...payments, p]);
+      const updatedInv = await db.getInvoiceById(id);
+      if (updatedInv) setInvoice({ ...updatedInv });
+      const updatedPays = await db.getPaymentsForInvoice(id);
+      setPayments(updatedPays);
       setRecordingPayment(false);
-      
-      // Reload details
-      window.location.reload();
+      showNotif('Payment Recorded', `Payment of ${formatCurrency(payAmount, invoice.currency)} recorded successfully. Receipt #${p.receipt_number}`, 'success');
     } catch (err: any) {
       showNotif('Payment Failed', err.message || 'Payment recording failed.', 'error');
     } finally {
