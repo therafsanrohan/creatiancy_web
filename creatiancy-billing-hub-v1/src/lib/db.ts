@@ -2219,9 +2219,18 @@ export const db = {
         }
       }
 
+      let validAccountManagerId: string | null = newInvoice.account_manager_id || null;
+      if (validAccountManagerId) {
+        const { data: p } = await supabase.from('profiles').select('id').eq('id', validAccountManagerId).maybeSingle();
+        if (!p) {
+          validAccountManagerId = null;
+        }
+      }
+
       const payload = {
         ...newInvoice,
-        created_by: validCreatedBy as any
+        created_by: validCreatedBy as any,
+        account_manager_id: validAccountManagerId
       };
       delete (payload as any).total_payable;
       delete (payload as any).subtotal;

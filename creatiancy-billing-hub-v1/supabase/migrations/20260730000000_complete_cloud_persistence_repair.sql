@@ -119,6 +119,10 @@ BEGIN
         v_created_by := NULL;
     END IF;
 
+    IF NULLIF(p_invoice->>'account_manager_id', '') IS NOT NULL AND NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = (p_invoice->>'account_manager_id')::uuid) THEN
+        p_invoice := jsonb_set(p_invoice, '{account_manager_id}', 'null');
+    END IF;
+
     -- Insert Invoice
     INSERT INTO public.invoices (
         id, secure_token, invoice_number, status, entity_id, client_id, currency,
