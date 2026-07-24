@@ -2508,7 +2508,7 @@ export const db = {
     let attempt = 0;
     let success = false;
 
-    while (attempt < 10 && !success) {
+    while (attempt < 20 && !success) {
       attempt++;
       let nextSeq = 1;
 
@@ -2522,14 +2522,14 @@ export const db = {
           let maxSerial = 0;
           for (const invRow of existingInvs) {
             if (invRow.invoice_number) {
-              const parts = invRow.invoice_number.split('-');
-              if (parts.length >= 4 && parts[parts.length - 2] === year.toString()) {
-                const num = parseInt(parts[parts.length - 1] || '0', 10);
+              const matches = invRow.invoice_number.match(/\d+$/);
+              if (matches && matches[0]) {
+                const num = parseInt(matches[0], 10);
                 if (!isNaN(num) && num > maxSerial) maxSerial = num;
               }
             }
           }
-          nextSeq = maxSerial + (attempt - 1) + 1;
+          nextSeq = maxSerial + attempt;
         } else {
           nextSeq = attempt;
         }
@@ -2552,15 +2552,35 @@ export const db = {
           .eq('id', id);
 
         if (invErr) {
-          if (invErr.message?.includes('invoices_invoice_number_key') || invErr.message?.includes('duplicate key')) {
-            // Collision occurred, retry loop will increment sequence
+          const errMsg = invErr.message || '';
+          if (errMsg.includes('invoices_invoice_number_key') || errMsg.includes('duplicate key') || errMsg.includes('unique constraint')) {
+            // Collision occurred, retry loop will increment sequence with new nextSeq
             continue;
           }
-          throw new Error(`Cloud invoice approval failed: ${invErr.message}`);
+          throw new Error(`Cloud invoice approval failed: ${errMsg}`);
         }
         success = true;
       } else {
         success = true;
+      }
+    }
+
+    if (!success) {
+      // Last-resort fallback with timestamp entropy to guarantee uniqueness
+      const prefix = entity?.invoice_prefix || entityPrefix;
+      invoiceNumber = `${prefix}-INV-${year}-${Date.now().toString().slice(-6)}`;
+      if (isSupabaseConfigured && supabase) {
+        const { error: invErr } = await supabase
+          .from('invoices')
+          .update({
+            status: 'approved',
+            invoice_number: invoiceNumber,
+            approved_by: validApprovedBy,
+            approved_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+        if (invErr) throw new Error(`Cloud invoice approval failed: ${invErr.message}`);
       }
     }
 
