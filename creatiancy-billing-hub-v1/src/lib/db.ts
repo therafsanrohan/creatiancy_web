@@ -2513,19 +2513,20 @@ export const db = {
       let nextSeq = 1;
 
       if (isSupabaseConfigured && supabase) {
-        const prefixPattern = `${entityPrefix}-${invoice.currency}-${year}-%`;
         const { data: existingInvs } = await supabase
           .from('invoices')
           .select('invoice_number')
-          .ilike('invoice_number', prefixPattern);
+          .not('invoice_number', 'is', null);
 
         if (existingInvs && existingInvs.length > 0) {
           let maxSerial = 0;
           for (const invRow of existingInvs) {
             if (invRow.invoice_number) {
               const parts = invRow.invoice_number.split('-');
-              const num = parseInt(parts[parts.length - 1] || '0', 10);
-              if (!isNaN(num) && num > maxSerial) maxSerial = num;
+              if (parts.length >= 4 && parts[parts.length - 2] === year.toString()) {
+                const num = parseInt(parts[parts.length - 1] || '0', 10);
+                if (!isNaN(num) && num > maxSerial) maxSerial = num;
+              }
             }
           }
           nextSeq = maxSerial + (attempt - 1) + 1;
@@ -2535,7 +2536,8 @@ export const db = {
       }
 
       const serialStr = nextSeq.toString().padStart(4, '0');
-      invoiceNumber = `${entityPrefix}-${invoice.currency}-${year}-${serialStr}`;
+      const prefix = entity?.invoice_prefix || entityPrefix;
+      invoiceNumber = `${prefix}-INV-${year}-${serialStr}`;
 
       if (isSupabaseConfigured && supabase) {
         const { error: invErr } = await supabase

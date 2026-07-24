@@ -196,10 +196,9 @@ BEGIN
 
         -- Check if v_final_number already exists in active invoices OR deleted_invoice_register
         IF NOT EXISTS (SELECT 1 FROM public.invoices WHERE invoice_number = v_final_number)
-           AND NOT EXISTS (
-               SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'deleted_invoice_register'
-           ) OR NOT EXISTS (
-               SELECT 1 FROM public.deleted_invoice_register WHERE invoice_number = v_final_number
+           AND (
+               NOT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'deleted_invoice_register')
+               OR NOT EXISTS (SELECT 1 FROM public.deleted_invoice_register WHERE invoice_number = v_final_number)
            ) THEN
             EXIT;
         END IF;
