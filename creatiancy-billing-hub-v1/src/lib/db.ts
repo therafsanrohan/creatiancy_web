@@ -2463,36 +2463,104 @@ export const db = {
     if (!invoice) throw new Error('Invoice not found');
 
     const user = await db.getCurrentUser();
-    const entities = await db.getEntities();
-    let entity = entities.find(e => e.id === invoice.entity_id) || entities[0];
-    
-    const year = parseInt(invoice.issue_date?.split('-')[0] || '') || new Date().getFullYear();
-    const entityPrefix = entity?.entity_code || 'CLTD';
+    let validApprovedBy: string | null = user?.id || null;
 
-    let nextSeq = 1;
     if (isSupabaseConfigured && supabase) {
-      const prefixPattern = `${entityPrefix}-${invoice.currency}-${year}-%`;
-      const { data: existingInvs } = await supabase
-        .from('invoices')
-        .select('invoice_number')
-        .ilike('invoice_number', prefixPattern)
-        .order('invoice_number', { ascending: false });
-      
-      if (existingInvs && existingInvs.length > 0) {
-        let maxSerial = 0;
-        for (const invRow of existingInvs) {
-          if (invRow.invoice_number) {
-            const parts = invRow.invoice_number.split('-');
-            const num = parseInt(parts[parts.length - 1] || '0', 10);
-            if (!isNaN(num) && num > maxSerial) maxSerial = num;
-          }
-        }
-        nextSeq = maxSerial + 1;
+      if (validApprovedBy) {
+        const { data: p } = await supabase.from('profiles').select('id').eq('id', validApprovedBy).maybeSingle();
+        if (!p) validApprovedBy = null;
+      }
+
+      // 1. Try atomic database RPC function first
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('finalize_invoice_and_assign_number', {
+        p_invoice_id: id,
+        p_user_id: validApprovedBy
+      });
+
+      if (!rpcErr && rpcRes && rpcRes.invoice_number) {
+        invoice.status = 'approved';
+        invoice.invoice_number = rpcRes.invoice_number;
+        invoice.approved_by = user?.id || null as any;
+        invoice.approved_at = new Date().toISOString();
+
+        await db.notifyAction({
+          sender_name: user?.full_name || 'System',
+          sender_role: user?.role_name || 'Super Admin',
+          title: `Invoice Approved: ${rpcRes.invoice_number}`,
+          message: `Invoice ${rpcRes.invoice_number} for ${invoice.project_name} has been approved and sequence locked.`,
+          category: 'invoice_approved',
+          target_roles: ['Super Admin', 'Finance Admin', 'Client Service', 'Project Manager'],
+          link_url: `/billing/invoices/${id}`
+        });
+
+        db.logAudit(user?.id || '00000000-0000-4000-8000-000000000000', 'approve_invoice', 'invoices', id, null, { status: 'approved', number: rpcRes.invoice_number });
+        return invoice;
       }
     }
 
-    const serialStr = nextSeq.toString().padStart(4, '0');
-    const invoiceNumber = `${entityPrefix}-${invoice.currency}-${year}-${serialStr}`;
+    // Fallback: Client-side sequence calculation with auto-retry collision loop
+    const entities = await db.getEntities();
+    let entity = entities.find(e => e.id === invoice.entity_id) || entities[0];
+    const year = parseInt(invoice.issue_date?.split('-')[0] || '') || new Date().getFullYear();
+    const entityPrefix = entity?.entity_code || 'CLTD';
+
+    let invoiceNumber = '';
+    let attempt = 0;
+    let success = false;
+
+    while (attempt < 10 && !success) {
+      attempt++;
+      let nextSeq = 1;
+
+      if (isSupabaseConfigured && supabase) {
+        const prefixPattern = `${entityPrefix}-${invoice.currency}-${year}-%`;
+        const { data: existingInvs } = await supabase
+          .from('invoices')
+          .select('invoice_number')
+          .ilike('invoice_number', prefixPattern);
+
+        if (existingInvs && existingInvs.length > 0) {
+          let maxSerial = 0;
+          for (const invRow of existingInvs) {
+            if (invRow.invoice_number) {
+              const parts = invRow.invoice_number.split('-');
+              const num = parseInt(parts[parts.length - 1] || '0', 10);
+              if (!isNaN(num) && num > maxSerial) maxSerial = num;
+            }
+          }
+          nextSeq = maxSerial + (attempt - 1) + 1;
+        } else {
+          nextSeq = attempt;
+        }
+      }
+
+      const serialStr = nextSeq.toString().padStart(4, '0');
+      invoiceNumber = `${entityPrefix}-${invoice.currency}-${year}-${serialStr}`;
+
+      if (isSupabaseConfigured && supabase) {
+        const { error: invErr } = await supabase
+          .from('invoices')
+          .update({
+            status: 'approved',
+            invoice_number: invoiceNumber,
+            approved_by: validApprovedBy,
+            approved_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id);
+
+        if (invErr) {
+          if (invErr.message?.includes('invoices_invoice_number_key') || invErr.message?.includes('duplicate key')) {
+            // Collision occurred, retry loop will increment sequence
+            continue;
+          }
+          throw new Error(`Cloud invoice approval failed: ${invErr.message}`);
+        }
+        success = true;
+      } else {
+        success = true;
+      }
+    }
 
     const items = await db.getInvoiceItems(id);
     const clients = await db.getClients(); const client = clients.find(c => c.id === invoice.client_id);
@@ -2522,24 +2590,6 @@ export const db = {
     };
 
     if (isSupabaseConfigured && supabase) {
-      let validApprovedBy: string | null = user?.id || null;
-      if (validApprovedBy) {
-        const { data: p } = await supabase.from('profiles').select('id').eq('id', validApprovedBy).maybeSingle();
-        if (!p) validApprovedBy = null;
-      }
-
-      const { error: invErr } = await supabase
-        .from('invoices')
-        .update({
-          status: 'approved',
-          invoice_number: invoiceNumber,
-          approved_by: validApprovedBy,
-          approved_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id);
-      if (invErr) throw new Error(`Cloud invoice approval failed: ${invErr.message}`);
-
       const { error: snapErr } = await supabase
         .from('invoice_snapshots')
         .upsert({
