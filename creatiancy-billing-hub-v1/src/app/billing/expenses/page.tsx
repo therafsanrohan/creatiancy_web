@@ -101,6 +101,8 @@ export default function ExpensesPage() {
   };
 
   // Payment Collection & Net Inflow calculation
+  // NET INCOMING (Excl. VAT) is calculated from NET RECEIVED — i.e., payment amount minus
+  // any gateway/processing fee already deducted. VAT is then extracted from that net figure.
   const getInflow = (currency: CurrencyTab) => {
     const relevantInvoices = invoices.filter(inv =>
       inv.currency === currency &&
@@ -108,8 +110,10 @@ export default function ExpensesPage() {
       matchesFilter(inv.issue_date)
     );
     let totalInvoiced = 0;
-    let grossCollected = 0;
-    let vatCollected = 0;
+    let grossCollected = 0;   // raw payment amounts (what client sent)
+    let netReceived = 0;      // after gateway/processing fee deduction
+    let vatFromNet = 0;       // VAT extracted from net received
+
     for (const inv of relevantInvoices) {
       const items = allItems.filter(i => i.invoice_id === inv.id);
       const pays = allPayments.filter(p => p.invoice_id === inv.id);
@@ -121,14 +125,24 @@ export default function ExpensesPage() {
       totalInvoiced += t.totalPayable;
       grossCollected += t.amountPaid;
 
-      // Estimate VAT portion of collected amount
-      if (t.totalPayable > 0 && t.vatAmount > 0) {
-        const vatRatio = t.vatAmount / t.totalPayable;
-        vatCollected += t.amountPaid * vatRatio;
+      // For each payment on this invoice, compute net (after processing fee) and
+      // extract the VAT portion from that net amount.
+      for (const p of pays) {
+        const pFee = p.processing_fee || 0;
+        const pNet = Math.max(0, p.amount - pFee);
+        netReceived += pNet;
+
+        // Estimate VAT share from net received using the invoice's VAT ratio
+        if (t.totalPayable > 0 && t.vatAmount > 0) {
+          const vatRatio = t.vatAmount / t.totalPayable;
+          vatFromNet += pNet * vatRatio;
+        }
       }
     }
-    const netIncomingRevenue = Math.max(0, grossCollected - vatCollected);
-    return { totalInvoiced, grossCollected, vatCollected, netIncomingRevenue };
+
+    // Net Incoming (Excl. VAT) = net received - VAT portion from that net
+    const netIncomingRevenue = Math.max(0, netReceived - vatFromNet);
+    return { totalInvoiced, grossCollected, vatCollected: vatFromNet, netIncomingRevenue };
   };
 
   // Filter expenses (separate active from pending deletion / archive)
@@ -343,7 +357,7 @@ export default function ExpensesPage() {
             </div>
             <p className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider">Net Incoming (Excl. VAT)</p>
             <p className="text-2xl font-extrabold text-green-700 mt-0.5">{formatCurrency(netIncomingRevenue, currencyTab)}</p>
-            <p className="text-xs text-gray-400 mt-1">Paid: {formatCurrency(grossCollected, currencyTab)} · VAT: {formatCurrency(vatCollected, currencyTab)}</p>
+            <p className="text-xs text-gray-400 mt-1">Gross Paid: {formatCurrency(grossCollected, currencyTab)} · VAT (from net): {formatCurrency(vatCollected, currencyTab)}</p>
           </div>
           {/* Expenses */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">

@@ -818,7 +818,7 @@ const MOCK_PROFILES: Profile[] = [
 
 const MOCK_ENTITIES: BusinessEntity[] = [
   {
-    id: '11111111-1111-4111-8111-111111111111',
+    id: '11111111-1111-1111-1111-111111111111',
     legal_name: 'Creatiancy Limited',
     entity_code: 'CLTD',
     logo_url: '',
@@ -838,7 +838,7 @@ const MOCK_ENTITIES: BusinessEntity[] = [
     default_vat_rate: 15.0
   },
   {
-    id: '22222222-2222-4222-8222-222222222222',
+    id: '22222222-2222-2222-2222-222222222222',
     legal_name: 'Creatiancy LLC',
     entity_code: 'CLLC',
     logo_url: '',
@@ -862,7 +862,7 @@ const MOCK_ENTITIES: BusinessEntity[] = [
 const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   {
     id: 'a00000b0-0000-4000-8000-000000000001',
-    entity_id: '11111111-1111-4111-8111-111111111111',
+    entity_id: '11111111-1111-1111-1111-111111111111',
     bank_name: 'City Bank PLC (Bangladesh)',
     account_holder: 'Creatiancy Limited',
     account_number: 'BDT-ACC-1002003004005',
@@ -874,7 +874,7 @@ const MOCK_BANK_ACCOUNTS: BankAccount[] = [
   },
   {
     id: 'a00000b0-0000-4000-8000-000000000002',
-    entity_id: '22222222-2222-4222-8222-222222222222',
+    entity_id: '22222222-2222-2222-2222-222222222222',
     bank_name: 'JPMorgan Chase Bank, N.A. (USA)',
     account_holder: 'Creatiancy LLC',
     account_number: 'USD-ACC-9876543210',

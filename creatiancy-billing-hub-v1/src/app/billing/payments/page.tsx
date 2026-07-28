@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { db, Payment, Invoice, BillingClient, Profile, GatewayRates, localStore } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
-import { CircleDollarSign, Plus, Receipt, Percent, ArrowDownRight, X, CheckCircle } from 'lucide-react';
+import { CircleDollarSign, Plus, Percent, ArrowDownRight, X, CheckCircle } from 'lucide-react';
 import NotificationModal from '@/components/NotificationModal';
 
 export default function PaymentsPage() {
@@ -309,21 +309,12 @@ export default function PaymentsPage() {
                         {formatCurrency(netReceived, p.currency)}
                       </td>
                       <td className="p-4 text-center">
-                        <div className="flex items-center justify-center space-x-3">
-                          <Link
-                            href={`/billing/receipts/${p.id}`}
-                            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-gray-500 hover:text-[#9B1C22] hover:underline"
-                          >
-                            <Receipt className="h-3.5 w-3.5" />
-                            <span>View Receipt</span>
-                          </Link>
-                          <button
-                            onClick={() => handleVerifyPayment(p)}
-                            className="inline-flex items-center space-x-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded transition cursor-pointer"
-                          >
-                            <span>Verify</span>
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => handleVerifyPayment(p)}
+                          className="inline-flex items-center space-x-1 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded transition cursor-pointer"
+                        >
+                          <span>Verify</span>
+                        </button>
                       </td>
                     </tr>
                   );
@@ -376,13 +367,6 @@ export default function PaymentsPage() {
                   )}
                 </div>
                 <div className="flex gap-2 pt-3 border-t border-gray-50">
-                  <Link
-                    href={`/billing/receipts/${p.id}`}
-                    className="flex-1 flex items-center justify-center space-x-1.5 text-xs font-semibold text-gray-600 bg-gray-50 hover:bg-gray-100 py-2 rounded-xl transition"
-                  >
-                    <Receipt className="h-3.5 w-3.5" />
-                    <span>View Receipt</span>
-                  </Link>
                   <button
                     onClick={() => handleVerifyPayment(p)}
                     className="flex-1 flex items-center justify-center space-x-1 text-xs font-bold text-emerald-600 bg-emerald-50 hover:bg-emerald-100 py-2 rounded-xl transition cursor-pointer"
