@@ -245,7 +245,22 @@ export default function TaxLedgerPage() {
         const flatItems = itemLists.flat();
         setAllItems(flatItems);
 
-        // Calculate Gross Receipts and Allowable Expenses
+        // ─────────────────────────────────────────────────────────────────
+        // GROSS REVENUE (FY) for Tax Ledger = Cashflow GROSS PROFIT
+        //
+        // Formula (mirrors Cashflow page getInflow logic):
+        //   1. For each FY payment → netReceived = amount − processing_fee
+        //   2. Extract VAT share from netReceived (proportional to invoice VAT ratio)
+        //   3. netIncomingRevenue = Σ netReceived − Σ vatFromNet
+        //   4. FY Expenses (BDT, active only)
+        //   5. GROSS PROFIT = netIncomingRevenue − fyExpenses
+        //      → This is the Gross Revenue used for corporate income tax calculation.
+        //
+        // Note: allowableExpenses is set to 0 because the expenses are already
+        // deducted inside the gross profit figure. User can add disallowed/adjustments
+        // manually if required.
+        // ─────────────────────────────────────────────────────────────────
+
         const [startYear] = financialYear.split('-').map(Number);
         const fyStartDate = `${startYear}-07-01`;
         const fyEndDate = `${startYear + 1}-06-30`;
@@ -256,19 +271,51 @@ export default function TaxLedgerPage() {
           inv.issue_date >= fyStartDate && inv.issue_date <= fyEndDate
         );
 
-        let liveGross = 0;
+
+        let fyNetReceived = 0;
+        let fyVatFromNet = 0;
+
         for (const inv of fyInvoices) {
           const items = flatItems.filter(i => i.invoice_id === inv.id);
           const paysForInv = pays.filter(p => p.invoice_id === inv.id);
-          const totals = calculateTotals({ items: items.map(i => ({ quantity: i.quantity, rate: i.rate })), discountType: inv.discount_type, discountValue: inv.discount_value, vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: paysForInv });
-          liveGross += (totals.totalPayable - totals.vatAmount);
+          const totals = calculateTotals({
+            items: items.map(i => ({ quantity: i.quantity, rate: i.rate })),
+            discountType: inv.discount_type, discountValue: inv.discount_value,
+            vatRate: inv.vat_rate, vatInclusive: inv.vat_inclusive, payments: paysForInv
+          });
+
+          // Per-payment net received (mirrors Cashflow getInflow)
+          for (const p of paysForInv) {
+            if (p.payment_date < fyStartDate || p.payment_date > fyEndDate) continue;
+            const pFee = p.processing_fee || 0;
+            const pNet = Math.max(0, p.amount - pFee);
+            fyNetReceived += pNet;
+            // Proportional VAT share from net received
+            if (totals.totalPayable > 0 && totals.vatAmount > 0) {
+              const vatRatio = totals.vatAmount / totals.totalPayable;
+              fyVatFromNet += pNet * vatRatio;
+            }
+          }
         }
-        setGrossReceipts(liveGross);
+
+        const fyNetIncoming = Math.max(0, fyNetReceived - fyVatFromNet);
 
         const fyExpenses = exps
-          .filter(e => e.currency === 'BDT' && e.expense_date >= fyStartDate && e.expense_date <= fyEndDate)
+          .filter(e =>
+            e.currency === 'BDT' &&
+            e.expense_date >= fyStartDate && e.expense_date <= fyEndDate &&
+            (!e.deletion_status || e.deletion_status === 'ACTIVE')
+          )
           .reduce((sum, e) => sum + e.amount, 0);
-        setAllowableExpenses(fyExpenses);
+
+        // GROSS PROFIT = Net Incoming (excl. VAT) − Operating Expenses
+        const fyGrossProfit = Math.max(0, fyNetIncoming - fyExpenses);
+
+        // grossReceipts → fed into corporate tax engine as Gross Revenue
+        setGrossReceipts(fyGrossProfit);
+        // allowableExpenses = 0 (already baked into gross profit above)
+        setAllowableExpenses(0);
+
 
         if (ents[0]) setFormEntityId(ents[0].id);
 
@@ -953,7 +1000,7 @@ export default function TaxLedgerPage() {
           <div className="space-y-6">
             {/* Income Tax Dashboard Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard label="Gross Revenue (FY)" amount={formatCurrency(grossReceipts, 'BDT')} sub={`Financial Year ${financialYear}`} color="bg-[#9B1C22]" icon={TrendingUp} />
+              <StatCard label="Gross Revenue (FY)" amount={formatCurrency(grossReceipts, 'BDT')} sub={`Cashflow Gross Profit · FY ${financialYear}`} color="bg-[#9B1C22]" icon={TrendingUp} />
               <StatCard label="Taxable Profit" amount={formatCurrency(taxResult.taxableProfitForTax, 'BDT')} sub={`Accounting Profit: ${formatCurrency(taxResult.accountingProfit, 'BDT')}`} color="bg-blue-600" icon={Scale} />
               <StatCard label="Final Tax Payable" amount={formatCurrency(taxResult.finalTaxPayable, 'BDT')} sub={`Route: ${taxResult.liabilityDeterminedBy.replace(/_/g, ' ')}`} color="bg-amber-600" icon={Calculator} badge={{ text: taxResult.liabilityDeterminedBy === 'REGULAR_CORPORATE_TAX' ? '25% / 27.5%' : taxResult.liabilityDeterminedBy === 'TURNOVER_MINIMUM_TAX' ? '0.60% TURNOVER' : 'SOURCE MIN', type: 'info' }} />
               <StatCard label="Corp. Tax Deposited" amount={formatCurrency(totalCorpTaxPaid, 'BDT')} sub={`Balance: ${formatCurrency(Math.max(0, taxBalance), 'BDT')}`} color="bg-emerald-600" icon={CheckCircle} badge={{ text: taxBalance <= 0 ? 'SETTLED' : 'OUTSTANDING', type: taxBalance <= 0 ? 'ok' : 'warn' }} />
@@ -972,12 +1019,12 @@ export default function TaxLedgerPage() {
                 <div>
                   <label className="block font-bold text-gray-700 mb-1.5">Gross Revenue (BDT)</label>
                   <input type="number" min="0" value={grossReceipts} onChange={e => setGrossReceipts(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-extrabold text-gray-900 focus:outline-none" />
-                  <p className="text-[10px] text-gray-400 mt-1">Auto-filled from paid invoices this FY</p>
+                  <p className="text-[10px] text-gray-400 mt-1">Auto-filled: Cashflow Gross Profit for FY (net received excl. VAT − expenses)</p>
                 </div>
                 <div>
                   <label className="block font-bold text-gray-700 mb-1.5">Allowable Expenses (BDT)</label>
                   <input type="number" min="0" value={allowableExpenses} onChange={e => setAllowableExpenses(parseFloat(e.target.value) || 0)} className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 font-extrabold text-gray-900 focus:outline-none" />
-                  <p className="text-[10px] text-gray-400 mt-1">Auto-filled from expense records this FY</p>
+                  <p className="text-[10px] text-gray-400 mt-1">Already deducted in Gross Profit. Add only disallowed adjustments below if needed.</p>
                 </div>
                 <div>
                   <label className="block font-bold text-gray-700 mb-1.5">Disallowed Expenses (BDT)</label>
