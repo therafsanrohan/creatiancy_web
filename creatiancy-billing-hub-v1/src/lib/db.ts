@@ -3194,12 +3194,23 @@ export const db = {
     // Get sequence count from cloud first
     let nextSeq = 1;
     if (isSupabaseConfigured && supabase) {
-      const { count, error: countErr } = await supabase
+      const { data: latestPayments, error: payErr } = await supabase
         .from('invoice_payments')
-        .select('*', { count: 'exact', head: true })
-        .not('receipt_number', 'is', null);
-      if (!countErr && count !== null) {
-        nextSeq = count + 1;
+        .select('receipt_number')
+        .like('receipt_number', `${receiptPrefix}-${year}-%`);
+      if (!payErr && latestPayments) {
+        let maxSeq = 0;
+        latestPayments.forEach(p => {
+          if (p.receipt_number) {
+            const parts = p.receipt_number.split('-');
+            const seqStr = parts[parts.length - 1];
+            const seqVal = parseInt(seqStr, 10);
+            if (!isNaN(seqVal) && seqVal > maxSeq) {
+              maxSeq = seqVal;
+            }
+          }
+        });
+        nextSeq = maxSeq + 1;
       }
     } else {
       const sequenceKey = `rec_${receiptPrefix}_${year}`;
