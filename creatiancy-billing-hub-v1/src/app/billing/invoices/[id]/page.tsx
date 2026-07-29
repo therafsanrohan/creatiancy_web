@@ -58,6 +58,7 @@ export default function InvoiceDetailsPage() {
   // Form states for manual payment
   const [payDate, setPayDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [payAmount, setPayAmount] = useState(0);
+  const [paymentOption, setPaymentOption] = useState<'full' | 'partial'>('full');
   const [payMethod, setPayMethod] = useState('Bank Transfer');
   const [payRef, setPayRef] = useState('');
   const [payNote, setPayNote] = useState('');
@@ -353,6 +354,7 @@ export default function InvoiceDetailsPage() {
 
   const handleRecordPaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (actionLoading) return;
     if (payAmount <= 0) {
       showNotif('Invalid Amount', 'Payment amount must be greater than zero.', 'error');
       return;
@@ -856,6 +858,7 @@ export default function InvoiceDetailsPage() {
                 <button
                   onClick={() => {
                     setPayAmount(totals.amountDue);
+                    setPaymentOption('full');
                     setRecordingPayment(true);
                   }}
                   className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#1E1E1E] py-3 text-xs font-bold text-white hover:bg-black shadow-md transition cursor-pointer"
@@ -912,8 +915,7 @@ export default function InvoiceDetailsPage() {
               <CreditCard className="h-4.5 w-4.5 text-[#9B1C22]" />
               <span>Record Wire or Cash Payment & Gateway Cutoff</span>
             </h3>
-            
-            <form onSubmit={handleRecordPaymentSubmit} className="space-y-4 text-xs">
+                      <form onSubmit={handleRecordPaymentSubmit} className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-3">
                 <div>
                   <label className="block font-semibold text-gray-700 mb-1.5">Payment Date *</label>
@@ -927,16 +929,48 @@ export default function InvoiceDetailsPage() {
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-gray-700 mb-1.5">Payment Amount ({invoice.currency}) *</label>
-                  <input
-                    type="number"
-                    step="any"
-                    required
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(parseFloat(e.target.value) || 0)}
-                    className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 px-3 text-xs text-[#1E1E1E] focus:outline-none font-bold focus:border-[#9B1C22]"
-                  />
+                  <label className="block font-semibold text-gray-700 mb-1.5">Payment Allocation *</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentOption('full');
+                        setPayAmount(totals.amountDue);
+                      }}
+                      className={`flex-1 py-2 px-3 rounded-xl border text-[10px] font-bold text-center transition cursor-pointer ${
+                        paymentOption === 'full'
+                          ? 'border-[#9B1C22] bg-[#9B1C22]/5 text-[#9B1C22]'
+                          : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      Full (৳{totals.amountDue.toLocaleString()})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentOption('partial')}
+                      className={`flex-1 py-2 px-3 rounded-xl border text-[10px] font-bold text-center transition cursor-pointer ${
+                        paymentOption === 'partial'
+                          ? 'border-[#9B1C22] bg-[#9B1C22]/5 text-[#9B1C22]'
+                          : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      Partial Payment
+                    </button>
+                  </div>
                 </div>
+              </div>
+
+              <div>
+                <label className="block font-semibold text-gray-700 mb-1.5">Payment Amount ({invoice.currency}) *</label>
+                <input
+                  type="number"
+                  step="any"
+                  required
+                  disabled={paymentOption === 'full'}
+                  value={payAmount}
+                  onChange={(e) => setPayAmount(parseFloat(e.target.value) || 0)}
+                  className="block w-full rounded-xl border border-gray-200 bg-white py-2.5 px-3 text-xs text-[#1E1E1E] focus:outline-none font-bold focus:border-[#9B1C22] disabled:bg-gray-55/70 disabled:text-gray-400"
+                />
               </div>
 
               {/* Platform Gateway Cutoff Fee Section */}

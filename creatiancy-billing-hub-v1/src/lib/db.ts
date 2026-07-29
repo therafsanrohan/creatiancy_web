@@ -2049,9 +2049,67 @@ export const db = {
             break;
         }
 
-        query = query.range(offset, offset + limit - 1);
+        let { data, error, count } = await query;
 
-        const { data, error, count } = await query;
+        // Fallback for missing archived_at column in database
+        if (error && error.message && error.message.includes('archived_at')) {
+          console.warn('archived_at column missing in Supabase, retrying query without archived_at filter');
+          let retryQuery = supabase.from('invoices').select('*', { count: 'exact' });
+          if (preset === 'active') {
+            retryQuery = retryQuery.neq('status', 'void');
+          } else if (preset === 'void') {
+            retryQuery = retryQuery.eq('status', 'void');
+          } else if (preset === 'archived') {
+            return { invoices: [], total: 0, page, totalPages: 1 };
+          }
+          if (options.status && options.status !== 'all') retryQuery = retryQuery.eq('status', options.status);
+          if (options.currency && options.currency !== 'all') retryQuery = retryQuery.eq('currency', options.currency);
+          if (options.entityId && options.entityId !== 'all') retryQuery = retryQuery.eq('entity_id', options.entityId);
+          if (options.clientId && options.clientId !== 'all') retryQuery = retryQuery.eq('client_id', options.clientId);
+          if (options.search && options.search.trim()) {
+            const s = options.search.trim();
+            retryQuery = retryQuery.or(`invoice_number.ilike.%${s}%,project_name.ilike.%${s}%,reference_number.ilike.%${s}%`);
+          }
+          const sort = options.sort || 'latest_created';
+          switch (sort) {
+            case 'latest_created':
+              retryQuery = retryQuery.order('created_at', { ascending: false }).order('id', { ascending: false });
+              break;
+            case 'oldest_created':
+              retryQuery = retryQuery.order('created_at', { ascending: true }).order('id', { ascending: true });
+              break;
+            case 'latest_issued':
+              retryQuery = retryQuery.order('issue_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+              break;
+            case 'oldest_issued':
+              retryQuery = retryQuery.order('issue_date', { ascending: true, nullsFirst: false }).order('created_at', { ascending: true });
+              break;
+            case 'due_soonest':
+              retryQuery = retryQuery.order('due_date', { ascending: true, nullsFirst: false });
+              break;
+            case 'due_latest':
+              retryQuery = retryQuery.order('due_date', { ascending: false, nullsFirst: false });
+              break;
+            case 'highest_amount':
+              retryQuery = retryQuery.order('total_payable', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
+              break;
+            case 'lowest_amount':
+              retryQuery = retryQuery.order('total_payable', { ascending: true, nullsFirst: false }).order('created_at', { ascending: false });
+              break;
+            case 'recently_updated':
+              retryQuery = retryQuery.order('updated_at', { ascending: false }).order('id', { ascending: false });
+              break;
+            default:
+              retryQuery = retryQuery.order('created_at', { ascending: false }).order('id', { ascending: false });
+              break;
+          }
+          retryQuery = retryQuery.range(offset, offset + limit - 1);
+          const retryRes = await retryQuery;
+          data = retryRes.data;
+          error = retryRes.error;
+          count = retryRes.count;
+        }
+
         if (!error && data) {
           const total = count || 0;
           const populated = await db.populateInvoicesTotalsBatch(data);

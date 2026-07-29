@@ -15,6 +15,7 @@ export default function PaymentsPage() {
   
   const [recordingPayment, setRecordingPayment] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form states for manual recording
   const [selectedInvoiceId, setSelectedInvoiceId] = useState('');
@@ -157,6 +158,7 @@ export default function PaymentsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (!selectedInvoiceId) {
       showModal('Selection Required', 'Please select an unpaid invoice to record payment.', 'error');
       return;
@@ -166,6 +168,7 @@ export default function PaymentsPage() {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const inv = invoices.find(i => i.id === selectedInvoiceId);
       if (!inv) return;
@@ -213,6 +216,8 @@ export default function PaymentsPage() {
       );
     } catch (err: any) {
       showModal('Recording Failed', err.message || 'Payment recording failed.', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -535,11 +540,12 @@ export default function PaymentsPage() {
                 >
                   Cancel
                 </button>
-                <button
+                 <button
                   type="submit"
-                  className="rounded-xl bg-[#9B1C22] py-2.5 px-6 font-semibold text-white hover:bg-[#9B1C22]/90 shadow-md cursor-pointer transition"
+                  disabled={isSubmitting}
+                  className="rounded-xl bg-[#9B1C22] py-2.5 px-6 font-semibold text-white hover:bg-[#9B1C22]/90 disabled:opacity-50 shadow-md cursor-pointer transition"
                 >
-                  Record Payment
+                  {isSubmitting ? 'Saving...' : 'Record Payment'}
                 </button>
               </div>
 
