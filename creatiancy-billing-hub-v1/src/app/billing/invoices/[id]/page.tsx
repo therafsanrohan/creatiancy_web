@@ -947,7 +947,10 @@ export default function InvoiceDetailsPage() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => setPaymentOption('partial')}
+                      onClick={() => {
+                        setPaymentOption('partial');
+                        setPayAmount(0);
+                      }}
                       className={`flex-1 py-2 px-3 rounded-xl border text-[10px] font-bold text-center transition cursor-pointer ${
                         paymentOption === 'partial'
                           ? 'border-[#9B1C22] bg-[#9B1C22]/5 text-[#9B1C22]'
