@@ -1,171 +1,83 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Shield } from "lucide-react";
-import { Container } from "@/components/ui/Layout";
-import { Heading, Text } from "@/components/ui/Typography";
 
 const sections = [
-  { id: "info", title: "1. Information We Collect" },
-  { id: "usage", title: "2. How We Use Your Information" },
-  { id: "sharing", title: "3. Data Sharing" },
-  { id: "security", title: "4. Data Security" },
-  { id: "cookies", title: "5. Cookies" },
-  { id: "rights", title: "6. Your Rights" },
-  { id: "links", title: "7. Third-Party Links" },
-  { id: "updates", title: "8. Updates" },
-  { id: "contact", title: "9. Contact" },
+  { id: "1", title: "Information We Collect", content: "We collect only what is strictly necessary to operate effectively and deliver premium experiences. This includes personal details (name, email), project-related intelligence, interaction data, and essential cookies for optimization." },
+  { id: "2", title: "How We Use Data", content: "Your intelligence is utilized exclusively to respond to inquiries, architect complex digital services, and optimize website performance. We absolutely do not sell or trade your personal data to third parties." },
+  { id: "3", title: "Data Sharing", content: "We may deploy data externally only under strict necessity: with highly trusted enterprise service providers (Vercel, Analytics, Communications), or when explicitly required by international law." },
+  { id: "4", title: "Data Security", content: "We apply military-grade routing, native security layers, and organizational measures to protect your data. However, no internet-facing architecture is completely impenetrable." },
+  { id: "5", title: "Cookies & Tracking", content: "We use encrypted cookies to enhance interface functionality and map user behavior. You maintain the right to disable cookies via browser parameters, though dynamic features may degrade." },
+  { id: "6", title: "Your Rights", content: "Operating on a global scale, you possess the right to extract and audit your stored data, demand immediate cryptographic deletion, and withdraw operational consent at any time." },
+  { id: "7", title: "Third-Party Links", content: "Our application may bridge to external ecosystems. We hold no architectural responsibility for external privacy algorithms or data collection policies." },
+  { id: "8", title: "Policy Updates", content: "We may deploy updates to this policy dynamically. Structural changes will be reflected natively on this route with a revised timestamp." },
 ];
 
 export default function PrivacyPolicyPage() {
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
-    }
-  };
-
   return (
-    <div className="min-h-screen pt-32 pb-24 bg-[var(--bg)] text-[var(--text)]">
-      <Container className="mb-24">
+    <div className="min-h-screen bg-[#FBFDF9] selection:bg-[#9B1C22] selection:text-white pb-32">
+      
+      {/* Clean, Readable Hero Section */}
+      <section className="pt-40 pb-16 px-6 md:px-12 max-w-4xl mx-auto text-center relative z-10 border-b border-[#1E1E1E]/10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-4xl space-y-6"
+          className="flex flex-col items-center gap-6"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[var(--ruby-red)]/10 flex items-center justify-center">
-              <Shield className="w-5 h-5 text-[var(--ruby-red)]" />
-            </div>
-            <Text variant="small" className="font-bold tracking-widest uppercase text-[var(--ruby-red)]">Legal</Text>
-          </div>
-          <Heading level={1} className="text-5xl md:text-7xl font-bold tracking-tight">
-            Privacy Policy.
-          </Heading>
-          <Text variant="lead" className="max-w-2xl text-[var(--muted-fg)]">
-            We respect your privacy and are committed to protecting your personal data with enterprise-grade security.
-          </Text>
-        </motion.div>
-      </Container>
-
-      <Container>
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
+          <h1 className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[#1E1E1E] leading-tight">
+            Privacy Policy
+          </h1>
           
-          {/* Sticky Sidebar (Table of Contents) */}
-          <motion.aside 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="hidden lg:block w-72 sticky top-32 shrink-0"
-          >
-            <div className="p-6 rounded-2xl bg-[var(--muted)]/10 border border-[var(--border)]">
-              <Text variant="small" className="uppercase font-bold tracking-widest text-[var(--muted-fg)] mb-6">Contents</Text>
-              <nav className="flex flex-col gap-3">
-                {sections.map((section) => (
-                  <button 
-                    key={section.id}
-                    onClick={() => scrollTo(section.id)}
-                    className="text-left text-sm font-medium text-[var(--text)]/70 hover:text-[var(--ruby-red)] transition-colors duration-300"
-                  >
-                    {section.title}
-                  </button>
-                ))}
-              </nav>
-            </div>
-          </motion.aside>
+          <p className="text-[16px] md:text-[18px] text-[#666666] font-light leading-relaxed max-w-2xl">
+            We respect your privacy and are committed to protecting your personal data with enterprise-grade security and transparency.
+          </p>
+          <p className="text-[13px] font-medium text-[#1E1E1E] uppercase tracking-widest mt-2 px-4 py-2 bg-black/5 rounded-full">
+            Effective Date: April 2026
+          </p>
+        </motion.div>
+      </section>
 
-          {/* Main Document */}
+      {/* Readable Document Layout */}
+      <section className="px-6 md:px-12 max-w-3xl mx-auto pt-16">
+        <div className="flex flex-col gap-12">
+          {sections.map((section, index) => (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: index * 0.05 }}
+              key={section.id}
+              className="flex flex-col gap-3"
+            >
+              <h2 className="text-[22px] md:text-[26px] font-semibold text-[#1E1E1E] flex items-baseline gap-3">
+                <span className="text-[16px] text-[#9B1C22] font-mono">{section.id}.</span> 
+                {section.title}
+              </h2>
+              <p className="text-[16px] md:text-[18px] text-[#444444] font-light leading-[1.8]">
+                {section.content}
+              </p>
+            </motion.div>
+          ))}
+          
           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.8 }}
-            className="flex-1 space-y-16"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-12 pt-12 border-t border-[#1E1E1E]/10"
           >
-            <div className="pb-8 border-b border-[var(--border)]">
-              <Text className="font-medium">Effective Date: April 2026</Text>
-              <Text className="mt-4 text-[var(--muted-fg)]">
-                <strong className="text-[var(--text)] font-medium">Creatiancy</strong> (“we”, “our”, “us”) respects your privacy and is committed to protecting your personal data. This policy explains how we collect, use, and safeguard information when you interact with our website and services.
-              </Text>
-            </div>
-
-            <div id="info" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>1. Information We Collect</Heading>
-              <Text className="text-[var(--muted-fg)]">We collect only what is strictly necessary to operate effectively and deliver premium experiences:</Text>
-              <ul className="list-disc pl-6 space-y-3 marker:text-[var(--ruby-red)] text-[var(--muted-fg)]">
-                <li>Personal details such as name, email address, phone number</li>
-                <li>Project-related intelligence and assets you choose to share</li>
-                <li>Usage data such as interaction paths, time spent, and device architecture</li>
-                <li>Cookies and tracking data strictly for analytics and optimization</li>
-              </ul>
-            </div>
-
-            <div id="usage" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>2. How We Use Your Information</Heading>
-              <Text className="text-[var(--muted-fg)]">Your intelligence is utilized exclusively to:</Text>
-              <ul className="list-disc pl-6 space-y-3 marker:text-[var(--ruby-red)] text-[var(--muted-fg)]">
-                <li>Respond to high-level inquiries and establish communication</li>
-                <li>Architect and deliver complex digital services</li>
-                <li>Optimize website performance and user interaction models</li>
-                <li>Analyze traffic patterns to refine our digital presence</li>
-                <li>Maintain absolute security and prevent unauthorized access</li>
-              </ul>
-              <div className="pt-4 border-l-2 border-[var(--ruby-red)] pl-4">
-                <Text className="font-medium text-[var(--text)]">We absolutely do not sell or trade your personal data to third parties.</Text>
-              </div>
-            </div>
-
-            <div id="sharing" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>3. Data Sharing</Heading>
-              <Text className="text-[var(--muted-fg)]">We may deploy data externally only under strict necessity:</Text>
-              <ul className="list-disc pl-6 space-y-3 marker:text-[var(--ruby-red)] text-[var(--muted-fg)]">
-                <li>With highly trusted enterprise service providers (Vercel, Analytics, Communications)</li>
-                <li>When explicitly required by international law or legal obligation</li>
-              </ul>
-            </div>
-
-            <div id="security" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>4. Data Security</Heading>
-              <Text className="text-[var(--muted-fg)]">We apply military-grade routing, Next.js native security layers, and organizational measures to protect your data. However, no internet-facing architecture is completely impenetrable, and absolute protection cannot be technically guaranteed.</Text>
-            </div>
-
-            <div id="cookies" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>5. Cookies</Heading>
-              <Text className="text-[var(--muted-fg)]">We use encrypted cookies to enhance interface functionality and map user behavior. You maintain the right to disable cookies via browser parameters, though dynamic features may degrade.</Text>
-            </div>
-
-            <div id="rights" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>6. Your Rights</Heading>
-              <Text className="text-[var(--muted-fg)]">Operating on a global scale, you possess the right to:</Text>
-              <ul className="list-disc pl-6 space-y-3 marker:text-[var(--ruby-red)] text-[var(--muted-fg)]">
-                <li>Extract and audit your stored data</li>
-                <li>Demand immediate cryptographic deletion</li>
-                <li>Withdraw operational consent</li>
-              </ul>
-            </div>
-
-            <div id="links" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>7. Third-Party Links</Heading>
-              <Text className="text-[var(--muted-fg)]">Our application may bridge to external ecosystems. We hold no architectural responsibility for external privacy algorithms.</Text>
-            </div>
-
-            <div id="updates" className="scroll-mt-32 space-y-6">
-              <Heading level={2}>8. Updates</Heading>
-              <Text className="text-[var(--muted-fg)]">We may deploy updates to this policy dynamically. Structural changes will be reflected natively on this route with a revised timestamp.</Text>
-            </div>
-
-            <div id="contact" className="scroll-mt-32 p-8 rounded-2xl bg-[var(--text)] text-[var(--bg)]">
-              <Heading level={2} className="mb-4">9. Contact Protocol</Heading>
-              <Text className="mb-6 opacity-80">For absolute privacy-related escalations or data audits:</Text>
-              <div className="flex flex-col gap-2">
-                <Text variant="small" className="uppercase font-bold tracking-widest opacity-50">Direct Email</Text>
-                <a href="mailto:Contact@creatiancy.com" className="text-2xl font-medium hover:text-[var(--ruby-red)] transition-colors">Contact@creatiancy.com</a>
-              </div>
-            </div>
-
+             <h2 className="text-[22px] md:text-[26px] font-semibold text-[#1E1E1E] mb-4">
+               Contact & Privacy Audits
+             </h2>
+             <p className="text-[16px] md:text-[18px] text-[#444444] font-light leading-[1.8] mb-6">
+               For absolute privacy-related escalations, data audits, or requests regarding this policy, please contact our team directly.
+             </p>
+             <a href="mailto:creatiancy@gmail.com" className="inline-flex items-center justify-center bg-[#1E1E1E] text-white px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#9B1C22] hover:-translate-y-1 hover:shadow-lg transition-all w-fit">
+               creatiancy@gmail.com
+             </a>
           </motion.div>
         </div>
-      </Container>
+      </section>
     </div>
   );
 }

@@ -88,7 +88,7 @@ export const Projects = () => {
                   {/* Absolute Desktop Hover CTA */}
                   <div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 z-20 pointer-events-none">
                     <div className="pointer-events-auto">
-                      <div className="inline-flex items-center justify-center font-medium transition-all duration-300 ease-out rounded-full active:scale-[0.98] text-center bg-[#9B1C22] text-[#FFFFFF] shadow-xl shadow-black/10 hover:bg-[#1E1E1E] hover:shadow-black/20 px-8 py-4 text-[14px]">
+                      <div className="inline-flex items-center justify-center font-medium transition-all duration-300 ease-out rounded-full active:scale-[0.98] text-center bg-[#9B1C22] text-white !text-white shadow-xl shadow-black/10 hover:bg-[#1E1E1E] hover:shadow-black/20 px-8 py-4 text-[14px]">
                         View Case Study
                       </div>
                     </div>

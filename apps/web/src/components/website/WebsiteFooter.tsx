@@ -52,9 +52,14 @@ export default function WebsiteFooter() {
 
           <div className="flex flex-col gap-6 lg:col-span-4 lg:col-start-9 col-span-2">
             <span className="text-[11px] md:text-[12px] uppercase tracking-widest text-white/50 font-medium">Let&apos;s Bring Your Vision To Life</span>
-            <a href="mailto:hello@creatiancy.com" className="text-[28px] md:text-[36px] lg:text-[42px] tracking-tight hover:opacity-70 transition-opacity border-b-[2px] border-white pb-2 inline-block w-fit whitespace-nowrap">
-              hello@creatiancy.com
-            </a>
+            <div className="flex flex-col sm:flex-row gap-4 mt-2">
+              <a href="mailto:creatiancy@gmail.com" className="inline-flex items-center justify-center bg-[#9B1C22] text-white px-6 py-3 rounded-full text-[14px] font-medium hover:bg-[#7A151A] transition-colors w-fit">
+                Mail Us
+              </a>
+              <a href="https://wa.me/8801325078941" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center bg-white text-[#1E1E1E] px-6 py-3 rounded-full text-[14px] font-medium hover:bg-[#25D366] hover:text-white transition-colors w-fit">
+                WhatsApp
+              </a>
+            </div>
           </div>
 
         </div>
@@ -76,10 +81,7 @@ export default function WebsiteFooter() {
 
           <div className="flex flex-col sm:flex-row w-full lg:w-auto justify-between lg:justify-end gap-8 lg:gap-24 items-start sm:items-end">
             
-            <div className="flex flex-col text-[12px] md:text-[13px] leading-[1.8] text-white uppercase font-medium">
-              <span>DHAKA, BANGLADESH</span>
-              <span>1205</span>
-            </div>
+
             
             <div className="flex items-end gap-8 lg:gap-16">
               <div className="flex flex-col text-[12px] md:text-[13px] leading-[1.8] text-white uppercase font-medium">

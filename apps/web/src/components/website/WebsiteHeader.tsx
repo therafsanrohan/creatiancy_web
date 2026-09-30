@@ -64,6 +64,8 @@ export default function WebsiteHeader() {
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
+  const isDarkHero = pathname === "/about" && !isScrolled;
+
   return (
     <>
       <motion.header
@@ -91,7 +93,9 @@ export default function WebsiteHeader() {
                   className={`text-[12px] font-medium tracking-[0.1em] transition-colors focus:outline-none focus-visible:text-[#9B1C22] ${
                     isActive 
                       ? "text-[#9B1C22]" 
-                      : "text-[#1E1E1E] hover:text-[#9B1C22]"
+                      : isDarkHero 
+                        ? "text-white/90 hover:text-white"
+                        : "text-[#1E1E1E] hover:text-[#9B1C22]"
                   }`}
                 >
                   {item.label}
@@ -114,7 +118,7 @@ export default function WebsiteHeader() {
               src="/logos/Creatiancy%20logo.svg"
               alt="Creatiancy"
               fill
-              className="object-contain"
+              className={`object-contain transition-all duration-500 ${isScrolled ? 'brightness-0' : ''}`}
               priority
             />
           </Link>
@@ -130,7 +134,9 @@ export default function WebsiteHeader() {
                   className={`text-[12px] font-medium tracking-[0.1em] transition-colors focus:outline-none focus-visible:text-[#9B1C22] ${
                     isActive 
                       ? "text-[#9B1C22]" 
-                      : "text-[#1E1E1E] hover:text-[#9B1C22]"
+                      : isDarkHero 
+                        ? "text-white/90 hover:text-white"
+                        : "text-[#1E1E1E] hover:text-[#9B1C22]"
                   }`}
                 >
                   {item.label}
@@ -144,7 +150,9 @@ export default function WebsiteHeader() {
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="lg:hidden flex items-center justify-center w-12 h-12 relative z-[60] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C22] rounded-full shrink-0 transition-colors text-[#1E1E1E]"
+            className={`lg:hidden flex items-center justify-center w-12 h-12 relative z-[60] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C22] rounded-full shrink-0 transition-colors ${
+              (isDarkHero && !menuOpen) ? "text-white" : "text-[#1E1E1E]"
+            }`}
           >
             <div className="relative w-6 h-[12px] flex flex-col justify-between">
               <span className={`block h-[1.5px] w-full bg-current transform transition-all duration-300 origin-center ${menuOpen ? "rotate-45 translate-y-[5px]" : ""}`} />
@@ -200,11 +208,13 @@ export default function WebsiteHeader() {
                 transition={{ delay: 0.4, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                 className="mt-12 w-full pt-8"
               >
-                <div className="flex flex-col space-y-2 text-left">
-                  <a href="mailto:hello@creatiancy.com" className="text-[16px] font-medium text-[#1E1E1E] hover:text-[#9B1C22] transition-colors">
-                    hello@creatiancy.com
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <a href="mailto:creatiancy@gmail.com" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center bg-[#9B1C22] !text-white px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#7A151A] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
+                    Mail Us
                   </a>
-                  <span className="text-[14px] text-[#1E1E1E]/50">Dhaka, Bangladesh</span>
+                  <a href="https://wa.me/8801325078941" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center bg-transparent border border-[#1E1E1E]/20 text-[#1E1E1E] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#25D366] hover:border-[#25D366] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
+                    WhatsApp
+                  </a>
                 </div>
               </motion.div>
             </div>

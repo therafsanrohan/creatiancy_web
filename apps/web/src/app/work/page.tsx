@@ -3,8 +3,6 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import WebsiteHeader from "@/components/website/WebsiteHeader";
-import WebsiteFooter from "@/components/website/WebsiteFooter";
 import "@/app/website.css";
 
 const workItems = [
@@ -27,66 +25,94 @@ export default function WorkPage() {
 
   return (
     <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
-      <WebsiteHeader />
       
       <main className="flex-1 w-full relative overflow-hidden">
-        {/* Apple-style Work Hero */}
-        <section className="relative min-h-[40vh] md:min-h-[50vh] flex flex-col justify-center items-center text-center pt-40 pb-12 px-6 md:px-12 w-full z-10 bg-[#FBFDF9]">
-          <div className="w-full max-w-5xl mx-auto relative z-10 flex flex-col items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1 }}
-              className="text-[16px] md:text-[20px] font-semibold tracking-wide text-[#9B1C22] mb-2"
-            >
-              Portfolio
-            </motion.div>
+        {/* Creative Work Hero */}
+        <section className="relative min-h-[45vh] md:min-h-[55vh] flex flex-col justify-end pt-32 pb-24 px-6 md:px-12 w-full z-10 bg-[#FBFDF9] overflow-hidden">
+          
+          <div className="w-full max-w-[1400px] mx-auto relative z-10">
+            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12 md:gap-8">
+              
+              <div className="flex-1 relative">
+                {/* Subtle visual accent */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="absolute -top-10 -left-10 w-40 h-40 bg-[#9B1C22]/10 rounded-full blur-[40px] pointer-events-none"
+                />
 
-            <motion.h1 
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              className="text-[48px] sm:text-[64px] md:text-[80px] font-semibold tracking-[-0.015em] text-[#1E1E1E] leading-[1.05]"
-            >
-              Selected Projects
-            </motion.h1>
+                <motion.h1 
+                  initial={{ opacity: 0, y: 40 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                  className="text-[64px] sm:text-[80px] md:text-[110px] lg:text-[130px] font-semibold tracking-tighter text-[#1E1E1E] leading-[1.1]"
+                >
+                  Selected <br className="hidden md:block"/>
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1E1E1E] to-[#888888] pb-2 pr-2 inline-block">Case Studies</span><span className="text-[#9B1C22]">.</span>
+                </motion.h1>
+              </div>
+
+              <div className="md:w-[450px] shrink-0 md:pb-6">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 1 }}
+                  className="pl-6 md:pl-10 border-l-[2px] border-[#1E1E1E]/10"
+                >
+                  <p className="text-[18px] md:text-[22px] text-gray-500 font-light leading-[1.6]">
+                    We build rigorous brand systems and immersive digital experiences. Here is a curated selection of our most impactful work.
+                  </p>
+                </motion.div>
+              </div>
+
+            </div>
           </div>
         </section>
 
-        <section className="pb-32 px-6 md:px-12 max-w-7xl mx-auto relative z-10">
-          <div className="flex flex-col border-t border-[#1E1E1E]/10">
+        <section className="pb-32 px-6 md:px-12 max-w-[1400px] mx-auto relative z-10">
+          <div className="flex flex-col gap-24 md:gap-32 w-full mt-12">
             {workItems.map((item, idx) => (
               <motion.div 
                 key={item.client}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: idx * 0.1, duration: 0.8 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="group flex flex-col md:flex-row items-center gap-12 lg:gap-20 w-full"
               >
-                <Link 
-                  href={`/work/${item.slug}`}
-                  className="group py-12 md:py-16 flex flex-col md:flex-row justify-between md:items-center gap-6 border-b border-[#1E1E1E]/10 hover:bg-[#F5F5F7]/50 transition-colors cursor-pointer px-6 -mx-6 rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9B1C22]"
-                >
-                  <div className="md:w-1/3">
-                    <span className="text-[11px] font-bold tracking-[0.2em] uppercase text-[#A3A3A3] block mb-3">{item.year}</span>
-                    <h2 className="text-[32px] md:text-[40px] font-semibold tracking-[-0.02em] text-[#1E1E1E] group-hover:text-[#9B1C22] transition-colors">{item.client}</h2>
-                  </div>
-                  <div className="md:w-1/2">
-                    <p className="text-[13px] uppercase tracking-widest text-[#1E1E1E]/50 mb-2 font-medium">{item.discipline}</p>
-                    <p className="text-[18px] font-light text-[#555555] leading-[1.5]">{item.summary}</p>
-                  </div>
-                  <div className="mt-4 md:mt-0 md:w-auto flex md:justify-end shrink-0">
-                    <div className="w-12 h-12 rounded-full border border-[#EAEAEA] flex items-center justify-center group-hover:bg-[#1E1E1E] group-hover:border-[#1E1E1E] transition-colors duration-300">
-                      <span className="text-lg transform -rotate-45 group-hover:rotate-0 group-hover:text-white transition-all duration-300">→</span>
-                    </div>
-                  </div>
-                </Link>
+                {/* Image side - flips based on odd/even index */}
+                <div className={`w-full md:w-1/2 aspect-[4/3] rounded-[32px] overflow-hidden bg-gray-100 relative ${idx % 2 !== 0 ? 'md:order-2' : ''}`}>
+                   {/* Placeholder for real project image */}
+                   <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 group-hover:scale-105 transition-transform duration-700 ease-[0.16,1,0.3,1] flex items-center justify-center">
+                     <span className="text-[120px] md:text-[180px] font-serif text-black/5 opacity-50 select-none">
+                       0{idx + 1}
+                     </span>
+                   </div>
+                </div>
+
+                {/* Text side */}
+                <div className="w-full md:w-1/2 flex flex-col items-start">
+                  <span className="text-[12px] font-bold tracking-[0.2em] text-[#9B1C22] uppercase mb-4">{item.discipline} &bull; {item.year}</span>
+                  <h2 className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[#1E1E1E] leading-none mb-6">
+                    {item.client}
+                  </h2>
+                  <p className="text-[18px] md:text-[22px] font-light text-gray-500 leading-[1.6] max-w-[500px] mb-10">
+                    {item.summary}
+                  </p>
+                  
+                  <Link 
+                    href={`/work/${item.slug}`}
+                    className="inline-flex items-center gap-3 px-8 py-4 bg-[#1E1E1E] !text-white rounded-full text-[15px] font-medium transition-all hover:bg-[#9B1C22] hover:-translate-y-1 focus:outline-none shadow-md"
+                  >
+                    View Case Study <span className="text-lg leading-none">→</span>
+                  </Link>
+                </div>
               </motion.div>
             ))}
           </div>
         </section>
       </main>
-      <WebsiteFooter />
     </div>
   );
 }

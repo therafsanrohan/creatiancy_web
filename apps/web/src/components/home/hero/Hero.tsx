@@ -52,9 +52,9 @@ export const Hero = () => {
         >
           {/* Button */}
           <ButtonLink href="/work" variant="secondary" size="lg" className="flex items-center gap-2 px-8 py-4">
-            Explore Work
-            <div className="w-6 h-6 rounded-full bg-white text-[#1E1E1E] flex items-center justify-center ml-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <span className="text-white !text-white font-medium">Explore Work</span>
+            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center ml-2">
+              <svg className="text-black" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="7" y1="17" x2="17" y2="7"></line>
                 <polyline points="7 7 17 7 17 17"></polyline>
               </svg>
@@ -67,7 +67,11 @@ export const Hero = () => {
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-[#E2E8F0] overflow-hidden flex items-center justify-center relative shadow-sm">
                   {/* Generic avatar placeholders using simple geometric patterns/colors */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${i === 1 ? 'from-blue-200 to-cyan-200' : i === 2 ? 'from-[#9B1C22]/30 to-[#9B1C22]/50' : i === 3 ? 'from-orange-200 to-amber-200' : 'from-purple-200 to-pink-200'}`} />
+                  {i === 1 ? (
+                    <img src="/clients/hector_img.jpg" alt="Client" className="w-full h-full object-cover relative z-10" />
+                  ) : (
+                    <div className={`absolute inset-0 bg-gradient-to-br ${i === 2 ? 'from-[#9B1C22]/30 to-[#9B1C22]/50' : i === 3 ? 'from-orange-200 to-amber-200' : 'from-purple-200 to-pink-200'}`} />
+                  )}
                 </div>
               ))}
             </div>

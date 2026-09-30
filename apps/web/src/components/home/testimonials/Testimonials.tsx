@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { TESTIMONIALS } from "@/lib/data/home";
+import { testimonials } from "@/constants/testimonials";
 
 const MILESTONES = [
   { value: "05", suffix: "+", label: "Years Experience" },
@@ -16,151 +16,105 @@ export const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % TESTIMONIALS.length);
+    setCurrentIndex((prev) => (prev + 1) % testimonials.length);
   };
 
   const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + TESTIMONIALS.length) % TESTIMONIALS.length);
+    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
   };
 
-  const current = TESTIMONIALS[currentIndex];
+  const current = testimonials[currentIndex];
 
   return (
     <div className="w-full bg-[#FAFAFA]">
       {/* --- CLIENT REVIEW SECTION --- */}
-      <section className="py-24 md:py-32 px-4 md:px-8 lg:px-12 w-full relative">
-        <div className="max-w-[1200px] mx-auto w-full">
+      <section className="py-24 md:py-32 px-4 md:px-8 lg:px-12 w-full relative bg-white">
+        <div className="max-w-[1000px] mx-auto w-full">
           
-          <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 items-start">
-            
-            {/* Left Column (Section Label & Image Card) */}
-            <div className="w-full lg:w-[35%] flex flex-col relative pt-4 md:pt-0">
-              <div className="flex flex-col max-w-[280px]">
-                {/* Image Controls Row */}
-                <div className="flex justify-between items-center w-full mb-4">
-                  <button 
-                    onClick={prevTestimonial}
-                    className="px-4 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none"
-                    aria-label="Previous Testimonial"
-                  >
-                    <span className="text-[14px] text-[#1E1E1E] leading-none mt-[-2px]">&larr;</span>
-                  </button>
-                  <span className="text-gray-400 text-[16px] leading-none">+</span>
-                </div>
-
-                {/* Image Box */}
-                <div className="w-full aspect-[4/5] bg-gray-200 relative overflow-hidden mb-4">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={currentIndex}
-                      initial={{ opacity: 0, scale: 1.05 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.4 }}
-                      className="absolute inset-0"
-                    >
-                      {/* Using a solid elegant color as a fallback if images don't exist */}
-                      <div className="w-full h-full bg-[#E5EDF4] flex items-center justify-center">
-                        <span className="text-[64px] text-[#1E1E1E]/10 font-serif">
-                          {current.author.charAt(0)}
-                        </span>
-                      </div>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-
-                {/* Bottom Labels */}
-                <div className="flex justify-between items-center w-full text-[10px] font-medium uppercase tracking-wider text-[#1E1E1E]">
-                  <span>HAPPY CUSTOMER</span>
-                  <span>2026&copy;</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column (Quote Content) */}
-            <div className="w-full lg:w-[65%] flex flex-col relative pt-8 lg:pt-[110px]">
-              <span className="text-[#9B1C22] text-[80px] md:text-[120px] font-serif leading-[0.3] mb-8 block select-none">
-                &ldquo;
-              </span>
-              
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentIndex}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.4 }}
-                  className="w-full"
-                >
-                  <p className="text-[28px] md:text-[44px] lg:text-[52px] font-medium tracking-tight text-[#1E1E1E] leading-[1.05] mb-12">
-                    {current.quote}
-                  </p>
-                  
-                  <div className="flex items-center gap-4 text-[20px] md:text-[24px] text-gray-500 mb-16 lg:mb-24">
-                    <span className="block w-8 h-[2px] bg-gray-400"></span>
-                    <span className="font-light">&mdash; {current.author}</span>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
-              
-              {/* Bottom Right Details & Navigation */}
-              <div className="flex justify-between items-end w-full mt-auto">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center">
-                    {/* Avatars */}
-                    <div className="flex -space-x-2">
-                      <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-[#FAFAFA]"></div>
-                      <div className="w-8 h-8 rounded-full bg-gray-400 border-2 border-[#FAFAFA]"></div>
-                      <div className="w-8 h-8 rounded-full bg-[#1E1E1E] border-2 border-[#FAFAFA]"></div>
-                    </div>
-                    <span className="ml-3 text-[14px] font-medium text-[#1E1E1E]">+1K</span>
-                  </div>
-                  <p className="text-[12px] text-gray-500 leading-tight max-w-[200px]">
-                    They joined not just for design, We&apos;re ready when you are.
-                  </p>
-                </div>
-                
-                {/* Next Button */}
-                <button 
-                  onClick={nextTestimonial}
-                  className="px-4 h-7 border border-gray-300 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors focus:outline-none"
-                  aria-label="Next Testimonial"
-                >
-                  <span className="text-[14px] text-[#1E1E1E] leading-none mt-[-2px]">&rarr;</span>
-                </button>
-              </div>
-            </div>
-
+          <div className="flex flex-col items-center text-center mb-12 md:mb-16">
+            <span className="text-[12px] font-bold tracking-[0.2em] text-[#9B1C22] uppercase mb-4 block">Testimonials</span>
+            <h2 className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[#1E1E1E] leading-none">Client Stories</h2>
           </div>
+
+          <div className="relative w-full">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                className="w-full bg-[#F9F9F9] rounded-[32px] md:rounded-[48px] p-8 md:p-12 lg:p-16 flex flex-col border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]"
+              >
+                {/* Minimalist Quote Icon */}
+                <div className="mb-8 opacity-40">
+                   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                     <path d="M10 11L8 15H11V19H5V15L7.5 10H10ZM19 11L17 15H20V19H14V15L16.5 10H19Z" fill="#9B1C22" />
+                   </svg>
+                </div>
+
+                <p className="text-[20px] md:text-[26px] lg:text-[32px] font-normal tracking-tight text-[#1E1E1E] leading-[1.6] mb-12 md:mb-16" style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}>
+                  {current.review}
+                </p>
+                
+                <div className="flex flex-col md:flex-row md:items-center justify-between w-full mt-auto pt-8 border-t border-gray-200 gap-8 md:gap-0">
+                  <div className="flex items-center gap-5">
+                    <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-full overflow-hidden bg-gray-200 shadow-inner">
+                      {current.image ? (
+                        <Image 
+                          src={current.image}
+                          alt={current.imageAlt || current.name}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xl text-gray-500 font-serif">
+                          {current.name.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[17px] md:text-[19px] font-semibold text-[#1E1E1E] mb-1">{current.name}</span>
+                      <span className="text-[12px] md:text-[13px] text-[#9B1C22] font-semibold tracking-wider uppercase">{current.designation}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <button 
+                      onClick={prevTestimonial}
+                      className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#1E1E1E] hover:border-[#1E1E1E] hover:text-white transition-all bg-white focus:outline-none"
+                      aria-label="Previous Testimonial"
+                    >
+                      &larr;
+                    </button>
+                    <button 
+                      onClick={nextTestimonial}
+                      className="w-12 h-12 md:w-14 md:h-14 rounded-full border border-gray-300 flex items-center justify-center hover:bg-[#1E1E1E] hover:border-[#1E1E1E] hover:text-white transition-all bg-white focus:outline-none"
+                      aria-label="Next Testimonial"
+                    >
+                      &rarr;
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
         </div>
       </section>
 
-      {/* --- DIVIDER --- */}
-      <div className="w-full px-4 md:px-8 lg:px-12">
-        <div className="max-w-[1200px] mx-auto border-t border-gray-200" />
-      </div>
-
       {/* --- AGENCY MILESTONES SECTION --- */}
-      <section className="py-16 md:py-24 px-4 md:px-8 lg:px-12 w-full relative">
+      <section className="py-16 md:py-24 px-4 md:px-8 lg:px-12 w-full relative bg-white">
         <div className="max-w-[1200px] mx-auto w-full">
-          <div className="flex flex-col lg:flex-row gap-12 lg:gap-24 items-start">
-            
-            {/* Left Side Title */}
-            <div className="w-full lg:w-[35%]">
-            </div>
-
-            {/* Right Side Stats */}
-            <div className="w-full lg:w-[65%] grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
-              {MILESTONES.map((stat, idx) => (
-                <div key={idx} className="flex flex-col gap-2">
-                  <div className="text-[56px] md:text-[64px] lg:text-[72px] font-medium text-[#1E1E1E] leading-none tracking-tighter">
-                    {stat.value}<span className="text-[#9B1C22]">{stat.suffix}</span>
-                  </div>
-                  <p className="text-[13px] text-gray-500 font-medium">{stat.label}</p>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6 md:gap-x-12 w-full">
+            {MILESTONES.map((stat, idx) => (
+              <div key={idx} className="flex flex-col items-center text-center lg:items-start lg:text-left gap-2 border-t border-[#1E1E1E]/10 pt-6 md:pt-8">
+                <div className="text-[48px] sm:text-[56px] md:text-[72px] lg:text-[80px] font-medium text-[#1E1E1E] leading-none tracking-tighter">
+                  {stat.value}<span className="text-[#9B1C22]">{stat.suffix}</span>
                 </div>
-              ))}
-            </div>
-
+                <p className="text-[12px] md:text-[14px] text-gray-500 font-medium uppercase tracking-widest mt-2">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

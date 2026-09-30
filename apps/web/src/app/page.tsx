@@ -38,8 +38,6 @@ const jsonLd = {
     "contactType": "customer service"
   }
 };
-import WebsiteHeader from "@/components/website/WebsiteHeader";
-import WebsiteFooter from "@/components/website/WebsiteFooter";
 
 import { Hero } from "@/components/home/hero/Hero";
 import { Services } from "@/components/home/services/Services";
@@ -59,7 +57,6 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <WebsiteHeader />
       
       <main className="w-full relative">
         <Hero />
@@ -73,7 +70,6 @@ export default function HomePage() {
         <FinalCTA />
       </main>
 
-      <WebsiteFooter />
     </div>
   );
 }

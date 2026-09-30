@@ -3,8 +3,6 @@
 import React, { useRef } from "react";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
-import WebsiteHeader from "@/components/website/WebsiteHeader";
-import WebsiteFooter from "@/components/website/WebsiteFooter";
 import "@/app/website.css";
 
 const fadeUp = {
@@ -59,38 +57,51 @@ export default function AboutPage() {
 
   return (
     <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
-      <WebsiteHeader />
       
       <main className="flex-1 w-full relative overflow-hidden">
         
-        {/* Apple-style About Hero */}
-        <section className="relative min-h-[60vh] md:min-h-[75vh] flex flex-col justify-center pt-32 pb-20 px-6 md:px-12 w-full z-10 bg-[#FBFDF9]">
-          <div className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center gap-6 relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1 }}
-              className="text-[16px] md:text-[20px] font-semibold tracking-wide text-[#9B1C22] mb-2"
-            >
-              About Creatiancy
-            </motion.div>
-
+        {/* Stunning Dark Mode About Hero */}
+        <section className="relative min-h-[75vh] md:min-h-[90vh] flex flex-col items-center justify-center pt-32 pb-24 px-6 md:px-12 w-full z-10 bg-[#050505] overflow-hidden rounded-b-[40px] md:rounded-b-[80px]">
+          
+          {/* Animated Background Orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.5, 0.3],
+                rotate: [0, 90, 0]
+              }}
+              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+              className="absolute -top-[20%] -left-[10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-gradient-to-br from-[#9B1C22]/40 to-transparent rounded-full blur-[100px] md:blur-[150px]"
+            />
+            <motion.div 
+              animate={{ 
+                scale: [1, 1.5, 1],
+                opacity: [0.2, 0.4, 0.2]
+              }}
+              transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+              className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#9B1C22]/20 rounded-full blur-[120px]"
+            />
+          </div>
+          
+          <div className="w-full max-w-6xl mx-auto flex flex-col items-center justify-center text-center gap-6 relative z-10">
             <motion.h1 
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              className="text-[48px] sm:text-[64px] md:text-[80px] font-semibold tracking-[-0.015em] text-[#1E1E1E] leading-[1.05]"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="text-[48px] sm:text-[64px] md:text-[80px] lg:text-[110px] font-semibold tracking-tighter text-white leading-[1.05]"
             >
-              We turn visual problems into <br className="hidden lg:block" /> clearer, stronger ideas.
+              We don't just design<br />
+              We <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-[#9B1C22]">solve problems</span>
             </motion.h1>
               
             <motion.p 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-6 text-[18px] md:text-[22px] text-[#444444] max-w-2xl font-normal leading-[1.5]"
+              className="mt-6 text-[18px] md:text-[24px] text-white/60 max-w-3xl font-light leading-[1.6]"
             >
-              We don't just decorate surfaces. We analyze objectives, map out structural challenges, and engineer visual systems designed for longevity and commercial authority.
+              We are a strategic creative agency that engineers visual systems designed for longevity, clarity, and commercial authority.
             </motion.p>
           </div>
         </section>
@@ -145,30 +156,41 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Capabilities Bridge */}
+        {/* Creative Capabilities Section */}
         <section className="py-24 md:py-32 px-6 md:px-12 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-[#1E1E1E]/10 pb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 pb-12">
             <div>
-              <h2 className="text-[32px] md:text-[56px] font-semibold tracking-tight text-[#1E1E1E]">Core Capabilities</h2>
+              <span className="text-[14px] font-bold tracking-[0.2em] text-[#9B1C22] uppercase mb-4 block">Our Expertise</span>
+              <h2 className="text-[40px] md:text-[64px] font-semibold tracking-tight text-[#1E1E1E] leading-none">Core Capabilities</h2>
             </div>
-            <Link href="/services" className="mt-6 md:mt-0 text-[13px] font-bold uppercase tracking-widest text-[#9B1C22] hover:text-[#1E1E1E] transition-colors focus:outline-none">
-              View All Services →
+            <Link href="/services" className="mt-8 md:mt-0 inline-flex items-center gap-3 px-6 py-3 rounded-full bg-[#9B1C22] hover:bg-[#7A151A] !text-white transition-all duration-300 text-[14px] font-medium shadow-md hover:shadow-lg focus:outline-none group">
+              Explore All Services 
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
             </Link>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-y-12 gap-x-6">
+          <div className="flex flex-col w-full border-t border-[#1E1E1E]/10">
             {['Brand Architecture', 'Digital Platforms', 'Enterprise UI/UX', 'Creative Technology', 'Motion Design', 'Editorial Systems'].map((cap, i) => (
               <motion.div 
                 key={i}
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
+                transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                className="group border-b border-[#1E1E1E]/10 relative overflow-hidden"
               >
-                <Link href="/services" className="group flex items-center gap-4 cursor-pointer focus:outline-none">
-                  <span className="w-8 h-[1px] bg-[#EAEAEA] group-hover:bg-[#9B1C22] transition-colors" />
-                  <span className="text-[16px] md:text-[20px] font-medium text-[#1E1E1E] group-hover:text-[#9B1C22] transition-colors">{cap}</span>
+                <Link href="/services" className="flex items-center justify-between py-8 md:py-12 px-4 relative z-10 w-full focus:outline-none">
+                   <div className="flex items-baseline gap-6 md:gap-12">
+                     <span className="text-[14px] md:text-[18px] font-mono text-[#A3A3A3] group-hover:text-white/70 transition-colors duration-500">0{i+1}</span>
+                     <h3 className="text-[28px] md:text-[48px] lg:text-[64px] font-medium text-[#1E1E1E] group-hover:text-white tracking-tighter transition-colors duration-500">{cap}</h3>
+                   </div>
+                   <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-[#1E1E1E]/10 flex items-center justify-center group-hover:border-white group-hover:bg-white transition-all duration-500 shrink-0">
+                     <span className="text-[#1E1E1E] -rotate-45 group-hover:rotate-0 transition-transform duration-500 text-lg md:text-xl">→</span>
+                   </div>
                 </Link>
+
+                {/* Hover Background Reveal - Red! */}
+                <div className="absolute inset-0 bg-[#9B1C22] transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-500 ease-[0.16,1,0.3,1] z-0" />
               </motion.div>
             ))}
           </div>
@@ -206,29 +228,53 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="py-32 px-6 md:px-12 flex flex-col items-center text-center">
-          <h2 className="text-[36px] md:text-[56px] font-bold tracking-tight text-[#1E1E1E] mb-12">
-            Have a visual problem <br className="hidden md:block" /> worth solving?
-          </h2>
-          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto">
-            <Link
-              href="/contact"
-              className="flex items-center justify-center px-6 py-3 bg-[#9B1C22] text-white rounded-full text-[15px] font-semibold transition-all duration-300 hover:bg-[#7A151A] shadow-md focus:outline-none"
+        {/* Premium Dark CTA Section */}
+        <section className="relative py-40 md:py-64 px-4 md:px-8 lg:px-12 w-full bg-[#050505] overflow-hidden mt-12 mb-0">
+          {/* Dynamic Background */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <motion.div 
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-gradient-to-r from-[#9B1C22]/20 to-transparent rounded-full blur-[100px] md:blur-[150px]"
+            />
+          </div>
+
+          <div className="relative z-10 max-w-[1200px] mx-auto flex flex-col items-center text-center">
+            <motion.h2 
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+              className="text-[56px] sm:text-[80px] md:text-[120px] font-medium tracking-tighter text-white leading-[0.9] mb-12"
             >
-              Start Project
-            </Link>
-            <Link
-              href="/work"
-              className="flex items-center justify-center px-6 py-3 bg-transparent text-[#2997FF] rounded-full text-[15px] font-semibold transition-all duration-300 hover:underline focus:outline-none"
+              Have a visual problem <br className="hidden md:block" />
+              <span className="italic text-[#9B1C22] font-serif">worth solving?</span>
+            </motion.h2>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col sm:flex-row items-center gap-6"
             >
-              View selected work <span className="ml-1 text-[12px]">›</span>
-            </Link>
+              <Link 
+                href="/contact" 
+                className="w-full sm:w-auto h-14 md:h-16 flex items-center justify-center px-8 md:px-12 bg-[#9B1C22] !text-white text-[16px] md:text-[18px] font-medium rounded-full shadow-[0_0_40px_rgba(155,28,34,0.4)] hover:shadow-[0_0_60px_rgba(155,28,34,0.6)] hover:-translate-y-1 transition-all"
+              >
+                Start Project
+              </Link>
+              <Link 
+                href="/work" 
+                className="w-full sm:w-auto h-14 md:h-16 flex items-center justify-center px-8 md:px-12 bg-white !text-black text-[16px] md:text-[18px] font-medium rounded-full hover:bg-gray-200 hover:-translate-y-1 transition-all"
+              >
+                View Selected Work
+              </Link>
+            </motion.div>
           </div>
         </section>
 
       </main>
-      <WebsiteFooter />
     </div>
   );
 }

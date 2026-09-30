@@ -21,32 +21,26 @@ export const Process = () => {
           </p>
         </div>
 
-        {/* Process Rows */}
-        <div className="w-full flex flex-col border-t border-gray-200">
+        {/* Creative Process Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
           {PROCESS_STEPS.map((step, idx) => (
             <motion.div 
               key={idx}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.6, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
-              className="group flex flex-col md:flex-row md:items-center py-10 md:py-16 border-b border-gray-200 hover:bg-[#FAFAFA] transition-colors px-4 md:px-8 -mx-4 md:-mx-8 rounded-2xl cursor-default"
+              className="relative flex flex-col p-8 md:p-12 rounded-[32px] overflow-hidden group border border-[#1E1E1E]/5 bg-[#FAFAFA] hover:bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500"
             >
-              {/* Massive Number */}
-              <div className="w-full md:w-[20%] mb-4 md:mb-0">
-                <span className="text-[64px] md:text-[80px] font-serif leading-none text-gray-200 group-hover:text-[#9B1C22] transition-colors duration-500">
-                  0{idx + 1}
-                </span>
-              </div>
+              {/* Massive Number Background */}
+              <span className="text-[140px] font-bold tracking-tighter text-[#1E1E1E]/5 group-hover:text-[#9B1C22]/10 transition-colors duration-500 absolute -bottom-6 -right-4 leading-none select-none">
+                0{idx + 1}
+              </span>
               
-              {/* Content */}
-              <div className="w-full md:w-[40%] mb-4 md:mb-0">
-                <h3 className="text-[28px] md:text-[40px] font-medium text-[#1E1E1E] tracking-tight group-hover:translate-x-4 transition-transform duration-500">
+              <div className="relative z-10 flex flex-col h-full justify-between gap-16 md:gap-24">
+                <h3 className="text-[28px] md:text-[36px] font-medium text-[#1E1E1E] tracking-tight">
                   {step.step}
                 </h3>
-              </div>
-              
-              <div className="w-full md:w-[40%]">
                 <p className="text-[16px] md:text-[18px] text-gray-500 font-light leading-[1.6]">
                   {step.detail}
                 </p>

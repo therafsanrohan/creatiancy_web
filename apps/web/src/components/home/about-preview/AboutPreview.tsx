@@ -14,14 +14,30 @@ export const AboutPreview = () => {
       <div className="max-w-[1200px] mx-auto w-full relative z-10">
         <div className="flex flex-col items-start md:items-center text-left md:text-center">
           
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-3 px-6 py-2.5 rounded-full border border-white/10 bg-white/5 mb-8 md:mb-12 backdrop-blur-md"
+          >
+             <span className="w-2 h-2 rounded-full bg-[#9B1C22] animate-pulse" />
+             <span className="text-[12px] md:text-[14px] uppercase tracking-[0.2em] text-white/80 font-medium">Creative Engineering Studio</span>
+          </motion.div>
+
           <motion.h2 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[36px] md:text-[64px] lg:text-[80px] font-medium tracking-tight text-[#FAFAFA] leading-[1.1] mb-12 md:mb-20 max-w-5xl"
+            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="text-[36px] md:text-[64px] lg:text-[88px] font-medium tracking-tight text-[#FAFAFA] leading-[1.05] mb-12 md:mb-20 max-w-5xl text-left md:text-center"
           >
-            We are a creative engineering studio. We exist to build brands and digital products that <span className="italic font-serif text-[#9B1C22]">perform flawlessly</span> and look exceptional.
+            We exist to build brands and digital products that <br className="hidden md:block"/>
+            <span className="relative inline-block mt-2">
+               <span className="relative z-10 italic font-serif text-[#9B1C22]">perform flawlessly</span>
+               <span className="absolute bottom-2 md:bottom-4 left-0 w-full h-[30%] bg-[#9B1C22]/20 -z-10 -rotate-2 skew-x-12" />
+            </span> 
+            {" "}and look exceptional.
           </motion.h2>
 
           <motion.div 

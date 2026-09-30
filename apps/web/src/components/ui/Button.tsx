@@ -12,8 +12,8 @@ function cn(...inputs: ClassValue[]) {
 const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-300 ease-out rounded-full active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E1E1E] focus-visible:ring-offset-2 text-center disabled:opacity-50 disabled:pointer-events-none";
 
 const variantStyles = {
-  primary: "bg-[#9B1C22] text-[#FFFFFF] hover:bg-[#1E1E1E] hover:text-[#FFFFFF] shadow-xl shadow-black/10 hover:shadow-black/20 [&_svg]:text-[#FFFFFF]",
-  secondary: "bg-[#1E1E1E] text-[#FFFFFF] hover:bg-[#9B1C22] hover:text-[#FFFFFF] shadow-xl shadow-black/10 hover:shadow-black/20 [&_svg]:text-[#FFFFFF]",
+  primary: "bg-[#9B1C22] text-white !text-white hover:bg-[#1E1E1E] shadow-xl shadow-black/10 hover:shadow-black/20",
+  secondary: "bg-[#1E1E1E] text-white !text-white hover:bg-[#9B1C22] shadow-xl shadow-black/10 hover:shadow-black/20",
   ghost: "bg-transparent text-[#1E1E1E] hover:text-[#9B1C22] active:scale-100",
 };
 

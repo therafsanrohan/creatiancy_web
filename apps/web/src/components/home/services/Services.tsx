@@ -94,14 +94,15 @@ export const Services = () => {
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className={`
-                relative w-full rounded-[24px] md:rounded-[40px] p-8 md:p-14 lg:p-20 flex flex-col 
+                relative w-full rounded-[24px] md:rounded-[40px] p-8 md:p-12 lg:p-16 xl:p-20 flex flex-col 
                 lg:sticky origin-top transition-all duration-500 will-change-transform
+                lg:top-[var(--card-top)]
                 ${service.bgColor} ${service.textColor} ${service.shadow || service.border}
               `}
               style={{ 
-                top: `calc(120px + ${idx * 28}px)`,
+                '--card-top': `calc(120px + ${idx * 28}px)`,
                 zIndex: idx + 1
-              }}
+              } as React.CSSProperties}
             >
               {/* Header */}
               <h3 className="text-[32px] md:text-[56px] lg:text-[72px] font-medium tracking-tight mb-8 md:mb-16 leading-[1.1] w-full">
