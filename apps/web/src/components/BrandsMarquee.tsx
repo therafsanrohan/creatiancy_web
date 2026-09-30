@@ -41,14 +41,14 @@ whileInView={{ opacity: 1, y: 0 }}
 
         <div className="flex relative w-full overflow-hidden">
           <div 
-            className="flex w-max animate-marquee gap-14 md:gap-28 items-center px-12"
+            className="flex w-max animate-marquee items-center"
             style={{ willChange: "transform", animationDuration: "25s" }}
           >
             
             {brands.map((logo, i) => {
               const detail = getBrandDetails(logo);
               return (
-                <div key={`brand-orig-${i}`} className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0 flex items-center justify-center">
+                <div key={`brand-orig-${i}`} className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0 flex items-center justify-center mr-14 md:mr-28">
                   {logo.startsWith("placeholder") ? (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="text-[var(--muted-fg)]/40 font-bold text-[10px] uppercase">Partner</span>
@@ -72,7 +72,7 @@ whileInView={{ opacity: 1, y: 0 }}
             {brands.map((logo, i) => {
               const detail = getBrandDetails(logo);
               return (
-                <div key={`brand-clone-${i}`} aria-hidden="true" className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0 flex items-center justify-center">
+                <div key={`brand-clone-${i}`} aria-hidden="true" className="group relative w-20 h-8 md:w-28 md:h-12 opacity-35 hover:opacity-100 transition-opacity duration-300 shrink-0 flex items-center justify-center mr-14 md:mr-28">
                   {logo.startsWith("placeholder") ? (
                     <div className="w-full h-full flex items-center justify-center">
                       <span className="text-[var(--muted-fg)]/40 font-bold text-[10px] uppercase">Partner</span>

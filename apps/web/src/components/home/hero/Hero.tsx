@@ -98,14 +98,12 @@ export const Hero = () => {
           </div>
 
           <div className="relative w-full flex overflow-hidden mask-edges">
-            <motion.div 
-              className="flex items-center gap-16 md:gap-32 w-max"
-              animate={{ x: ["0%", "-50%"] }}
-              transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
+            <div 
+              className="flex items-center w-max animate-smooth-marquee hover:[animation-play-state:paused]"
             >
               
               {[...Array(2)].map((_, i) => (
-                <div key={i} className="flex items-center gap-16 md:gap-32">
+                <div key={i} className="flex items-center gap-16 md:gap-32 pr-16 md:pr-32">
                   {[
                     { name: "Elcardo", src: "/brands/elcardo_logo.png", width: 140, height: 45 },
                     { name: "AtoBD", src: "/brands/AtoBD_logo.png", width: 110, height: 45 },
@@ -116,7 +114,7 @@ export const Hero = () => {
                   ].map((logo) => (
                     <div 
                       key={`${i}-${logo.name}`}
-                      className="relative group cursor-pointer flex items-center justify-center h-16"
+                      className="relative group cursor-pointer flex items-center justify-center h-16 shrink-0"
                     >
                       
                       <div className="relative w-full h-full flex items-center justify-center grayscale brightness-0 opacity-50 group-hover:opacity-100 transition-all duration-500 hover:scale-105">
@@ -138,13 +136,21 @@ export const Hero = () => {
                   ))}
                 </div>
               ))}
-            </motion.div>
+            </div>
           </div>
 
           <style dangerouslySetInnerHTML={{__html: `
             .mask-edges {
               mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
               -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+            }
+            @keyframes smooth-marquee {
+              0% { transform: translate3d(0, 0, 0); }
+              100% { transform: translate3d(-50%, 0, 0); }
+            }
+            .animate-smooth-marquee {
+              animation: smooth-marquee 30s linear infinite;
+              will-change: transform;
             }
           `}} />
         </motion.div>
