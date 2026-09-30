@@ -16,8 +16,6 @@ const sections = [
 export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-[#FBFDF9] selection:bg-[#9B1C22] selection:text-white pb-32">
-      
-      {/* Clean, Readable Hero Section */}
       <section className="pt-40 pb-16 px-6 md:px-12 max-w-4xl mx-auto text-center relative z-10 border-b border-[#1E1E1E]/10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -38,7 +36,6 @@ export default function PrivacyPolicyPage() {
         </motion.div>
       </section>
 
-      {/* Readable Document Layout */}
       <section className="px-6 md:px-12 max-w-3xl mx-auto pt-16">
         <div className="flex flex-col gap-12">
           {sections.map((section, index) => (

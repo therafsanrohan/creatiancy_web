@@ -21,8 +21,6 @@ interface Service {
 export default function ServicesClient({ services }: { services: Service[] }) {
   return (
     <div className="min-h-screen pt-32 pb-24 bg-[var(--bg)] text-[var(--text)]">
-      
-      {/* Header Section */}
       <Container className="mb-24 md:mb-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -43,7 +41,6 @@ export default function ServicesClient({ services }: { services: Service[] }) {
         </motion.div>
       </Container>
 
-      {/* Services List */}
       <Container className="space-y-12 md:space-y-24 mb-24 md:mb-32">
         {services.map((svc, i) => (
           <motion.article 
@@ -87,10 +84,8 @@ export default function ServicesClient({ services }: { services: Service[] }) {
         ))}
       </Container>
 
-      {/* Testimonials */}
       <Testimonials />
 
-      {/* Marketing Action Section */}
       <Container className="mt-24 md:mt-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}

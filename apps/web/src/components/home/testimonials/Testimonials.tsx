@@ -27,7 +27,7 @@ export const Testimonials = () => {
 
   return (
     <div className="w-full bg-[#FAFAFA]">
-      {/* --- CLIENT REVIEW SECTION --- */}
+
       <section className="py-24 md:py-32 px-4 md:px-8 lg:px-12 w-full relative bg-white">
         <div className="max-w-[1000px] mx-auto w-full">
           
@@ -46,7 +46,6 @@ export const Testimonials = () => {
                 transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                 className="w-full bg-[#F9F9F9] rounded-[32px] md:rounded-[48px] p-8 md:p-12 lg:p-16 flex flex-col border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]"
               >
-                {/* Minimalist Quote Icon */}
                 <div className="mb-8 opacity-40">
                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                      <path d="M10 11L8 15H11V19H5V15L7.5 10H10ZM19 11L17 15H20V19H14V15L16.5 10H19Z" fill="#9B1C22" />
@@ -103,7 +102,6 @@ export const Testimonials = () => {
         </div>
       </section>
 
-      {/* --- AGENCY MILESTONES SECTION --- */}
       <section className="py-16 md:py-24 px-4 md:px-8 lg:px-12 w-full relative bg-white">
         <div className="max-w-[1200px] mx-auto w-full">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6 md:gap-x-12 w-full">

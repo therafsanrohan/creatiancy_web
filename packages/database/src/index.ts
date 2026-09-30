@@ -52,7 +52,6 @@ export type SiteSetting = {
   value: any;
 };
 
-// A singleton client for server-side fetching of public data
 export function getDbClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://dummy.supabase.co';
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'dummy-anon-key';
