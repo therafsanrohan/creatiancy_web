@@ -8,8 +8,7 @@ import { Heading, Text } from "@/components/ui/Typography";
 import { Link as CustomLink } from "@/components/ui/Link";
 import { Button } from "@/components/ui/Button";
 
-const Testimonials = dynamic(() => import("@/components/Testimonials"));
-const FAQSection = dynamic(() => import("@/components/FAQSection"));
+import { Testimonials } from "@/components/home/testimonials/Testimonials";
 
 interface Service {
   title: string;
@@ -90,9 +89,6 @@ export default function ServicesClient({ services }: { services: Service[] }) {
 
       {/* Testimonials */}
       <Testimonials />
-
-      {/* FAQs */}
-      <FAQSection />
 
       {/* Marketing Action Section */}
       <Container className="mt-24 md:mt-32">
