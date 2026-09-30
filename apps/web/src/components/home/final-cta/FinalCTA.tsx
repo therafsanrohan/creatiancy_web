@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 export const FinalCTA = () => {
   return (
     <section className="relative py-40 md:py-64 px-4 md:px-8 lg:px-12 w-full bg-[#1E1E1E] overflow-hidden">
-      {/* Dynamic Background */}
+      
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <motion.div 
           animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}

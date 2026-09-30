@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 export default function NotFound() {
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[var(--bg)] mt-[-80px]">
-      {/* Dynamic Error Background */}
+      
       <div className="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none">
         <motion.div 
           animate={{ 

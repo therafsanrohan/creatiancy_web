@@ -8,18 +8,16 @@ import { CLIENTS } from "@/lib/data/home";
 export const Hero = () => {
   return (
     <section className="relative w-full min-h-[100svh] pt-32 pb-20 flex flex-col items-center justify-center overflow-hidden bg-white">
-      
-      {/* Background Gradients (Creatiancy Reddish tones) */}
+
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Soft Reddish blush on the left */}
+        
         <div className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[#9B1C22]/10 blur-[120px] opacity-80" />
-        {/* Soft Reddish blush on the right */}
+        
         <div className="absolute top-[10%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#9B1C22]/10 blur-[100px] opacity-80" />
       </div>
 
       <div className="max-w-5xl mx-auto px-6 md:px-12 w-full relative z-10 flex flex-col items-center text-center mt-10 lg:mt-16">
-        
-        {/* Main Headline */}
+
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -31,7 +29,6 @@ export const Hero = () => {
           </h1>
         </motion.div>
 
-        {/* Sub-headline */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -43,14 +40,13 @@ export const Hero = () => {
           </p>
         </motion.div>
 
-        {/* CTA & Trust Indicators */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="flex flex-col sm:flex-row items-center gap-8"
         >
-          {/* Button */}
+          
           <ButtonLink href="/work" variant="secondary" size="lg" className="flex items-center gap-2 px-8 py-4">
             <span className="text-white !text-white font-medium">Explore Work</span>
             <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center ml-2">
@@ -61,12 +57,11 @@ export const Hero = () => {
             </div>
           </ButtonLink>
 
-          {/* Avatar Stack & Rating */}
           <div className="flex items-center gap-4">
             <div className="flex -space-x-3">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-[#E2E8F0] overflow-hidden flex items-center justify-center relative shadow-sm">
-                  {/* Generic avatar placeholders using simple geometric patterns/colors */}
+                  
                   {i === 1 ? (
                     <img src="/clients/hector_img.jpg" alt="Client" className="w-full h-full object-cover relative z-10" />
                   ) : (
@@ -88,7 +83,6 @@ export const Hero = () => {
           </div>
         </motion.div>
 
-        {/* Logo Divider & Strip */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -103,14 +97,13 @@ export const Hero = () => {
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E2E8F0]" />
           </div>
 
-          {/* Infinite Marquee Logos */}
           <div className="relative w-full flex overflow-hidden mask-edges">
             <motion.div 
               className="flex items-center gap-16 md:gap-32 w-max"
               animate={{ x: ["0%", "-50%"] }}
               transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
             >
-              {/* Duplicate the array to create seamless loop */}
+              
               {[...Array(2)].map((_, i) => (
                 <div key={i} className="flex items-center gap-16 md:gap-32">
                   {[
@@ -125,7 +118,7 @@ export const Hero = () => {
                       key={`${i}-${logo.name}`}
                       className="relative group cursor-pointer flex items-center justify-center h-16"
                     >
-                      {/* Universal Grey/Black Filter for ultimate visibility and uniformity */}
+                      
                       <div className="relative w-full h-full flex items-center justify-center grayscale brightness-0 opacity-50 group-hover:opacity-100 transition-all duration-500 hover:scale-105">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
@@ -148,7 +141,6 @@ export const Hero = () => {
             </motion.div>
           </div>
 
-          
           <style dangerouslySetInnerHTML={{__html: `
             .mask-edges {
               mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);

@@ -27,7 +27,7 @@ export default async function InsightPostPage({ params }: { params: Promise<{ sl
   }
 
   if (!post) {
-    // Fallback static data for demonstration
+
     const fallbacks = [
       {
         id: "1",

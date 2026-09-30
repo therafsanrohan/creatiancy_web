@@ -4,7 +4,6 @@ import { createClient } from "@/utils/supabase/middleware";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. Block access to sensitive files
   const sensitiveFiles = [
     "/package.json",
     "/package-lock.json",
@@ -23,12 +22,10 @@ export async function proxy(request: NextRequest) {
     return new NextResponse("Access Denied: Restricted System File", { status: 403 });
   }
 
-  // 2. Block access to hidden paths
   if (pathname.includes("/.")) {
     return new NextResponse("Access Denied: Hidden Path", { status: 403 });
   }
 
-  // 3. Refresh Supabase session if available
   let response: NextResponse | undefined;
   try {
     response = await createClient(request);
@@ -40,7 +37,6 @@ export async function proxy(request: NextRequest) {
     response = NextResponse.next();
   }
 
-  // 4. Enforce HTTP Security Headers
   const headers = response.headers;
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");

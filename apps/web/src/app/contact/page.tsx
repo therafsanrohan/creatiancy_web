@@ -18,15 +18,12 @@ export default function ContactPage() {
   return (
     <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
       <main className="flex-1 w-full relative overflow-hidden bg-[#FBFDF9]">
-        
-        {/* Subtle Decorative Background */}
+
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#9B1C22]/5 rounded-full blur-[120px] pointer-events-none translate-x-1/2 -translate-y-1/2" />
-        
-        {/* Split Screen Contact Layout */}
+
         <section className="relative min-h-screen pt-40 pb-32 px-6 md:px-12 w-full z-10">
           <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row items-start justify-between gap-16 lg:gap-24 relative z-10">
-            
-            {/* Left Side: Huge Text (Sticky on Desktop) */}
+
             <div className="lg:w-1/2 lg:sticky lg:top-40 pt-4 md:pt-10">
               <motion.h1 
                 initial="hidden"
@@ -56,7 +53,6 @@ export default function ContactPage() {
               </motion.div>
             </div>
 
-            {/* Right Side: Contact Form */}
             <div className="lg:w-1/2 w-full max-w-2xl mt-8 lg:mt-0">
               <motion.div 
                 initial={{ opacity: 0, y: 30 }}
@@ -64,7 +60,7 @@ export default function ContactPage() {
                 transition={{ delay: 0.5, duration: 1 }}
                 className="bg-white rounded-[40px] p-8 md:p-12 lg:p-16 shadow-[0_8px_40px_rgb(0,0,0,0.04)] border border-[#1E1E1E]/5 relative overflow-hidden"
               >
-                {/* Form decorative accent */}
+                
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#9B1C22]/10 to-transparent rounded-bl-full pointer-events-none" />
 
                 <form action="mailto:creatiancy@gmail.com" method="post" encType="text/plain" className="space-y-12 relative z-10">

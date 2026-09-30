@@ -27,14 +27,14 @@ export default function WorkPage() {
     <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
       
       <main className="flex-1 w-full relative overflow-hidden">
-        {/* Creative Work Hero */}
+        
         <section className="relative min-h-[45vh] md:min-h-[55vh] flex flex-col justify-end pt-32 pb-24 px-6 md:px-12 w-full z-10 bg-[#FBFDF9] overflow-hidden">
           
           <div className="w-full max-w-[1400px] mx-auto relative z-10">
             <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12 md:gap-8">
               
               <div className="flex-1 relative">
-                {/* Subtle visual accent */}
+                
                 <motion.div
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -81,9 +81,9 @@ export default function WorkPage() {
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                 className="group flex flex-col md:flex-row items-center gap-12 lg:gap-20 w-full"
               >
-                {/* Image side - flips based on odd/even index */}
+                
                 <div className={`w-full md:w-1/2 aspect-[4/3] rounded-[32px] overflow-hidden bg-gray-100 relative ${idx % 2 !== 0 ? 'md:order-2' : ''}`}>
-                   {/* Placeholder for real project image */}
+                   
                    <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 group-hover:scale-105 transition-transform duration-700 ease-[0.16,1,0.3,1] flex items-center justify-center">
                      <span className="text-[120px] md:text-[180px] font-serif text-black/5 opacity-50 select-none">
                        0{idx + 1}
@@ -91,7 +91,6 @@ export default function WorkPage() {
                    </div>
                 </div>
 
-                {/* Text side */}
                 <div className="w-full md:w-1/2 flex flex-col items-start">
                   <span className="text-[12px] font-bold tracking-[0.2em] text-[#9B1C22] uppercase mb-4">{item.discipline} &bull; {item.year}</span>
                   <h2 className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[#1E1E1E] leading-none mb-6">

@@ -1,5 +1,5 @@
 export const worldCountries = [
-  // NORTH AMERICA (23)
+
   { city: "St. John's", country: "Antigua and Barbuda", flag: "ag", tz: "America/Antigua" },
   { city: "Nassau", country: "Bahamas", flag: "bs", tz: "America/Nassau" },
   { city: "Bridgetown", country: "Barbados", flag: "bb", tz: "America/Barbados" },
@@ -24,7 +24,6 @@ export const worldCountries = [
   { city: "Port of Spain", country: "Trinidad and Tobago", flag: "tt", tz: "America/Port_of_Spain" },
   { city: "Washington, D.C.", country: "United States", flag: "us", tz: "America/New_York" },
 
-  // SOUTH AMERICA (12)
   { city: "Buenos Aires", country: "Argentina", flag: "ar", tz: "America/Argentina/Buenos_Aires" },
   { city: "Sucre", country: "Bolivia", flag: "bo", tz: "America/La_Paz" },
   { city: "Brasília", country: "Brazil", flag: "br", tz: "America/Sao_Paulo" },
@@ -38,7 +37,6 @@ export const worldCountries = [
   { city: "Montevideo", country: "Uruguay", flag: "uy", tz: "America/Montevideo" },
   { city: "Caracas", country: "Venezuela", flag: "ve", tz: "America/Caracas" },
 
-  // EUROPE (43)
   { city: "Tirana", country: "Albania", flag: "al", tz: "Europe/Tirane" },
   { city: "Andorra la Vella", country: "Andorra", flag: "ad", tz: "Europe/Andorra" },
   { city: "Vienna", country: "Austria", flag: "at", tz: "Europe/Vienna" },
@@ -83,7 +81,6 @@ export const worldCountries = [
   { city: "Kyiv", country: "Ukraine", flag: "ua", tz: "Europe/Kiev" },
   { city: "London", country: "United Kingdom", flag: "gb", tz: "Europe/London" },
 
-  // ASIA (47)
   { city: "Kabul", country: "Afghanistan", flag: "af", tz: "Asia/Kabul" },
   { city: "Yerevan", country: "Armenia", flag: "am", tz: "Asia/Yerevan" },
   { city: "Baku", country: "Azerbaijan", flag: "az", tz: "Asia/Baku" },
@@ -132,7 +129,6 @@ export const worldCountries = [
   { city: "Hanoi", country: "Vietnam", flag: "vn", tz: "Asia/Ho_Chi_Minh" },
   { city: "Sana'a", country: "Yemen", flag: "ye", tz: "Asia/Aden" },
 
-  // AFRICA (54)
   { city: "Algiers", country: "Algeria", flag: "dz", tz: "Africa/Algiers" },
   { city: "Luanda", country: "Angola", flag: "ao", tz: "Africa/Luanda" },
   { city: "Porto-Novo", country: "Benin", flag: "bj", tz: "Africa/Porto-Novo" },
@@ -188,7 +184,6 @@ export const worldCountries = [
   { city: "Lusaka", country: "Zambia", flag: "zm", tz: "Africa/Lusaka" },
   { city: "Harare", country: "Zimbabwe", flag: "zw", tz: "Africa/Harare" },
 
-  // OCEANIA (14)
   { city: "Canberra", country: "Australia", flag: "au", tz: "Australia/Sydney" },
   { city: "Suva", country: "Fiji", flag: "fj", tz: "Pacific/Fiji" },
   { city: "Tarawa", country: "Kiribati", flag: "ki", tz: "Pacific/Tarawa" },

@@ -8,7 +8,6 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Global Creatiancy Button Design System
 const baseStyles = "inline-flex items-center justify-center font-medium transition-all duration-300 ease-out rounded-full active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1E1E1E] focus-visible:ring-offset-2 text-center disabled:opacity-50 disabled:pointer-events-none";
 
 const variantStyles = {

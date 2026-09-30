@@ -32,12 +32,10 @@ export default function WebsiteHeader() {
   const pathname = usePathname();
   const { scrollY } = useScroll();
 
-  // Handle Scroll State
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 60);
   });
 
-  // Body Scroll Lock for Mobile Menu
   useEffect(() => {
     if (menuOpen) {
       document.body.style.overflow = "hidden";
@@ -49,7 +47,6 @@ export default function WebsiteHeader() {
     };
   }, [menuOpen]);
 
-  // Handle escape key to close menu
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setMenuOpen(false);
@@ -81,8 +78,7 @@ export default function WebsiteHeader() {
               : "bg-transparent"
           }`}
         >
-          
-          {/* Left Navigation (Desktop) */}
+
           <nav className="hidden lg:flex items-center space-x-12 flex-1">
             {LEFT_NAV.map((item) => {
               const isActive = checkActive(item.href);
@@ -104,10 +100,8 @@ export default function WebsiteHeader() {
             })}
           </nav>
 
-          {/* Mobile Spacer (Balances the hamburger icon to keep logo perfectly centered on mobile) */}
           <div className="lg:hidden w-12 flex-shrink-0" />
 
-          {/* Center Logo */}
           <Link
             href="/"
             className="relative flex items-center justify-center shrink-0 w-[120px] md:w-[140px] h-[30px] z-[60] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C22] rounded-sm transition-opacity opacity-90 hover:opacity-100"
@@ -123,7 +117,6 @@ export default function WebsiteHeader() {
             />
           </Link>
 
-          {/* Right Navigation (Desktop) */}
           <nav className="hidden lg:flex items-center justify-end space-x-12 flex-1">
             {RIGHT_NAV.map((item) => {
               const isActive = checkActive(item.href);
@@ -145,7 +138,6 @@ export default function WebsiteHeader() {
             })}
           </nav>
 
-          {/* Mobile Menu Toggle */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             aria-expanded={menuOpen}
@@ -163,7 +155,6 @@ export default function WebsiteHeader() {
         </div>
       </motion.header>
 
-      {/* Mobile/Tablet Fullscreen Overlay Navigation */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div

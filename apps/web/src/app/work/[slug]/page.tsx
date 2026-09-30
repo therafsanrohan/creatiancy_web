@@ -28,7 +28,6 @@ export default async function CaseStudyPage({ params }: { params: Promise<{ slug
     console.error("Failed to fetch case study from Supabase:", err);
   }
 
-  // Fallback to static mock data
   if (!project) {
     project = caseStudies.find((p) => p.id === slug || p.id === resolvedParams.slug);
   }

@@ -58,7 +58,7 @@ export default function PostClient({ post }: { post: any }) {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="prose prose-lg prose-invert max-w-none text-[var(--muted-fg)] prose-headings:text-[var(--text)] prose-headings:font-heading prose-a:text-[var(--ruby-red)] hover:prose-a:text-white prose-a:transition-colors"
           >
-            {/* Render rich content here. For now, simple text rendering. */}
+            
             {post.rich_content && post.rich_content.map((block: any, idx: number) => {
               if (block.type === 'paragraph') {
                 return <p key={idx}>{block.content}</p>;

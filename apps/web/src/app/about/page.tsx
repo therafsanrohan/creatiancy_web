@@ -59,11 +59,9 @@ export default function AboutPage() {
     <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
       
       <main className="flex-1 w-full relative overflow-hidden">
-        
-        {/* Stunning Dark Mode About Hero */}
+
         <section className="relative min-h-[75vh] md:min-h-[90vh] flex flex-col items-center justify-center pt-32 pb-24 px-6 md:px-12 w-full z-10 bg-[#050505] overflow-hidden rounded-b-[40px] md:rounded-b-[80px]">
-          
-          {/* Animated Background Orbs */}
+
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <motion.div 
               animate={{ 
@@ -106,7 +104,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Philosophy Section */}
         <section className="py-24 md:py-32 px-6 md:px-12 max-w-5xl mx-auto border-t border-[#1E1E1E]/10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
@@ -125,7 +122,6 @@ export default function AboutPage() {
           </motion.div>
         </section>
 
-        {/* Creative Approach */}
         <section className="py-24 md:py-32 bg-[#1E1E1E] text-white px-6 md:px-12">
           <div className="max-w-7xl mx-auto">
             <motion.div 
@@ -156,7 +152,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Creative Capabilities Section */}
         <section className="py-24 md:py-32 px-6 md:px-12 max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 pb-12">
             <div>
@@ -189,14 +184,12 @@ export default function AboutPage() {
                    </div>
                 </Link>
 
-                {/* Hover Background Reveal - Red! */}
                 <div className="absolute inset-0 bg-[#9B1C22] transform scale-y-0 origin-bottom group-hover:scale-y-100 transition-transform duration-500 ease-[0.16,1,0.3,1] z-0" />
               </motion.div>
             ))}
           </div>
         </section>
 
-        {/* Selected Work Bridge */}
         <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto bg-[#F5F5F7] rounded-3xl mb-32">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-[#1E1E1E]/10 pb-12">
             <div>
@@ -228,9 +221,8 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Premium Dark CTA Section */}
         <section className="relative py-40 md:py-64 px-4 md:px-8 lg:px-12 w-full bg-[#050505] overflow-hidden mt-12 mb-0">
-          {/* Dynamic Background */}
+          
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <motion.div 
               animate={{ rotate: 360 }}

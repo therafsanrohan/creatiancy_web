@@ -1,4 +1,3 @@
-// src/constants/faq.ts
 
 export type FAQItem = {
   id: string;

@@ -88,11 +88,9 @@ export default function ServicesPage() {
 
   return (
     <div className="creatiancy-scope bg-[#FBFDF9] selection:bg-[#9B1C22] selection:text-white">
-      
-      {/* Creative Services Hero */}
+
       <main className="relative min-h-[50vh] md:min-h-[60vh] flex flex-col justify-center pt-40 pb-24 px-6 md:px-12 w-full z-10 bg-[#FBFDF9] overflow-hidden">
-        
-        {/* Subtle Decorative Elements */}
+
         <div className="absolute inset-0 w-full h-full pointer-events-none flex items-center justify-center">
           <motion.div 
             initial={{ opacity: 0, scale: 0.8 }}
@@ -131,7 +129,6 @@ export default function ServicesPage() {
         </div>
       </main>
 
-      {/* Services Grid Layout */}
       <section className="relative z-10 pb-32">
         <div className="max-w-[1400px] mx-auto px-6 md:px-12 w-full">
           {servicesData.map((category, idx) => (
@@ -143,7 +140,7 @@ export default function ServicesPage() {
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col lg:flex-row gap-12 lg:gap-24 py-24 md:py-32 border-t border-[#1E1E1E]/5 relative"
             >
-              {/* Sticky Sidebar */}
+              
               <div className="lg:w-1/3 shrink-0 lg:sticky lg:top-32 h-fit">
                 <span className="text-[14px] font-mono font-semibold text-[#9B1C22] block mb-4">{category.id}</span>
                 <h2 className="text-[40px] md:text-[56px] font-bold tracking-tight text-[#1E1E1E] leading-[1.1] mb-6">
@@ -154,7 +151,6 @@ export default function ServicesPage() {
                 </p>
               </div>
 
-              {/* Service Cards Grid */}
               <div className="lg:w-2/3 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {category.items.map((item, itemIdx) => (
                   <div 
@@ -189,9 +185,8 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Premium Dark CTA Section */}
       <section className="relative py-40 md:py-64 px-4 md:px-8 lg:px-12 w-full bg-[#050505] overflow-hidden mt-12">
-        {/* Dynamic Background Orb */}
+        
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <motion.div 
             animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}

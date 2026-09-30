@@ -23,7 +23,6 @@ export default async function InsightsPage() {
     console.error("Failed to fetch insights:", err);
   }
 
-  // Optional static fallback
   if (posts.length === 0) {
     posts = [
       {

@@ -7,7 +7,7 @@ import { ButtonLink } from "@/components/ui/Button";
 export const AboutPreview = () => {
   return (
     <section className="py-32 md:py-48 px-4 md:px-8 lg:px-12 w-full relative bg-[#050505] overflow-hidden my-0">
-      {/* Ambient Glows */}
+      
       <div className="absolute top-0 left-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#9B1C22]/15 rounded-full blur-[100px] md:blur-[150px] -translate-y-1/2 pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-white/5 rounded-full blur-[100px] translate-y-1/2 pointer-events-none" />
       

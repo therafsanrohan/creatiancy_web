@@ -70,8 +70,7 @@ export const Services = () => {
   return (
     <section className="py-20 md:py-32 px-4 md:px-8 lg:px-12 w-full bg-[#FAFAFA] overflow-hidden">
       <div className="max-w-6xl mx-auto flex flex-col items-center">
-        
-        {/* Intro */}
+
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -84,7 +83,6 @@ export const Services = () => {
           </h2>
         </motion.div>
 
-        {/* Sticky Card Stack */}
         <div className="relative w-full flex flex-col gap-8 lg:gap-10">
           {EXTENDED_SERVICES.map((service, idx) => (
             <motion.div 
@@ -104,7 +102,7 @@ export const Services = () => {
                 zIndex: idx + 1
               } as React.CSSProperties}
             >
-              {/* Header */}
+              
               <h3 className="text-[32px] md:text-[56px] lg:text-[72px] font-medium tracking-tight mb-8 md:mb-16 leading-[1.1] w-full">
                 <span className="opacity-40 mr-3 md:mr-6 font-normal">
                   {service.id}
@@ -112,15 +110,14 @@ export const Services = () => {
                 {service.category}
               </h3>
 
-              {/* Two Column Content */}
               <div className="flex flex-col lg:flex-row gap-8 lg:gap-24 w-full">
-                {/* Left Description */}
+                
                 <div className="flex-1 lg:max-w-lg">
                    <p className={`text-[16px] md:text-[20px] lg:text-[24px] font-light leading-[1.5] ${service.descColor}`}>
                      {service.desc}
                    </p>
                 </div>
-                {/* Right Bullets */}
+                
                 <div className="flex-1 flex flex-col justify-center gap-4 mt-4 lg:mt-0 lg:pl-12">
                   {service.list.map((item, i) => (
                     <div key={i} className="flex items-start gap-4 text-[15px] md:text-[18px] lg:text-[20px] font-normal tracking-wide">

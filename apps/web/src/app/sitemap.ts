@@ -14,7 +14,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/insights`, lastModified: new Date(), changeFrequency: 'weekly' as const, priority: 0.7 },
   ];
 
-  // Fetch dynamic projects
   const { data: projects } = await supabase
     .from('projects')
     .select('slug, updated_at')
@@ -27,7 +26,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // Fetch dynamic insights
   const { data: posts } = await supabase
     .from('posts')
     .select('slug, updated_at')

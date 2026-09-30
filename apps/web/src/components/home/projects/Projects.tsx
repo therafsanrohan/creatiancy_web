@@ -33,8 +33,7 @@ export const Projects = () => {
   return (
     <section className="py-24 md:py-40 px-6 md:px-12 bg-[#F5F5F7] overflow-hidden">
       <div className="max-w-7xl mx-auto">
-        
-        {/* Editorial Intro */}
+
         <div className="mb-20 md:mb-32 max-w-3xl">
           <motion.h2 
             initial={{ opacity: 0, y: 30 }}
@@ -56,7 +55,6 @@ export const Projects = () => {
           </motion.p>
         </div>
 
-        {/* Curated Exhibition Grid */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-y-20 md:gap-y-32 gap-x-8">
           {PROJECTS.slice(0, 4).map((project, idx) => {
             const layout = RHYTHM[idx] || { span: "col-span-12", height: "h-[50vh]", isFeatured: false };
@@ -78,14 +76,12 @@ export const Projects = () => {
                 
                 <Link href={`/work/${project.id}`} className="relative block overflow-hidden rounded-2xl md:rounded-[32px] w-full bg-[#EAEAEA]">
                   <div className={`w-full ${layout.height} relative overflow-hidden`}>
-                    {/* Placeholder Background */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#D0D0D0] to-[#E0E0E0] transform transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-105" />
                     
-                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#D0D0D0] to-[#E0E0E0] transform transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-105" />
+
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
 
-                  {/* Absolute Desktop Hover CTA */}
                   <div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 z-20 pointer-events-none">
                     <div className="pointer-events-auto">
                       <div className="inline-flex items-center justify-center font-medium transition-all duration-300 ease-out rounded-full active:scale-[0.98] text-center bg-[#9B1C22] text-white !text-white shadow-xl shadow-black/10 hover:bg-[#1E1E1E] hover:shadow-black/20 px-8 py-4 text-[14px]">
@@ -95,7 +91,6 @@ export const Projects = () => {
                   </div>
                 </Link>
 
-                {/* Metadata */}
                 <div className="mt-6 md:mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                   <div>
                     <h3 className="text-[28px] md:text-[36px] font-medium tracking-tight text-[#1E1E1E] leading-none mb-2">
@@ -109,7 +104,7 @@ export const Projects = () => {
                     <span className="text-[14px] md:text-[15px] text-[#1E1E1E]/40 font-medium">
                       {project.year}
                     </span>
-                    {/* Mobile CTA (Visible on small screens, hidden on desktop where hover handles it) */}
+                    
                     <div className="md:hidden">
                       <ButtonLink href={`/work/${project.id}`} variant="primary" size="sm">
                         View Case Study
@@ -121,8 +116,7 @@ export const Projects = () => {
             );
           })}
         </div>
-        
-        {/* Section Footer / CTA */}
+
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

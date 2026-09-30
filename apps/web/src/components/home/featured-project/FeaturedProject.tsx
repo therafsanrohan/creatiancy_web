@@ -16,7 +16,7 @@ export const FeaturedProject = () => {
         className="relative rounded-3xl overflow-hidden bg-[#1E1E1E] text-white min-h-[500px] md:h-[700px] lg:h-[800px] flex items-end p-6 sm:p-10 md:p-16 group cursor-pointer"
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10"></div>
-        {/* Abstract background for featured */}
+        
         <div className="absolute inset-0 bg-[#252525] group-hover:scale-105 transition-transform duration-1000"></div>
 
         <div className="relative z-20 w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-8">

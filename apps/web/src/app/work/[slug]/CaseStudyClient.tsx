@@ -16,8 +16,7 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
   
   return (
     <article className="min-h-screen bg-[var(--bg)]">
-      
-      {/* Top Back Link Navigation */}
+
       <div className="absolute top-24 left-0 w-full z-50">
         <Container>
           <CustomLink href="/work" className="inline-flex items-center gap-2 text-sm uppercase tracking-widest font-bold">
@@ -26,7 +25,6 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
         </Container>
       </div>
 
-      {/* 1. Hero Block */}
       <CaseStudyHero 
         title={project.title}
         client={project.clientName || project.client || "Confidential"}
@@ -35,7 +33,6 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
         image={project.image}
       />
 
-      {/* 2. Challenge Text Block */}
       {(project.problem || project.challenge) && (
         <CaseStudyText 
           title="The Challenge" 
@@ -43,7 +40,6 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
         />
       )}
 
-      {/* 3. Strategy/Approach Text Block */}
       {(project.solution || project.strategy) && (
         <CaseStudyText 
           title="Our Approach" 
@@ -51,7 +47,6 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
         />
       )}
 
-      {/* 4. Mock Metrics (If available, otherwise hide) */}
       <CaseStudyMetrics 
         metrics={[
           { label: "Increase in Conversion", value: "+120%" },
@@ -59,7 +54,6 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
         ]}
       />
 
-      {/* 5. Outcome Block */}
       {(project.result) && (
         <CaseStudyText 
           title="The Outcome" 
@@ -67,14 +61,12 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
         />
       )}
 
-      {/* 6. Mock Gallery Block */}
       {project.image && (
         <CaseStudyGallery 
           images={[project.image, project.image]} 
         />
       )}
 
-      {/* 7. Mock Testimonial Block */}
       <CaseStudyTestimonial 
         quote="Creatiancy completely changed how we operate digitally. Their technical precision and design aesthetic are unmatched."
         author={project.clientName || project.client || "Partner"}

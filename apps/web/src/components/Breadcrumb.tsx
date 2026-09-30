@@ -1,5 +1,5 @@
-// components/Breadcrumb.tsx
-// Semantic breadcrumb navigation with Schema.org microdata annotations.
+
+
 // Used on all inner pages (/work, /services, /about, /contact, /privacy, /terms, /world-live).
 
 interface BreadcrumbProps {

@@ -16,7 +16,6 @@ const BRAND_DETAILS: Record<string, { alt: string; width: number; height: number
 export default function BrandsMarquee({ brands }: { brands: string[] }) {
   if (!brands || brands.length === 0) return null;
 
-  // Helper to resolve brand properties safely
   const getBrandDetails = (logo: string) => {
     return BRAND_DETAILS[logo] || { alt: `${logo.replace(/_logo\..*$/i, "")} logo`, width: 160, height: 60 };
   };
@@ -35,17 +34,16 @@ export default function BrandsMarquee({ brands }: { brands: string[] }) {
       </div>
       
       <div className="relative w-full max-w-screen-2xl mx-auto py-2">
-        {/* Deep Edge Fades */}
+        
         <div className="absolute left-0 top-0 bottom-0 w-20 md:w-56 bg-gradient-to-r from-[var(--bg)] via-[var(--bg)]/90 to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-20 md:w-56 bg-gradient-to-l from-[var(--bg)] via-[var(--bg)]/90 to-transparent z-10 pointer-events-none" />
 
-        {/* 1-Row Logo Wall */}
         <div className="flex relative w-full overflow-hidden">
           <div 
             className="flex w-max animate-marquee gap-14 md:gap-28 items-center px-12"
             style={{ willChange: "transform", animationDuration: "25s" }}
           >
-            {/* Set 1: Original (accessible to assistive tech) */}
+            
             {brands.map((logo, i) => {
               const detail = getBrandDetails(logo);
               return (
@@ -70,7 +68,6 @@ export default function BrandsMarquee({ brands }: { brands: string[] }) {
               );
             })}
 
-            {/* Set 2: Cloned (duplicated loop set, completely hidden from screen readers) */}
             {brands.map((logo, i) => {
               const detail = getBrandDetails(logo);
               return (
