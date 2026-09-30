@@ -33,7 +33,7 @@ export default async function InsightsPage() {
         excerpt: "How brands are shifting from disposable marketing to enduring digital architectures.",
         category: "Strategy",
         reading_time: 5,
-        publication_date: new Date().toISOString()
+        publication_date: "2026-09-30T00:00:00.000Z"
       },
       {
         id: "2",
@@ -42,7 +42,7 @@ export default async function InsightsPage() {
         excerpt: "The technical foundations behind high-performance, immersive web interfaces.",
         category: "Engineering",
         reading_time: 8,
-        publication_date: new Date(Date.now() - 86400000 * 5).toISOString()
+        publication_date: "2026-09-25T00:00:00.000Z"
       }
     ];
   }

@@ -7,7 +7,7 @@ import { Link as CustomLink } from "@/components/ui/Link";
 import { Container, Grid } from "@/components/ui/Layout";
 import { Heading, Text } from "@/components/ui/Typography";
 
-export default function WorkClient({ projects }: { projects: any[] }) {
+export default function WorkClient({ projects }: { projects: Record<string, any>[] }) {
   return (
     <div className="min-h-screen pt-32 pb-24 bg-[var(--bg)] text-[var(--text)]">
       <Container>

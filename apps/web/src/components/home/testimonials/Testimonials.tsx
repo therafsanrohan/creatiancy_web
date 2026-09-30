@@ -147,9 +147,6 @@ export const Testimonials = () => {
             
             {/* Left Side Title */}
             <div className="w-full lg:w-[35%]">
-              <span className="text-[12px] font-medium tracking-[0.1em] text-gray-500 uppercase block">
-                [05] AGENCY MILESTONES
-              </span>
             </div>
 
             {/* Right Side Stats */}

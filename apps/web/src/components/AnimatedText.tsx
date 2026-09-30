@@ -11,12 +11,6 @@ interface AnimatedTextProps {
   "aria-hidden"?: boolean;
 }
 
-/* Safe spring config */
-const spring: Transition = {
-  type: "spring",
-  damping: 12,
-  stiffness: 100,
-};
 
 export default function AnimatedText({
   text,
@@ -55,7 +49,7 @@ export default function AnimatedText({
     },
   };
 
-  const MotionTag = (motion as any)[Tag] || motion.div;
+  const MotionTag = (motion as Record<string, React.ElementType>)[Tag] || motion.div;
 
   return (
     <MotionTag

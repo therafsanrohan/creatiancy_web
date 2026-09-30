@@ -51,7 +51,7 @@ export default function WebsiteFooter() {
           </div>
 
           <div className="flex flex-col gap-6 lg:col-span-4 lg:col-start-9 col-span-2">
-            <span className="text-[11px] md:text-[12px] uppercase tracking-widest text-white/50 font-medium">Let's Bring Your Vision To Life</span>
+            <span className="text-[11px] md:text-[12px] uppercase tracking-widest text-white/50 font-medium">Let&apos;s Bring Your Vision To Life</span>
             <a href="mailto:hello@creatiancy.com" className="text-[28px] md:text-[36px] lg:text-[42px] tracking-tight hover:opacity-70 transition-opacity border-b-[2px] border-white pb-2 inline-block w-fit whitespace-nowrap">
               hello@creatiancy.com
             </a>

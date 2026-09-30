@@ -115,7 +115,7 @@ export function CaseStudyTestimonial({ quote, author, role }: TestimonialProps) 
       <Container>
         <div className="max-w-4xl mx-auto text-center space-y-12">
           <Heading level={3} className="text-3xl md:text-5xl font-light italic text-balance leading-relaxed">
-            "{quote}"
+            &ldquo;{quote}&rdquo;
           </Heading>
           <div>
             <Text className="font-bold">{author}</Text>

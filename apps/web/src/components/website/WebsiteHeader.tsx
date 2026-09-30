@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
-import { ButtonLink } from "@/components/ui/Button";
 
 type NavItem = {
   label: string;
@@ -64,8 +63,6 @@ export default function WebsiteHeader() {
     if (href === "#") return false;
     return pathname === href || pathname.startsWith(`${href}/`);
   };
-
-  const isLightMode = isScrolled || menuOpen;
 
   return (
     <>

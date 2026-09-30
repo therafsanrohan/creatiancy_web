@@ -11,7 +11,7 @@ import {
   CaseStudyTestimonial
 } from "@/features/case-study/blocks";
 
-export default function CaseStudyClient({ project }: { project: any }) {
+export default function CaseStudyClient({ project }: { project: Record<string, any> }) {
   // We mock a structured layout based on the raw project data provided for this modular template.
   
   return (
