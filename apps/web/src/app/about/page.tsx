@@ -70,7 +70,7 @@ export default function AboutPage() {
                 rotate: [0, 90, 0]
               }}
               transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="absolute -top-[20%] -left-[10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-gradient-to-br from-[#9B1C22]/40 to-transparent rounded-full blur-[100px] md:blur-[150px]"
+              className="absolute -top-[20%] -left-[10%] w-[500px] md:w-[800px] h-[500px] md:h-[800px] bg-gradient-to-br from-[#9B1C22]/40 to-transparent rounded-full blur-3xl md:blur-3xl"
             />
             <motion.div 
               animate={{ 
@@ -78,7 +78,7 @@ export default function AboutPage() {
                 opacity: [0.2, 0.4, 0.2]
               }}
               transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#9B1C22]/20 rounded-full blur-[120px]"
+              className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#9B1C22]/20 rounded-full blur-3xl"
             />
           </div>
           
@@ -107,7 +107,8 @@ export default function AboutPage() {
         <section className="py-24 md:py-32 px-6 md:px-12 max-w-5xl mx-auto border-t border-[#1E1E1E]/10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center text-center"
@@ -126,7 +127,8 @@ export default function AboutPage() {
           <div className="max-w-7xl mx-auto">
             <motion.div 
               initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               className="mb-20"
             >
@@ -138,7 +140,8 @@ export default function AboutPage() {
                 <motion.div 
                   key={idx}
                   initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1, duration: 0.8 }}
                   className="border-r border-b border-[#333333] p-10 flex flex-col h-full hover:bg-[#252525] transition-colors duration-500"
@@ -169,7 +172,8 @@ export default function AboutPage() {
               <motion.div 
                 key={i}
                 initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 className="group border-b border-[#1E1E1E]/10 relative overflow-hidden"
@@ -227,14 +231,15 @@ export default function AboutPage() {
             <motion.div 
               animate={{ rotate: 360 }}
               transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-gradient-to-r from-[#9B1C22]/20 to-transparent rounded-full blur-[100px] md:blur-[150px]"
+              className="w-[400px] md:w-[800px] h-[400px] md:h-[800px] bg-gradient-to-r from-[#9B1C22]/20 to-transparent rounded-full blur-3xl md:blur-3xl"
             />
           </div>
 
           <div className="relative z-10 max-w-[1200px] mx-auto flex flex-col items-center text-center">
             <motion.h2 
               initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
               className="text-[56px] sm:text-[80px] md:text-[120px] font-medium tracking-tighter text-white leading-[0.9] mb-12"
@@ -245,7 +250,8 @@ export default function AboutPage() {
 
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col sm:flex-row items-center gap-6"

@@ -11,9 +11,9 @@ export const Hero = () => {
 
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         
-        <div className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[#9B1C22]/10 blur-[120px] opacity-80" />
+        <div className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[#9B1C22]/10 blur-3xl opacity-80" />
         
-        <div className="absolute top-[10%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#9B1C22]/10 blur-[100px] opacity-80" />
+        <div className="absolute top-[10%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#9B1C22]/10 blur-3xl opacity-80" />
       </div>
 
       <div className="max-w-5xl mx-auto px-6 md:px-12 w-full relative z-10 flex flex-col items-center text-center mt-10 lg:mt-16">

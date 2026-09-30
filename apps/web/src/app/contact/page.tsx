@@ -19,7 +19,7 @@ export default function ContactPage() {
     <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
       <main className="flex-1 w-full relative overflow-hidden bg-[#FBFDF9]">
 
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#9B1C22]/5 rounded-full blur-[120px] pointer-events-none translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#9B1C22]/5 rounded-full blur-3xl pointer-events-none translate-x-1/2 -translate-y-1/2" />
 
         <section className="relative min-h-screen pt-40 pb-32 px-6 md:px-12 w-full z-10">
           <div className="max-w-[1400px] mx-auto flex flex-col lg:flex-row items-start justify-between gap-16 lg:gap-24 relative z-10">

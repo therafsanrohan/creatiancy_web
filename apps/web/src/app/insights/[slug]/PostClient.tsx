@@ -7,7 +7,7 @@ import { ArrowLeft, Clock, Calendar, Tag } from "lucide-react";
 export default function PostClient({ post }: { post: any }) {
   return (
     <div className="min-h-screen pt-32 pb-24 relative overflow-hidden bg-[var(--bg)]">
-      <div className="absolute top-[-10%] right-[-5%] w-[45vw] h-[45vw] bg-[var(--ruby-red)]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-[-10%] right-[-5%] w-[45vw] h-[45vw] bg-[var(--ruby-red)]/5 blur-3xl rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-4 md:px-8 relative z-10">
         <Link 

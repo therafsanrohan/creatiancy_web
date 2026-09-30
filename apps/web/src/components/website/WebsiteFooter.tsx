@@ -12,8 +12,8 @@ export default function WebsiteFooter() {
   return (
     <footer className="relative bg-[#050505] text-[#FAFAFA] pt-24 md:pt-32 pb-8 px-6 md:px-12 w-full mt-auto overflow-hidden font-sans">
       
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[500px] bg-white opacity-[0.15] blur-[140px] rounded-[100%] pointer-events-none" />
-      <div className="absolute bottom-0 right-[-10%] w-[600px] h-[600px] bg-white opacity-[0.03] blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120%] h-[500px] bg-white opacity-[0.15] blur-3xl rounded-[100%] pointer-events-none" />
+      <div className="absolute bottom-0 right-[-10%] w-[600px] h-[600px] bg-white opacity-[0.03] blur-3xl rounded-full pointer-events-none" />
 
       <div className="relative z-10 max-w-[1400px] mx-auto flex flex-col h-full">
         

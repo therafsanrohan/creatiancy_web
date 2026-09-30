@@ -37,7 +37,8 @@ export const Projects = () => {
         <div className="mb-20 md:mb-32 max-w-3xl">
           <motion.h2 
             initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="text-[50px] md:text-[80px] lg:text-[110px] font-bold tracking-tighter text-[#1E1E1E] leading-[0.85] uppercase mb-8"
@@ -46,7 +47,8 @@ export const Projects = () => {
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="text-[18px] md:text-[24px] text-[#1E1E1E]/70 font-light leading-[1.4] max-w-xl"
@@ -63,7 +65,8 @@ export const Projects = () => {
               <motion.div 
                 key={project.id}
                 initial={{ opacity: 0, y: 60 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
                 className={`${layout.span} flex flex-col group`}
@@ -119,7 +122,8 @@ export const Projects = () => {
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.8 }}
           className="mt-32 pt-20 border-t border-[#1E1E1E]/10 flex flex-col items-center"

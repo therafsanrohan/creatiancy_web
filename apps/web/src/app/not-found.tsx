@@ -14,7 +14,7 @@ export default function NotFound() {
             rotate: [0, 90, 0] 
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-[var(--accent)] rounded-full blur-[100px] mix-blend-multiply dark:mix-blend-screen"
+          className="absolute w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-[var(--accent)] rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen"
         />
         <motion.div 
           animate={{ 
@@ -22,7 +22,7 @@ export default function NotFound() {
             rotate: [0, -90, 0] 
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[50vw] h-[50vw] max-w-[700px] max-h-[700px] bg-[var(--text)] rounded-full blur-[120px] mix-blend-multiply dark:mix-blend-screen"
+          className="absolute w-[50vw] h-[50vw] max-w-[700px] max-h-[700px] bg-[var(--text)] rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen"
         />
       </div>
       

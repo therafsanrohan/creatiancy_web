@@ -96,7 +96,7 @@ export default function ServicesPage() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5, ease: "easeOut" }}
-            className="w-[600px] md:w-[800px] h-[600px] md:h-[800px] bg-[#9B1C22]/5 rounded-full blur-[100px] md:blur-[150px]"
+            className="w-[600px] md:w-[800px] h-[600px] md:h-[800px] bg-[#9B1C22]/5 rounded-full blur-3xl md:blur-3xl"
           />
         </div>
 
@@ -135,7 +135,8 @@ export default function ServicesPage() {
             <motion.div 
               key={category.id} 
               initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="flex flex-col lg:flex-row gap-12 lg:gap-24 py-24 md:py-32 border-t border-[#1E1E1E]/5 relative"
@@ -191,14 +192,15 @@ export default function ServicesPage() {
           <motion.div 
             animate={{ scale: [1, 1.1, 1], opacity: [0.15, 0.25, 0.15] }}
             transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-            className="w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#9B1C22] rounded-full blur-[120px] md:blur-[180px]"
+            className="w-[300px] md:w-[600px] h-[300px] md:h-[600px] bg-[#9B1C22] rounded-full blur-3xl md:blur-3xl"
           />
         </div>
 
         <div className="relative z-10 max-w-[1200px] mx-auto flex flex-col items-center text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="text-[48px] md:text-[80px] lg:text-[110px] font-medium tracking-tighter text-white leading-[0.9] mb-12"
@@ -209,7 +211,8 @@ export default function ServicesPage() {
 
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col sm:flex-row items-center gap-6"

@@ -41,7 +41,8 @@ export default function PrivacyPolicyPage() {
           {sections.map((section, index) => (
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-50px" }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
               key={section.id}
@@ -59,7 +60,8 @@ export default function PrivacyPolicyPage() {
           
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mt-12 pt-12 border-t border-[#1E1E1E]/10"
           >

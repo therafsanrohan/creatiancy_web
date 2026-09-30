@@ -10,7 +10,8 @@ export const FeaturedProject = () => {
     <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
       <motion.div 
         initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         className="relative rounded-3xl overflow-hidden bg-[#1E1E1E] text-white min-h-[500px] md:h-[700px] lg:h-[800px] flex items-end p-6 sm:p-10 md:p-16 group cursor-pointer"

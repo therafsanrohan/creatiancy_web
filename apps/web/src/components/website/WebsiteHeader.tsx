@@ -74,7 +74,7 @@ export default function WebsiteHeader() {
         <div 
           className={`h-[70px] px-6 lg:px-10 flex items-center justify-between rounded-2xl transition-all duration-500 ${
             isScrolled 
-              ? "bg-white/70 backdrop-blur-[20px] saturate-[1.8] border border-black/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.04)]" 
+              ? "bg-white/70 backdrop-blur-md saturate-[1.8] border border-black/[0.05] shadow-[0_8px_30px_rgb(0,0,0,0.04)]" 
               : "bg-transparent"
           }`}
         >

@@ -25,7 +25,8 @@ export default function BrandsMarquee({ brands }: { brands: string[] }) {
       <div className="container mx-auto px-4 mb-10 text-center relative z-10">
         <motion.span
           initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--ruby-red)]/5 text-[var(--ruby-red)] text-[10px] font-bold tracking-widest uppercase border border-[var(--ruby-red)]/10"
         >

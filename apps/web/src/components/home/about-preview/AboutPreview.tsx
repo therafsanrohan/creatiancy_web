@@ -8,15 +8,16 @@ export const AboutPreview = () => {
   return (
     <section className="py-32 md:py-48 px-4 md:px-8 lg:px-12 w-full relative bg-[#050505] overflow-hidden my-0">
       
-      <div className="absolute top-0 left-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#9B1C22]/15 rounded-full blur-[100px] md:blur-[150px] -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-white/5 rounded-full blur-[100px] translate-y-1/2 pointer-events-none" />
+      <div className="absolute top-0 left-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#9B1C22]/15 rounded-full blur-3xl md:blur-3xl -translate-y-1/2 pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-white/5 rounded-full blur-3xl translate-y-1/2 pointer-events-none" />
       
       <div className="max-w-[1200px] mx-auto w-full relative z-10">
         <div className="flex flex-col items-start md:items-center text-left md:text-center">
           
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
             className="flex items-center gap-3 px-6 py-2.5 rounded-full border border-white/10 bg-white/5 mb-8 md:mb-12 backdrop-blur-md"
@@ -27,7 +28,8 @@ export const AboutPreview = () => {
 
           <motion.h2 
             initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="text-[36px] md:text-[64px] lg:text-[88px] font-medium tracking-tight text-[#FAFAFA] leading-[1.05] mb-12 md:mb-20 max-w-5xl text-left md:text-center"
@@ -42,7 +44,8 @@ export const AboutPreview = () => {
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto"
