@@ -1,80 +1,74 @@
-# Creatiancy Digital Studio
+# Creatiancy Monorepo
 
-## 1. Project Overview
-Creatiancy is a professional digital studio portfolio and brand platform. Built with Next.js, it serves as a high-quality showcase for creative work and client services.
+Welcome to the new, modernized Creatiancy Global Website and CMS.
 
-The codebase is designed for performance, security, and SEO optimization from the ground up.
+This project is built using a robust, scalable Next.js monorepo architecture leveraging Supabase for backend services (Auth & Postgres) and Cloudinary for media asset management.
 
+## Project Architecture
 
----
+The codebase is organized into applications and shared packages:
 
-## 2. Technical Stack
-- **Core Engine:** Next.js 15 (App Router natively forced Server-Side execution logic)
-- **Styling:** Vanilla Tailwind CSS + Modular `theme.css` tokens
-- **CMS:** Sanity Studio (embedded at `/studio`)
-- **Analytics:** Google Analytics (gtag.js)
-- **Animations:** Framer Motion (Spring Physics arrays)
-- **Security:** Root `middleware.ts` bot deflection & heavy native CSP Next hooks
-- **Environment:** Node Edge Ecosystem (Vercel)
+### Apps
+- `apps/web`: The public-facing agency website (`creatiancy.com`). Built with Next.js App Router, Tailwind v4, and Framer Motion. Contains the marketing pages, portfolio (case studies), services, and insights.
+- `apps/admin`: The secure CMS dashboard (`admin.creatiancy.com`). Built with Next.js App Router and secured via Supabase SSR Auth middleware. Used to manage Inquiries, Projects, and Insights.
 
----
+### Packages
+- `packages/database`: Shared Supabase client configuration and schema definitions.
+- `packages/ui`: Shared design system, Tailwind v4 tokens, and global styling constants.
+- `packages/auth`: (Reserved) Shared authentication logic.
 
-## 3. Configuration Subsystems (Single Source of Truth)
-We have eradicated deep-nested UI hardcoding. Absolute data control is maintained from structural configurations located in `src/constants/`:
+## Prerequisites
 
-- **`src/constants/footerConfig.ts`**: The singular interface controller for the entire application's connect capabilities. Holds email records, physical studio addresses, WhatsApp APIs, and all Social vectors.
-- **`src/constants/projects.ts`**: The decoupled data spine for rendering dynamic Case Studies and Recent Project Grids natively across the marketing pages.
-- **`src/constants/testimonials.ts`**: Manages the Client Feedback section globally.
-- **`src/constants/services.ts`**: Centralized list of core agency services and their descriptions.
+- Node.js >= 18
+- Supabase Cloud Project (or Local Docker for local Supabase)
+- Cloudinary Account (for media uploads)
 
-### How to Add or Edit Testimonials
-To update client testimonials, edit the `src/constants/testimonials.ts` file.
+## Environment Variables
 
-**Structure of a Testimonial Object:**
-```typescript
-{
-  id: "unique-id",          
-  name: "Client Name",      
-  designation: "Role",      
-  image: "image_url",       
-  review: "Review text..."  
-}
+You must create a `.env.local` file in both `apps/web` and `apps/admin` with the following variables:
+
+```env
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL="your-project-url"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="your-anon-key"
+
+# Cloudinary Configuration (Only required in apps/admin for uploading)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME="your-cloud-name"
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET="your-unsigned-upload-preset"
 ```
 
----
+## Running Locally
 
-## 4. Built-in Security & Obfuscation
+To start the development servers for both the web app and the admin dashboard concurrently:
 
-The application includes multi-layered protection:
+```bash
+npm install
+npm run dev
+```
 
-*   **SecurityProvider**: Client-side component that disables right-click, F12, and common inspection shortcuts (CMD+U, CMD+SHIFT+I) to discourage source viewing.
-*   **Production Hardening**: Source maps are disabled in production, and the `X-Powered-By` header is removed to prevent signature fingerprinting.
-*   **Security Headers**: Implements strict CSP, HSTS, and Frame-Options via `next.config.ts`.
+- `apps/web` will typically run on `http://localhost:3000` (or 3001)
+- `apps/admin` will typically run on `http://localhost:3001` (or 3000)
 
----
+## Database Schema
 
-## 5. Folder Directory (Source-First Architecture)
-- **`/src/app`**: Next.js routing architecture and metadata layouts.
-- **`/src/components`**: Reusable components categorized by concern.
-- **`/src/constants`**: Centralized configuration files for content management.
-- **`/src/lib`**: Utility integrations and core logic.
-- **`/src/sanity`**: CMS Configuration and Schema Definitions.
-- **`/public`**: Static assets (logos, images).
-- **`middleware.ts`**: Active security perimeter hook for Next Edge layers.
+The database relies on the schema defined in `supabase/migrations`. 
+To apply the schema to your Supabase cloud project:
 
----
+1. Link your project: `npx supabase link --project-ref your-project-ref`
+2. Push the migrations: `npx supabase db push`
 
-## 6. Maintenance & Content Updates
-For non-technical owners, most updates can be done by editing files in `src/constants/`. These files use plain-English comments and simple TypeScript objects that are easy to modify even without deep coding knowledge.
+*Note: Ensure you create a super-admin user in your Supabase dashboard to login to the `apps/admin` application.*
 
----
+## Deployment (Vercel)
 
-## Credits
-**Website designed and developed by Creatiancy**  
-📞 +880 1325 078 941 | ✉️ contact@creatiancy.com | 🌐 www.creatiancy.com  
-**Rafsan Rohan — Founder & Creative Lead**  
-📞 +880 1325 078 942 | ✉️ knock.rafsan@gmail.com | 🌐 www.rafsanrohan.com  
-
-⚠️ *Note: This codebase was used by the development team (Creatiancy) for development and testing purposes only.*
-
-
+1. Import the repository into Vercel.
+2. Create **two separate Vercel projects** pointing to the same repository.
+3. For the **Web App**:
+   - Framework Preset: `Next.js`
+   - Root Directory: `apps/web`
+   - Build Command: `npm run build`
+4. For the **Admin App**:
+   - Framework Preset: `Next.js`
+   - Root Directory: `apps/admin`
+   - Build Command: `npm run build`
+5. Add the necessary Environment Variables to both Vercel projects.

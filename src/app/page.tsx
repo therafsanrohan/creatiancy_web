@@ -1,183 +1,159 @@
-import type { Metadata } from 'next';
-import Hero from "@/components/Hero";
-import AnimatedText from "@/components/AnimatedText";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
-import dynamic from "next/dynamic";
-import fs from "fs";
-import path from "path";
+import WebsiteHeader from "@/components/website/WebsiteHeader";
+import WebsiteFooter from "@/components/website/WebsiteFooter";
+import "@/app/website.css";
 
-export const metadata: Metadata = {
-  title: 'Digital Design & Development Studio',
-};
+const verifiedPartners = [
+  { name: "AtoBD", logo: "/brands/AtoBD_logo.png" },
+  { name: "Elcardo", logo: "/brands/elcardo_logo.png" },
+  { name: "ODL", logo: "/brands/odl_logo.png" },
+  { name: "Oven", logo: "/brands/oven_logo.png" },
+  { name: "S Brand", logo: "/brands/s_logo.png" },
+];
 
-// Configuration & Data
-import { recentProjects } from "@/constants/projects";
-import { agencyServices } from "@/constants/services";
-const BrandsMarquee = dynamic(() => import("@/components/BrandsMarquee"), { 
-  ssr: true,
-});
-const Testimonials = dynamic(() => import("@/components/Testimonials"));
-const FAQSection = dynamic(() => import("@/components/FAQSection"));
+const capabilities = [
+  {
+    num: "01",
+    title: "Brand Architecture & Visual Systems",
+    desc: "Comprehensive brand positioning, editorial identity, and strategic guidelines designed for longevity and commercial authority.",
+  },
+  {
+    num: "02",
+    title: "Digital Platforms & Engineering",
+    desc: "Ultra-fast, enterprise-standard web architectures engineered with high-precision frontend stacks and modern usability.",
+  },
+  {
+    num: "03",
+    title: "Creative Technology & Motion",
+    desc: "Bridging avant-garde technology and interactive motion without unnecessary decorative baggage.",
+  },
+];
 
-/**
- * Main Landing Page
- * -----------------
- * This is the primary entry point for the Creatiancy website.
- * It features a heroic entrance, a client marquee, our core services, 
- * social proof via testimonials, and a showcase of our best work.
- */
-export default function Home() {
-  // Logic to dynamically pull brand logos from the public folder.
-  // This allows the owner to simply drop a file into /public/brands to update the marquee.
-  let brands: string[] = [];
-  try {
-    const brandsDir = path.join(process.cwd(), 'public/brands');
-    if (fs.existsSync(brandsDir)) {
-      brands = fs.readdirSync(brandsDir).filter(f => f.match(/\.(png|jpe?g|svg|webp)$/i));
-    }
-  } catch (err) {
-    // We don't want a missing folder to crash the whole site
-    console.warn("Hey, looks like the brands directory is missing or unreadable.", err);
-  }
+const selectedWorks = [
+  {
+    client: "Elcardo Industrial",
+    discipline: "Brand Architecture & Platform",
+    year: "2026",
+    summary: "Re-engineering market presence with clean editorial direction and corporate digital systems.",
+  },
+  {
+    client: "AtoBD Logistics",
+    discipline: "Product Design & Web Engineering",
+    year: "2025",
+    summary: "A high-performance digital framework handling national scale logistics identity.",
+  },
+  {
+    client: "ODL Systems",
+    discipline: "Creative Technology",
+    year: "2025",
+    summary: "Refined digital presence and modern visual identity for specialized hardware and security technology.",
+  },
+];
 
-  // Fallback logos for a fresh install/dev environment
-  if (brands.length === 0) {
-    brands = ["placeholder_1", "placeholder_2", "placeholder_3", "placeholder_4"];
-  }
-
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "@id": "https://www.creatiancy.com/#website",
-    "name": "Creatiancy",
-    "url": "https://www.creatiancy.com",
-    "description": "Boutique digital design and development studio crafting precision brand experiences.",
-    "publisher": { "@id": "https://www.creatiancy.com/#organization" },
-    "inLanguage": "en-US"
-  };
-
+export default function HomePage() {
   return (
-    <>
-      {/* WebSite JSON-LD — homepage only */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-      />
+    <div className="creatiancy-scope">
+      <WebsiteHeader />
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="pt-44 pb-20 md:pt-56 md:pb-32 px-6 md:px-12 max-w-7xl mx-auto">
+          <p className="text-[#9B1C22] text-xs font-semibold tracking-widest uppercase mb-6">
+            Creative Technology &amp; Brand Authority
+          </p>
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-normal tracking-tight text-[#1E1E1E] leading-[1.05] max-w-5xl">
+            We Build Legacies.
+          </h1>
+          <p className="mt-8 text-lg md:text-xl text-[#1E1E1E]/70 max-w-2xl font-light leading-relaxed">
+            Creatiancy is an authoritative creative technology agency. We transform ambition into enduring market leadership through disciplined design and performance engineering.
+          </p>
+          <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <Link
+              href="/work"
+              className="px-8 py-4 bg-[#1E1E1E] text-[#FBFDF9] text-xs uppercase tracking-widest font-semibold hover:bg-[#9B1C22] transition-colors"
+            >
+              Explore Portfolio
+            </Link>
+            <span className="text-xs uppercase tracking-widest text-[#1E1E1E]/50">
+              Creative Principle: Performance over decoration
+            </span>
+          </div>
+        </section>
 
-      <div className="flex flex-col gap-24 md:gap-32 pb-24">
-        {/* 01. The Hero Section - Our Big Hello */}
-        <Hero />
-        
-        {/* 02. Client Trust - Scrolling Marquee */}
-        {brands.length > 0 && <BrandsMarquee brands={brands} />}
-        
-        {/* 03. Services Snapshot - What We Actually Do */}
-        <section aria-labelledby="services-heading" className="container mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-12">
-            <div>
-              <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6">
-                Our Expertise
-              </div>
-              <AnimatedText 
-                text="A creative agency engineering strategic design & intelligent development."
-                el="h2"
-                className="text-3xl md:text-5xl font-heading tracking-tight mb-6 -ml-1 text-left justify-start"
-              />
-              <p className="text-[var(--muted-fg)] max-w-md text-lg leading-relaxed">
-                We provide end-to-end branding services and full-spectrum digital marketing to accelerate business performance.
-              </p>
-            </div>
-
-            <div className="grid gap-8">
-              {agencyServices.map((service, index) => (
-                <Link 
-                  href={service.href} 
-                  key={index} 
-                  className="group border-b border-[var(--muted)] pb-6 block cursor-pointer"
-                  title={`Learn more about Creatiancy ${service.title} services`}
-                >
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-[var(--ruby-red)] transition-colors inline-flex items-center gap-2">
-                    {service.title}
-                    <ArrowUpRight className="w-4 h-4 opacity-0 -translate-y-1 translate-x-1 group-hover:opacity-100 group-hover:translate-y-0 group-hover:translate-x-0 transition-all duration-300" />
-                  </h3>
-                  <p className="text-[var(--muted-fg)] leading-snug">{service.desc}</p>
-                </Link>
+        {/* Partners Banner */}
+        <section className="border-y border-[#1E1E1E]/10 py-12 bg-white">
+          <div className="max-w-7xl mx-auto px-6 md:px-12">
+            <p className="text-[11px] uppercase tracking-widest text-[#1E1E1E]/40 mb-8 font-semibold">
+              Selected Clients &amp; Collaborators
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8 items-center">
+              {verifiedPartners.map((item) => (
+                <div key={item.name} className="relative h-12 w-full flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
+                  <Image src={item.logo} alt={item.name} fill className="object-contain grayscale hover:grayscale-0 transition-all duration-300" sizes="160px" />
+                </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* 04. Social Proof - What our clients say */}
-        <Testimonials />
-
-        {/* 05. Selected Work - The Portfolio Showcase */}
-        <section aria-labelledby="work-heading" className="container mx-auto px-4">
-          <div className="flex justify-between items-end mb-12">
+        {/* Services Section */}
+        <section className="py-24 md:py-32 px-6 md:px-12 max-w-7xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 pb-6 border-b border-[#1E1E1E]/10">
             <div>
-              <div className="inline-block px-4 py-2 rounded-full bg-[var(--ruby-red)]/10 text-[var(--ruby-red)] text-sm font-bold tracking-widest uppercase mb-6 border border-[var(--ruby-red)]/20">
-                Selected Work
-              </div>
-              <h2 id="work-heading" className="text-4xl md:text-5xl lg:text-6xl font-heading font-extrabold tracking-tight text-balance">
-                Recent Projects.
-              </h2>
+              <p className="text-xs uppercase tracking-widest text-[#9B1C22] font-semibold mb-2">Capabilities</p>
+              <h2 className="text-3xl md:text-5xl font-light text-[#1E1E1E]">Designed for market impact.</h2>
             </div>
+            <Link href="/services" className="mt-4 md:mt-0 text-xs uppercase tracking-widest font-semibold hover:text-[#9B1C22] transition-colors">
+              All Services &rarr;
+            </Link>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            {recentProjects.map((project, index) => (
-              <div 
-                key={project.id} 
-                className={`flex flex-col ${index % 2 !== 0 ? 'md:mt-16' : ''}`}
-              >
-                <Link 
-                  href={project.link}
-                  target={project.link !== "#" ? "_blank" : undefined}
-                  rel="noopener noreferrer"
-                  className="group cursor-pointer relative w-full aspect-[4/3] rounded-2xl overflow-hidden mb-6 bg-[var(--muted)]/10 border border-[var(--muted)]/30 block"
-                >
-                  {project.image ? (
-                    <Image 
-                      src={project.image} 
-                      alt={`${project.title} — Creatiancy case study`}
-                      fill
-                      quality={85}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      priority={index === 0}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-[var(--muted)]/40 to-[var(--bg)] group-hover:scale-105 transition-transform duration-700 ease-out" />
-                  )}
-                  
-                  {/* Visual Feedback on Hover */}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500 z-10 flex items-center justify-center pointer-events-none">
-                    {project.link !== "#" && (
-                      <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center opacity-0 scale-50 group-hover:opacity-100 group-hover:scale-100 transition-all duration-500 ease-out shadow-2xl">
-                        <ArrowUpRight className="w-8 h-8 text-black" />
-                      </div>
-                    )}
-                  </div>
-                </Link>
-
-                <div className="flex flex-col gap-4 px-2">
-                  <Link href={project.link} className="group cursor-pointer block">
-                    <h3 className="text-2xl md:text-3xl font-bold font-heading group-hover:text-[var(--ruby-red)] transition-colors duration-300 flex justify-between items-center">
-                      {project.title}
-                    </h3>
-                    <p className="text-[var(--muted-fg)] text-lg font-light mt-1">{project.industry}</p>
-                    <div className="h-0.5 w-0 bg-[var(--ruby-red)] group-hover:w-12 transition-all duration-500 ease-out mt-2" />
-                  </Link>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {capabilities.map((s) => (
+              <div key={s.num} className="bg-white border border-[#1E1E1E]/10 p-8 md:p-10 flex flex-col justify-between hover:border-[#9B1C22] transition-colors duration-300">
+                <div>
+                  <span className="text-[#9B1C22] font-mono text-sm block mb-6 font-bold">{s.num}</span>
+                  <h3 className="text-2xl font-normal text-[#1E1E1E] mb-4">{s.title}</h3>
+                  <p className="text-sm text-[#1E1E1E]/70 font-light leading-relaxed">{s.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* 06. Interactive FAQ Section */}
-        <FAQSection />
-      </div>
-    </>
+        {/* Selected Work Section */}
+        <section className="py-20 md:py-28 bg-white border-t border-[#1E1E1E]/10 px-6 md:px-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 pb-6 border-b border-[#1E1E1E]/10">
+              <div>
+                <p className="text-xs uppercase tracking-widest text-[#9B1C22] font-semibold mb-2">Portfolio</p>
+                <h2 className="text-3xl md:text-5xl font-light text-[#1E1E1E]">Selected Work</h2>
+              </div>
+              <Link href="/work" className="mt-4 md:mt-0 text-xs uppercase tracking-widest font-semibold hover:text-[#9B1C22] transition-colors">
+                Full Archive &rarr;
+              </Link>
+            </div>
+            <div className="divide-y divide-[#1E1E1E]/10">
+              {selectedWorks.map((work) => (
+                <div key={work.client} className="py-8 md:py-12 flex flex-col md:flex-row md:items-center justify-between group hover:bg-[#FBFDF9] transition-colors px-4 -mx-4">
+                  <div className="md:w-1/3">
+                    <span className="text-xs font-mono text-[#9B1C22] block mb-1">{work.year}</span>
+                    <h3 className="text-2xl md:text-3xl font-normal text-[#1E1E1E] group-hover:text-[#9B1C22] transition-colors">{work.client}</h3>
+                  </div>
+                  <div className="mt-2 md:mt-0 md:w-1/3">
+                    <p className="text-xs uppercase tracking-widest text-[#1E1E1E]/60 mb-1">{work.discipline}</p>
+                    <p className="text-sm font-light text-[#1E1E1E]/75">{work.summary}</p>
+                  </div>
+                  <div className="mt-4 md:mt-0 md:w-1/6 md:text-right">
+                    <span className="text-xs uppercase tracking-widest font-semibold text-[#1E1E1E] group-hover:text-[#9B1C22]">Case Study &rarr;</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      </main>
+      <WebsiteFooter />
+    </div>
   );
 }

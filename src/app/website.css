@@ -1,0 +1,36 @@
+:root {
+  --cr-red: #9B1C22;
+  --cr-black: #1E1E1E;
+  --cr-lotion: #FBFDF9;
+  --cr-white: #FFFFFF;
+  --cr-border: rgba(30, 30, 30, 0.08);
+  --cr-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.creatiancy-scope {
+  background-color: var(--cr-lotion);
+  color: var(--cr-black);
+  font-family: var(--cr-font);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.creatiancy-scope * {
+  box-sizing: border-box;
+}
+
+.creatiancy-scope a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.glass-nav {
+  background-color: rgba(251, 253, 249, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--cr-border);
+}
