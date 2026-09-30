@@ -16,7 +16,7 @@ export const AboutPreview = () => {
           
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-            viewport={{ once: true, margin: "-50px" }}
+            
 whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
@@ -28,7 +28,7 @@ whileInView={{ opacity: 1, scale: 1 }}
 
           <motion.h2 
             initial={{ opacity: 0, y: 30 }}
-            viewport={{ once: true, margin: "-50px" }}
+            
 whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -44,7 +44,7 @@ whileInView={{ opacity: 1, y: 0 }}
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
-            viewport={{ once: true, margin: "-50px" }}
+            
 whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}

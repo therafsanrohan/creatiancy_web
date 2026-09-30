@@ -107,9 +107,9 @@ export default function AboutPage() {
         <section className="py-24 md:py-32 px-6 md:px-12 max-w-5xl mx-auto border-t border-[#1E1E1E]/10">
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
-            viewport={{ once: true, margin: "-50px" }}
+            
 whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col items-center text-center"
           >
@@ -127,7 +127,7 @@ whileInView={{ opacity: 1, y: 0 }}
           <div className="max-w-7xl mx-auto">
             <motion.div 
               initial={{ opacity: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
+              
 whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               className="mb-20"
@@ -140,7 +140,7 @@ whileInView={{ opacity: 1 }}
                 <motion.div 
                   key={idx}
                   initial={{ opacity: 0, y: 20 }}
-                  viewport={{ once: true, margin: "-50px" }}
+                  
 whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1, duration: 0.8 }}
@@ -172,7 +172,7 @@ whileInView={{ opacity: 1, y: 0 }}
               <motion.div 
                 key={i}
                 initial={{ opacity: 0, x: -20 }}
-                viewport={{ once: true, margin: "-50px" }}
+                
 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
@@ -238,7 +238,7 @@ whileInView={{ opacity: 1, x: 0 }}
           <div className="relative z-10 max-w-[1200px] mx-auto flex flex-col items-center text-center">
             <motion.h2 
               initial={{ opacity: 0, y: 50 }}
-              viewport={{ once: true, margin: "-50px" }}
+              
 whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
@@ -250,7 +250,7 @@ whileInView={{ opacity: 1, y: 0 }}
 
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
-              viewport={{ once: true, margin: "-50px" }}
+              
 whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}

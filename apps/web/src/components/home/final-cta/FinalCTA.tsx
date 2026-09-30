@@ -19,7 +19,7 @@ export const FinalCTA = () => {
       <div className="relative z-10 max-w-[1200px] mx-auto flex flex-col items-center text-center">
         <motion.h2 
           initial={{ opacity: 0, y: 50 }}
-          viewport={{ once: true, margin: "-50px" }}
+          
 whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
@@ -31,7 +31,7 @@ whileInView={{ opacity: 1, y: 0 }}
 
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
-          viewport={{ once: true, margin: "-50px" }}
+          
 whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}

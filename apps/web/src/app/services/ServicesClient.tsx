@@ -46,9 +46,9 @@ export default function ServicesClient({ services }: { services: Service[] }) {
           <motion.article 
             key={i}
             initial={{ opacity: 0, y: 40 }}
-            viewport={{ once: true, margin: "-50px" }}
+            
 whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true }}
             transition={{ duration: 0.7, delay: i * 0.1 }}
             className="group grid xl:grid-cols-[1fr_2fr] gap-8 md:gap-16 border rounded-3xl p-8 md:p-12 border-[var(--border)] bg-[var(--muted)]/10 hover:bg-[var(--muted)]/20 transition-all duration-500 hover:shadow-2xl hover:shadow-[var(--ruby-red)]/5"
           >
@@ -90,7 +90,7 @@ whileInView={{ opacity: 1, y: 0 }}
       <Container className="mt-24 md:mt-32">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          viewport={{ once: true, margin: "-50px" }}
+          
 whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}

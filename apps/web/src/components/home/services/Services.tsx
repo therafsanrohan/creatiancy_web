@@ -73,7 +73,7 @@ export const Services = () => {
 
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
-          viewport={{ once: true, margin: "-50px" }}
+          
 whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="text-center mb-16 md:mb-24 flex flex-col items-center"
@@ -89,9 +89,9 @@ whileInView={{ opacity: 1, y: 0 }}
             <motion.div 
               key={service.id}
               initial={{ opacity: 0, y: 30 }}
-              viewport={{ once: true, margin: "-50px" }}
+              
 whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
+              viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
               className={`
                 relative w-full rounded-[24px] md:rounded-[40px] p-8 md:p-12 lg:p-16 xl:p-20 flex flex-col 
