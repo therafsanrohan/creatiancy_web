@@ -5,12 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { testimonials } from "@/constants/testimonials";
 
-const MILESTONES = [
-  { value: "05", suffix: "+", label: "Years Experience" },
-  { value: "120", suffix: "+", label: "Projects Completed" },
-  { value: "50", suffix: "+", label: "Brands Transformed" },
-  { value: "92", suffix: "%", label: "Returning Clients" },
-];
+
 
 export const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -102,20 +97,7 @@ export const Testimonials = () => {
         </div>
       </section>
 
-      <section className="py-16 md:py-24 px-4 md:px-8 lg:px-12 w-full relative bg-white">
-        <div className="max-w-[1200px] mx-auto w-full">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12 gap-x-6 md:gap-x-12 w-full">
-            {MILESTONES.map((stat, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center lg:items-start lg:text-left gap-2 border-t border-[#1E1E1E]/10 pt-6 md:pt-8">
-                <div className="text-[48px] sm:text-[56px] md:text-[72px] lg:text-[80px] font-medium text-[#1E1E1E] leading-none tracking-tighter">
-                  {stat.value}<span className="text-[#9B1C22]">{stat.suffix}</span>
-                </div>
-                <p className="text-[12px] md:text-[14px] text-gray-500 font-medium uppercase tracking-widest mt-2">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
     </div>
   );
 };

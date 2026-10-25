@@ -3,7 +3,6 @@
 import React from "react";
 import { ButtonLink } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { CLIENTS } from "@/lib/data/home";
 
 export const Hero = () => {
   return (
@@ -25,7 +24,7 @@ export const Hero = () => {
           className="mb-6 w-full"
         >
           <h1 className="text-[12vw] sm:text-[60px] md:text-[80px] lg:text-[96px] font-bold tracking-tighter text-[#0F172A] leading-[1.05] max-w-4xl mx-auto">
-            Building bold brands with thoughtful design
+            Build a brand that knows where it&apos;s going.
           </h1>
         </motion.div>
 
@@ -36,7 +35,7 @@ export const Hero = () => {
           className="mb-10 w-full"
         >
           <p className="text-[16px] md:text-[18px] text-[#475569] font-normal max-w-2xl mx-auto leading-[1.6]">
-            At Creatiancy, we design brands, digital experiences, and campaigns that dominate the market, guiding you from strategy to success.
+            We connect strategy, creative direction, and digital experiences to help ambitious businesses communicate with clarity and build brands with purpose.
           </p>
         </motion.div>
 
@@ -44,43 +43,14 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row items-center gap-8"
+          className="flex flex-col sm:flex-row items-center gap-4"
         >
-          
-          <ButtonLink href="/work" variant="secondary" size="lg" className="flex items-center gap-2 px-8 py-4">
-            <span className="text-white !text-white font-medium">Explore Work</span>
-            <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center ml-2">
-              <svg className="text-black" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="7" y1="17" x2="17" y2="7"></line>
-                <polyline points="7 7 17 7 17 17"></polyline>
-              </svg>
-            </div>
+          <ButtonLink href="/contact" variant="primary" size="lg" className="px-8 py-4">
+            Start a Project
           </ButtonLink>
-
-          <div className="flex items-center gap-4">
-            <div className="flex -space-x-3">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-[#E2E8F0] overflow-hidden flex items-center justify-center relative shadow-sm">
-                  
-                  {i === 1 ? (
-                    <img src="/clients/hector_img.jpg" alt="Client" className="w-full h-full object-cover relative z-10" />
-                  ) : (
-                    <div className={`absolute inset-0 bg-gradient-to-br ${i === 2 ? 'from-[#9B1C22]/30 to-[#9B1C22]/50' : i === 3 ? 'from-orange-200 to-amber-200' : 'from-purple-200 to-pink-200'}`} />
-                  )}
-                </div>
-              ))}
-            </div>
-            <div className="flex flex-col items-start text-left">
-              <div className="flex gap-0.5 text-amber-400 mb-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <svg key={star} width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                ))}
-              </div>
-              <span className="text-[13px] text-[#64748B] font-medium">Trusted by global clients</span>
-            </div>
-          </div>
+          <ButtonLink href="/work" variant="ghost" size="lg" className="px-8 py-4 text-[#475569] hover:text-[#1E1E1E]">
+            Explore Our Work →
+          </ButtonLink>
         </motion.div>
 
         <motion.div 
@@ -92,7 +62,7 @@ export const Hero = () => {
           <div className="w-full flex items-center justify-center gap-4 mb-12 opacity-70 px-6">
             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E2E8F0]" />
             <span className="text-[13px] text-[#64748B] font-medium tracking-wide">
-              Loved by big and small brands around the world
+              Brands we&apos;ve worked with
             </span>
             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E2E8F0]" />
           </div>

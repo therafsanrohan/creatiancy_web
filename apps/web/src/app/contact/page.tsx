@@ -43,7 +43,7 @@ export default function ContactPage() {
               >
                 <p>We partner with ambitious organizations to architect absolute clarity and commercial authority.</p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-6">
-                  <a href="mailto:creatiancy@gmail.com" className="inline-flex items-center justify-center bg-[#9B1C22] !text-white px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#7A151A] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
+                  <a href="mailto:hello@creatiancy.com" className="inline-flex items-center justify-center bg-[#9B1C22] !text-white px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#7A151A] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
                     Mail Us
                   </a>
                   <a href="https://wa.me/8801325078941" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center bg-transparent border border-[#1E1E1E]/20 text-[#1E1E1E] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#25D366] hover:border-[#25D366] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
@@ -63,7 +63,7 @@ export default function ContactPage() {
                 
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-[#9B1C22]/10 to-transparent rounded-bl-full pointer-events-none" />
 
-                <form action="mailto:creatiancy@gmail.com" method="post" encType="text/plain" className="space-y-12 relative z-10">
+                <form action="mailto:hello@creatiancy.com" method="post" encType="text/plain" className="space-y-12 relative z-10">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div className="relative group">
                       <label className="block text-[11px] font-bold uppercase tracking-[0.2em] text-[#A3A3A3] mb-2 transition-colors group-focus-within:text-[#9B1C22]">Name</label>

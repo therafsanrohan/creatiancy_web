@@ -200,7 +200,7 @@ export default function WebsiteHeader() {
                 className="mt-12 w-full pt-8"
               >
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <a href="mailto:creatiancy@gmail.com" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center bg-[#9B1C22] !text-white px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#7A151A] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
+                  <a href="mailto:hello@creatiancy.com" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center bg-[#9B1C22] !text-white px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#7A151A] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">
                     Mail Us
                   </a>
                   <a href="https://wa.me/8801325078941" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)} className="inline-flex items-center justify-center bg-transparent border border-[#1E1E1E]/20 text-[#1E1E1E] px-8 py-4 rounded-full text-[15px] font-medium hover:bg-[#25D366] hover:border-[#25D366] hover:!text-white hover:-translate-y-1 hover:shadow-lg transition-all w-full sm:w-fit">

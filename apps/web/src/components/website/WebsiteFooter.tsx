@@ -25,8 +25,8 @@ export default function WebsiteFooter() {
               <li><Link href="/" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">Home</Link></li>
               <li><Link href="/about" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">About</Link></li>
               <li><Link href="/services" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">Services</Link></li>
-              <li><Link href="/projects" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">Portfolio</Link></li>
-              <li><Link href="/contact" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">Testimonial</Link></li>
+              <li><Link href="/work" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">Portfolio</Link></li>
+              <li><Link href="/contact" className="text-[16px] md:text-[18px] hover:opacity-70 transition-opacity">Contact</Link></li>
             </ul>
           </div>
 
@@ -51,9 +51,9 @@ export default function WebsiteFooter() {
           </div>
 
           <div className="flex flex-col gap-6 lg:col-span-4 lg:col-start-9 col-span-2">
-            <span className="text-[11px] md:text-[12px] uppercase tracking-widest text-white/50 font-medium">Let&apos;s Bring Your Vision To Life</span>
+            <span className="text-[11px] md:text-[12px] uppercase tracking-widest text-white/50 font-medium">Start a Conversation</span>
             <div className="flex flex-col sm:flex-row gap-4 mt-2">
-              <a href="mailto:creatiancy@gmail.com" className="inline-flex items-center justify-center bg-[#9B1C22] text-white px-6 py-3 rounded-full text-[14px] font-medium hover:bg-[#7A151A] transition-colors w-fit">
+              <a href="mailto:hello@creatiancy.com" className="inline-flex items-center justify-center bg-[#9B1C22] text-white px-6 py-3 rounded-full text-[14px] font-medium hover:bg-[#7A151A] transition-colors w-fit">
                 Mail Us
               </a>
               <a href="https://wa.me/8801325078941" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center bg-white text-[#1E1E1E] px-6 py-3 rounded-full text-[14px] font-medium hover:bg-[#25D366] hover:text-white transition-colors w-fit">
