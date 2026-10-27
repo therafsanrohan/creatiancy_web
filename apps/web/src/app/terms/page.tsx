@@ -77,9 +77,9 @@ export default function TermsOfServicePage() {
               <a 
                 href="mailto:hello@creatiancy.com?subject=Legal%20Agreement%20Inquiry"
                 aria-label="Send email to legal department"
-                className="inline-flex items-center px-7 py-3 bg-[#1E1E1E] text-white rounded-[6px] text-[12px] font-mono uppercase tracking-[0.14em] hover:bg-[#9B1C22] transition-colors"
+                className="inline-flex items-center justify-center px-7 min-h-[48px] bg-gradient-to-b from-[#A8242A] to-[#9B1C22] text-white rounded-full text-[13px] font-medium shadow-[0_2px_12px_rgba(155,28,34,0.25)] hover:from-[#9B1C22] hover:to-[#82151B] transition-all"
               >
-                Inquire With Legal Counsel →
+                Inquire With Legal Counsel
               </a>
             </div>
 

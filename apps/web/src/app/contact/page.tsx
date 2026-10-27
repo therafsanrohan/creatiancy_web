@@ -126,18 +126,18 @@ export default function ContactPage() {
                   <a
                     href="mailto:hello@creatiancy.com?subject=Studio%20Inquiry%20from%20Creatiancy%20Web"
                     aria-label="Send project brief via email"
-                    className="flex-1 inline-flex items-center justify-center h-12 px-5 bg-[#FF2B43] text-[#070809] text-[12px] font-mono font-bold tracking-[0.14em] uppercase rounded-full hover:bg-[#E01E37] transition-colors min-h-[48px]"
+                    className="flex-1 inline-flex items-center justify-center h-12 px-7 bg-gradient-to-b from-[#A8242A] to-[#9B1C22] text-white text-[13px] font-medium rounded-full shadow-[0_2px_12px_rgba(155,28,34,0.25)] hover:from-[#9B1C22] hover:to-[#82151B] transition-all min-h-[48px]"
                   >
-                    Send Email Brief →
+                    Send Email Brief
                   </a>
                   <a
                     href="https://wa.me/8801325078941"
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Message studio director on WhatsApp"
-                    className="flex-1 inline-flex items-center justify-center h-12 px-5 border border-white/10 text-[#F4F5F7] text-[12px] font-mono tracking-[0.14em] uppercase rounded-full hover:border-[#FF2B43] hover:bg-white/[0.04] transition-colors min-h-[48px]"
+                    className="flex-1 inline-flex items-center justify-center h-12 px-7 bg-white/[0.04] text-[#F4F5F7] border border-white/10 text-[13px] font-medium rounded-full hover:border-[#9B1C22]/50 hover:bg-white/[0.08] transition-all min-h-[48px]"
                   >
-                    WhatsApp Direct ↗
+                    WhatsApp Direct
                   </a>
                 </div>
 
@@ -177,9 +177,9 @@ export default function ContactPage() {
                           scope: "",
                         });
                       }}
-                      className="mt-4 text-[12px] font-mono uppercase tracking-[0.16em] text-[#FF2B43] hover:underline"
+                      className="mt-4 text-[12px] font-medium tracking-wide text-[#9B1C22] hover:underline"
                     >
-                      Submit Another Studio Inquiry →
+                      Submit Another Studio Inquiry
                     </button>
                   </div>
                 ) : (
@@ -243,7 +243,7 @@ export default function ContactPage() {
 
                       <div>
                         <label htmlFor="email" className="block text-[11px] font-mono uppercase tracking-[0.16em] text-neutral-400 mb-2">
-                          Work Email <span className="text-[#FF2B43]">*</span>
+                          Work Email <span className="text-[#9B1C22]">*</span>
                         </label>
                         <input
                           id="email"
@@ -251,7 +251,7 @@ export default function ContactPage() {
                           required
                           value={formData.email}
                           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          className="w-full h-12 bg-white/[0.03] border border-white/10 rounded-[12px] px-4 text-[15px] text-[#F4F5F7] focus:outline-none focus:border-[#FF2B43] transition-colors"
+                          className="w-full h-12 bg-white/[0.03] border border-white/10 rounded-[12px] px-4 text-[15px] text-[#F4F5F7] focus:outline-none focus:border-[#9B1C22] transition-colors"
                           placeholder="sarah@organization.com"
                         />
                       </div>
@@ -259,7 +259,7 @@ export default function ContactPage() {
 
                     <div>
                       <label htmlFor="scope" className="block text-[11px] font-mono uppercase tracking-[0.16em] text-neutral-400 mb-2">
-                        Project Scope &amp; Ambitions <span className="text-[#FF2B43]">*</span>
+                        Project Scope &amp; Ambitions <span className="text-[#9B1C22]">*</span>
                       </label>
                       <textarea
                         id="scope"
@@ -267,7 +267,7 @@ export default function ContactPage() {
                         required
                         value={formData.scope}
                         onChange={(e) => setFormData({ ...formData, scope: e.target.value })}
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-[12px] p-4 text-[15px] text-[#F4F5F7] focus:outline-none focus:border-[#FF2B43] transition-colors resize-none leading-relaxed"
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-[12px] p-4 text-[15px] text-[#F4F5F7] focus:outline-none focus:border-[#9B1C22] transition-colors resize-none leading-relaxed"
                         placeholder="Tell us about your brand challenge, key milestones, and what success looks like..."
                       />
                     </div>
@@ -277,7 +277,6 @@ export default function ContactPage() {
                         type="submit"
                         variant="primary"
                         size="md"
-                        arrow
                         disabled={status === "submitting"}
                       >
                         {status === "submitting" ? "Transmitting..." : "Submit Project Brief"}

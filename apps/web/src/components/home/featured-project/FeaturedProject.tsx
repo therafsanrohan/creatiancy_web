@@ -62,7 +62,6 @@ export const FeaturedProject = () => {
                 href="/work/omni-connects"
                 variant="primary"
                 size="md"
-                arrow
                 className="md:shrink-0"
               >
                 Case Study

@@ -232,10 +232,10 @@ export default function AboutPage() {
               </div>
 
               <div className="pt-4 flex flex-wrap items-center gap-4">
-                <ButtonLink href="/contact" variant="primary" size="md" arrow>
+                <ButtonLink href="/contact" variant="primary" size="md">
                   Start Conversation
                 </ButtonLink>
-                <ButtonLink href="/work" variant="outline" size="md" arrow>
+                <ButtonLink href="/work" variant="outline" size="md">
                   Explore Work
                 </ButtonLink>
               </div>

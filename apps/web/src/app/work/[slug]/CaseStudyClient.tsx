@@ -82,12 +82,12 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
                 href={project.externalLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center h-12 px-6 border border-[#1E1E1E]/20 text-[#1E1E1E] text-[12px] font-mono tracking-[0.14em] uppercase rounded-[6px] hover:border-[#1E1E1E] hover:bg-[#F2F4F0] transition-colors"
+                className="inline-flex items-center justify-center min-h-[48px] px-7 border border-black/15 text-[#1D1D1F] text-[13px] font-medium rounded-full hover:border-[#9B1C22]/60 hover:text-[#9B1C22] transition-colors"
               >
-                External Showcase ↗
+                External Showcase
               </a>
             )}
-            <ButtonLink href="/contact" variant="primary" size="md" arrow>
+            <ButtonLink href="/contact" variant="primary" size="md">
               Start a Project
             </ButtonLink>
           </div>

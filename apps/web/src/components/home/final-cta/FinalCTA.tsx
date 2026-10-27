@@ -27,20 +27,18 @@ export const FinalCTA = () => {
             href="/contact" 
             variant="primary" 
             size="lg" 
-            className="w-full justify-between group"
+            className="w-full justify-center"
           >
-            <span>Start a Project</span>
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
+            Start a Project
           </ButtonLink>
 
           <ButtonLink 
             href="/work" 
             variant="outline" 
             size="lg" 
-            className="w-full justify-between text-white border-white/20 hover:border-white hover:text-white"
+            className="w-full justify-center text-white border-white/20 hover:border-white hover:text-white"
           >
-            <span>Explore Archive</span>
-            <span>↗</span>
+            Explore Archive
           </ButtonLink>
         </div>
 

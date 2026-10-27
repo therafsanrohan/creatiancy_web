@@ -158,31 +158,31 @@ export function Services() {
   return (
     <section
       id="services"
-      className="relative w-full bg-[#070809] py-32 px-4 sm:px-6 lg:px-8 text-neutral-100 overflow-hidden border-t border-white/[0.06]"
+      className="relative w-full bg-[#F5F5F7] py-28 sm:py-36 px-4 sm:px-6 lg:px-8 text-[#1D1D1F] overflow-hidden border-t border-black/[0.06]"
     >
-      {/* Background Ambient Red Flares */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[650px] h-[300px] bg-[#FF2B43]/8 blur-[160px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-10 right-10 w-[400px] h-[250px] bg-[#D90429]/6 blur-[140px] pointer-events-none rounded-full" />
+      {/* Background Subtle Ambient Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[650px] h-[300px] bg-[#9B1C22]/5 blur-[160px] pointer-events-none rounded-full" />
+      <div className="absolute bottom-10 right-10 w-[400px] h-[250px] bg-black/[0.02] blur-[140px] pointer-events-none rounded-full" />
 
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 pb-8 border-b border-white/[0.08] gap-6">
+      <div className="max-w-7xl mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 pb-8 border-b border-black/[0.08] gap-6">
           <div>
-            <h2 className="text-[34px] sm:text-[48px] md:text-[60px] font-bold tracking-tight text-[#F4F5F7] leading-none uppercase font-heading">
+            <h2 className="text-[34px] sm:text-[48px] md:text-[60px] font-bold tracking-tight text-[#1D1D1F] leading-none uppercase">
               The Creative Lab &amp; Systems.
             </h2>
           </div>
           <div className="mt-6 md:mt-0 max-w-md">
-            <p className="text-[15px] sm:text-[17px] text-neutral-400 font-light max-w-md font-sans mb-3">
+            <p className="text-[15px] sm:text-[17px] text-[#6E6E73] font-normal max-w-md mb-3">
               Where brand strategy collides with spatial technology and high-conversion UX.
             </p>
-            <div className="flex items-center gap-3 text-xs font-mono text-neutral-500">
-              <span className="w-2 h-2 rounded-full bg-[#FF2B43] animate-pulse" />
-              <span>CLICK ANY CARD TO REVEAL FULL SYSTEM SPECS</span>
+            <div className="flex items-center gap-2.5 text-xs font-medium text-[#86868B]">
+              <span className="w-2 h-2 rounded-full bg-[#9B1C22] animate-pulse" />
+              <span>Tap any discipline to reveal system specs</span>
             </div>
           </div>
         </div>
 
-        {/* 12-Column Bento Matrix */}
+        {/* 12-Column Apple Bento Matrix */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {servicesData.map((item) => {
             const IconComponent = item.icon;
@@ -195,17 +195,17 @@ export function Services() {
                 onMouseEnter={() => setHoveredId(item.id)}
                 onMouseLeave={() => setHoveredId(null)}
                 onClick={() => toggleExpand(item.id)}
-                className={`group relative rounded-3xl bg-[#0E1114]/90 border backdrop-blur-xl transition-all duration-500 cursor-pointer p-8 sm:p-10 flex flex-col justify-between overflow-hidden ${
+                className={`group relative rounded-[28px] bg-white border transition-all duration-500 cursor-pointer p-8 sm:p-10 flex flex-col justify-between overflow-hidden shadow-sm ${
                   item.colSpan
                 } ${
                   isExpanded || isHovered
-                    ? 'border-[#FF2B43]/50 shadow-[0_20px_50px_-20px_rgba(255,43,67,0.25)] -translate-y-1'
-                    : 'border-white/[0.07] hover:border-white/20'
+                    ? 'border-[#9B1C22]/40 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.08)] -translate-y-1'
+                    : 'border-black/[0.06] hover:border-black/20 hover:shadow-md'
                 }`}
               >
-                {/* Dynamic Crimson Radial Glow on Card Top-Right */}
+                {/* Subtle Brand Red Radial Tint on Card Top-Right */}
                 <div
-                  className={`absolute top-0 right-0 w-52 h-52 bg-gradient-to-bl from-[#FF2B43]/20 via-[#FF2B43]/5 to-transparent rounded-bl-full pointer-events-none transition-opacity duration-500 ${
+                  className={`absolute top-0 right-0 w-52 h-52 bg-gradient-to-bl from-[#9B1C22]/8 via-[#9B1C22]/2 to-transparent rounded-bl-full pointer-events-none transition-opacity duration-500 ${
                     isHovered || isExpanded ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
@@ -213,17 +213,17 @@ export function Services() {
                 {/* Card Top: Number, Badge, and Icon */}
                 <div>
                   <div className="flex items-center justify-between mb-8">
-                    <div className="flex items-center gap-2 font-mono text-xs text-neutral-500 tracking-wider">
-                      <span className="text-[#FF2B43] font-semibold">[{item.number}]</span>
+                    <div className="flex items-center gap-2 font-medium text-xs text-[#86868B] tracking-wide">
+                      <span className="text-[#9B1C22] font-semibold">[{item.number}]</span>
                       <span>•</span>
-                      <span className="uppercase text-neutral-400">{item.badge}</span>
+                      <span className="uppercase text-[#6E6E73]">{item.badge}</span>
                     </div>
 
                     <div
                       className={`w-11 h-11 rounded-2xl flex items-center justify-center border transition-all duration-300 ${
                         isHovered || isExpanded
-                          ? 'bg-[#FF2B43] text-white border-[#FF2B43] shadow-[0_0_20px_rgba(255,43,67,0.4)]'
-                          : 'bg-white/[0.03] border-white/[0.08] text-neutral-300 group-hover:text-white'
+                          ? 'bg-[#9B1C22] text-white border-[#9B1C22] shadow-[0_4px_16px_rgba(155,28,34,0.35)]'
+                          : 'bg-neutral-100 border-black/[0.04] text-[#1D1D1F]'
                       }`}
                     >
                       <IconComponent className="w-5 h-5" />
@@ -231,28 +231,28 @@ export function Services() {
                   </div>
 
                   {/* Title & Tagline */}
-                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2 group-hover:text-white transition-colors">
+                  <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#1D1D1F] mb-2">
                     {item.title}
                   </h3>
-                  <p className="text-xs font-mono uppercase tracking-wider text-[#FF2B43] mb-4">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#9B1C22] mb-4">
                     {item.tagline}
                   </p>
-                  <p className="text-sm text-neutral-400 leading-relaxed mb-8">
+                  <p className="text-sm text-[#6E6E73] leading-relaxed mb-8">
                     {item.summary}
                   </p>
                 </div>
 
                 {/* Capability Chips */}
                 <div>
-                  <div className="pt-6 border-t border-white/[0.06] mb-6">
-                    <div className="text-[11px] font-mono uppercase text-neutral-500 mb-3 tracking-wider">
+                  <div className="pt-6 border-t border-black/[0.06] mb-6">
+                    <div className="text-[11px] font-medium uppercase text-[#86868B] mb-3 tracking-wide">
                       Core Disciplines
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {item.capabilities.map((cap, idx) => (
                         <span
                           key={idx}
-                          className="text-xs px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-neutral-300 font-sans group-hover:border-white/15 transition-colors"
+                          className="text-xs px-3.5 py-1.5 rounded-full bg-neutral-100 border border-black/[0.04] text-[#1D1D1F] font-medium transition-colors hover:bg-neutral-200/70"
                         >
                           {cap}
                         </span>
@@ -263,16 +263,16 @@ export function Services() {
                   {/* Expandable System Specs Drawer */}
                   <div
                     className={`overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-                      isExpanded ? 'max-h-60 opacity-100 pt-4 border-t border-white/[0.06] mb-4' : 'max-h-0 opacity-0'
+                      isExpanded ? 'max-h-60 opacity-100 pt-4 border-t border-black/[0.06] mb-4' : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="text-[11px] font-mono uppercase text-[#FF2B43] mb-3 tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3" /> System Architecture Specs
+                    <div className="text-[11px] font-medium uppercase text-[#9B1C22] mb-3 tracking-wide flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> System Architecture Specs
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono text-neutral-400">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-normal text-[#6E6E73]">
                       {item.systemSpecs.map((spec, sIdx) => (
                         <div key={sIdx} className="flex items-center gap-2">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#FF2B43] shrink-0" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#9B1C22] shrink-0" />
                           <span>{spec}</span>
                         </div>
                       ))}
@@ -280,16 +280,16 @@ export function Services() {
                   </div>
 
                   {/* Bottom Action Row */}
-                  <div className="pt-4 flex items-center justify-between text-xs font-mono text-neutral-500 border-t border-white/[0.04]">
-                    <span className="text-[#FF2B43] font-medium tracking-wide">
+                  <div className="pt-4 flex items-center justify-between text-xs font-medium text-[#86868B] border-t border-black/[0.04]">
+                    <span className="text-[#9B1C22] font-semibold tracking-wide">
                       {item.metric}
                     </span>
-                    <div className="flex items-center gap-1.5 text-neutral-400 group-hover:text-white transition-colors">
+                    <div className="flex items-center gap-1.5 text-[#1D1D1F] group-hover:text-[#9B1C22] transition-colors">
                       <span>{isExpanded ? 'Collapse' : 'Details'}</span>
                       {isExpanded ? (
-                        <ArrowUpRight className="w-4 h-4 text-[#FF2B43] rotate-45 transition-transform" />
+                        <ArrowUpRight className="w-4 h-4 text-[#9B1C22] rotate-45 transition-transform" />
                       ) : (
-                        <ChevronRight className="w-4 h-4 text-neutral-500 group-hover:text-[#FF2B43] group-hover:translate-x-0.5 transition-all" />
+                        <ChevronRight className="w-4 h-4 text-[#86868B] group-hover:text-[#9B1C22] group-hover:translate-x-0.5 transition-all" />
                       )}
                     </div>
                   </div>
@@ -300,21 +300,20 @@ export function Services() {
         </div>
 
         {/* Bottom Floating Conversion Strip */}
-        <div className="mt-16 p-8 rounded-3xl bg-gradient-to-r from-[#0E1114] via-[#0E1114] to-[#FF2B43]/10 border border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="mt-16 p-8 sm:p-10 rounded-[28px] bg-white border border-black/[0.08] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="text-center sm:text-left">
-            <h4 className="text-xl font-normal text-white mb-1">
+            <h4 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1D1D1F] mb-1">
               Need a bespoke cross-disciplinary scope?
             </h4>
-            <p className="text-xs font-mono text-neutral-400">
+            <p className="text-sm text-[#6E6E73] font-normal">
               We structure custom hybrid engagements combining brand identity, 3D film, and enterprise web architecture.
             </p>
           </div>
           <a
             href="/contact"
-            className="px-6 py-3.5 rounded-full bg-[#FF2B43] text-white font-medium text-xs font-mono uppercase tracking-wider flex items-center gap-2 hover:bg-[#E01E37] transition-all shadow-[0_0_25px_rgba(255,43,67,0.4)] shrink-0 min-h-[48px]"
+            className="group inline-flex items-center justify-center px-7 h-13 rounded-full bg-gradient-to-b from-[#A8242A] to-[#9B1C22] hover:from-[#9B1C22] hover:to-[#82151B] text-white font-medium text-xs uppercase tracking-wider transition-all duration-200 border border-[#9B1C22]/30 shadow-[0_2px_12px_rgba(155,28,34,0.25)] hover:shadow-[0_4px_20px_rgba(155,28,34,0.35)] shrink-0 min-h-[48px] active:scale-[0.98] text-center"
           >
             <span>Custom Architecture Brief</span>
-            <ArrowUpRight className="w-4 h-4" />
           </a>
         </div>
       </div>

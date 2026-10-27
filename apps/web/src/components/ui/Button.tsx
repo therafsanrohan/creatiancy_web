@@ -8,35 +8,35 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Studio Single-Source-of-Truth CTA System with Electric Mint & Void Styling
+// Studio Single-Source-of-Truth CTA System with Creatiancy Branding Red & Apple-Clean Styling
 // Minimum 48px touch target for accessibility and Google UI heuristics.
 const baseStyles = 
-  "group relative inline-flex items-center justify-center font-medium tracking-[0.12em] uppercase " +
+  "group relative inline-flex items-center justify-center font-medium tracking-wide " +
   "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] select-none cursor-pointer " +
-  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF2B43] focus-visible:ring-offset-2 focus-visible:ring-offset-[#070809] " +
-  "disabled:opacity-40 disabled:pointer-events-none active:scale-[0.98] text-center min-h-[48px] min-w-[48px]";
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#9B1C22] focus-visible:ring-offset-2 " +
+  "disabled:opacity-40 disabled:pointer-events-none active:scale-[0.98] text-center min-h-[48px] rounded-full";
 
 const variantStyles = {
   primary: 
-    "bg-[#FF2B43] text-white hover:bg-[#E01E37] font-semibold border border-[#FF2B43] shadow-[0_4px_20px_rgba(255,43,67,0.3)]",
+    "bg-gradient-to-b from-[#A8242A] to-[#9B1C22] text-white hover:from-[#9B1C22] hover:to-[#82151B] font-medium border border-[#9B1C22]/30 shadow-[0_2px_12px_rgba(155,28,34,0.25)] hover:shadow-[0_4px_20px_rgba(155,28,34,0.35)]",
   secondary: 
-    "bg-[#0E1114] text-[#F4F5F7] hover:bg-white/[0.06] border border-white/10 shadow-[0_4px_16px_rgba(0,0,0,0.4)]",
+    "bg-white hover:bg-neutral-50 text-[#1D1D1F] border border-black/[0.08] hover:border-black/20 shadow-sm",
   outline:
-    "bg-transparent text-[#F4F5F7] hover:text-[#FF2B43] border border-white/15 hover:border-[#FF2B43]/60",
+    "bg-transparent text-[#1D1D1F] hover:text-[#9B1C22] border border-black/15 hover:border-[#9B1C22]/60",
   glass:
-    "bg-white/[0.03] backdrop-blur-xl text-[#F4F5F7] hover:bg-white/[0.08] hover:text-[#FF2B43] border border-white/10",
+    "bg-white/80 backdrop-blur-xl text-[#1D1D1F] hover:bg-white hover:text-[#9B1C22] border border-black/10 shadow-sm",
   white:
-    "bg-white text-[#070809] hover:bg-neutral-200 border border-white shadow-md",
+    "bg-white text-[#1D1D1F] hover:bg-neutral-100 border border-black/[0.08] shadow-sm",
   "on-dark":
-    "bg-white/[0.04] text-[#F4F5F7] border border-white/10 hover:border-[#FF2B43]/40 hover:text-[#FF2B43]",
+    "bg-white/[0.04] text-[#1D1D1F] border border-black/10 hover:border-[#9B1C22]/40 hover:text-[#9B1C22]",
   text: 
-    "bg-transparent text-[#F4F5F7] hover:text-[#FF2B43] p-0 min-h-[48px] h-auto border-0 shadow-none font-semibold",
+    "bg-transparent text-[#1D1D1F] hover:text-[#9B1C22] p-0 min-h-[48px] h-auto border-0 shadow-none font-medium",
 };
 
 const sizeStyles = {
-  sm: "h-12 px-5 text-[11px] rounded-full gap-2",
-  md: "h-12 px-7 text-[12px] rounded-full gap-2.5",
-  lg: "h-14 px-9 text-[13px] rounded-full gap-3",
+  sm: "h-11 px-5 text-[12px]",
+  md: "h-12 px-7 text-[13px]",
+  lg: "h-13 px-8 text-[13px]",
 };
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -46,7 +46,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", arrow = false, children, ...props }, ref) => {
+  ({ className, variant = "primary", size = "md", arrow: _arrow, children, ...props }, ref) => {
     return (
       <button
         ref={ref}
@@ -54,11 +54,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         <span>{children}</span>
-        {arrow && (
-          <span className="inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1" aria-hidden="true">
-            →
-          </span>
-        )}
       </button>
     );
   }
@@ -73,7 +68,7 @@ export interface ButtonLinkProps extends AnchorHTMLAttributes<HTMLAnchorElement>
 }
 
 export const ButtonLink = React.forwardRef<HTMLAnchorElement, ButtonLinkProps>(
-  ({ className, variant = "primary", size = "md", arrow = false, href, children, ...props }, ref) => {
+  ({ className, variant = "primary", size = "md", arrow: _arrow, href, children, ...props }, ref) => {
     return (
       <Link
         ref={ref}
@@ -82,11 +77,6 @@ export const ButtonLink = React.forwardRef<HTMLAnchorElement, ButtonLinkProps>(
         {...props}
       >
         <span>{children}</span>
-        {arrow && (
-          <span className="inline-block transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1" aria-hidden="true">
-            →
-          </span>
-        )}
       </Link>
     );
   }

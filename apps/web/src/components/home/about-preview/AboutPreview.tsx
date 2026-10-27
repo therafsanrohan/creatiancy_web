@@ -83,10 +83,10 @@ export const AboutPreview = () => {
             Founded in Dhaka &bull; Working with global brands and ambitious leaders.
           </span>
           <div className="flex items-center gap-4">
-            <ButtonLink href="/about" variant="primary" size="md" arrow>
+            <ButtonLink href="/about" variant="primary" size="md">
               Studio Manifesto
             </ButtonLink>
-            <ButtonLink href="/contact" variant="on-dark" size="md" arrow>
+            <ButtonLink href="/contact" variant="on-dark" size="md">
               Start Conversation
             </ButtonLink>
           </div>

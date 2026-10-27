@@ -1,13 +1,13 @@
 :root {
-  --cr-void: #070809;
-  --cr-surface: #0E1114;
+  --cr-void: #F5F5F7;
+  --cr-surface: #FFFFFF;
   --cr-mint: #FF2B43;
   --cr-mint-hover: #E01E37;
-  --cr-heading: #F4F5F7;
-  --cr-muted: #9CA3AF;
-  --cr-subtle: #6B7280;
-  --cr-border: rgba(255, 255, 255, 0.08);
-  --cr-font: "Helvetica Neue", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --cr-heading: #1D1D1F;
+  --cr-muted: #6E6E73;
+  --cr-subtle: #86868B;
+  --cr-border: rgba(0, 0, 0, 0.08);
+  --cr-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
   --cr-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -15,6 +15,7 @@
   background-color: var(--cr-void);
   color: var(--cr-heading);
   font-family: var(--cr-font);
+  font-stretch: normal;
   min-height: 100vh;
   display: flex;
   flex-direction: column;

@@ -2,49 +2,59 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #070809;
-  --surface: #0E1114;
-  --text: #F4F5F7;
-  --text-muted: #9CA3AF;
-  --crimson: #FF2B43;
-  --crimson-hover: #E01E37;
-  --mint: #FF2B43;
-  --mint-hover: #E01E37;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.04);
+  --bg: #F5F5F7;
+  --surface: #FFFFFF;
+  --surface-secondary: #FBFBFD;
+  --text: #1D1D1F;
+  --text-muted: #6E6E73;
+  --text-subtle: #86868B;
+  --crimson: #9B1C22;
+  --crimson-hover: #82151B;
+  --mint: #9B1C22;
+  --mint-hover: #82151B;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-subtle: rgba(0, 0, 0, 0.04);
 }
 
 @theme {
-  --font-sans: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
-  --font-heading: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-  --color-void: #070809;
-  --color-surface: #0E1114;
-  --color-crimson: #FF2B43;
-  --color-crimson-hover: #E01E37;
-  --color-mint: #FF2B43;
-  --color-mint-hover: #E01E37;
-  --color-heading: #F4F5F7;
+  --color-void: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-crimson: #9B1C22;
+  --color-crimson-hover: #82151B;
+  --color-mint: #9B1C22;
+  --color-mint-hover: #82151B;
+  --color-heading: #1D1D1F;
 }
 
 @layer base {
-  * {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-stretch: normal !important;
   }
   
   html {
     scroll-behavior: smooth;
-    color-scheme: dark;
+    color-scheme: light;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-stretch: normal !important;
   }
 
   html, body {
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
-    background-color: #070809;
-    color: #F4F5F7;
+    background-color: #F5F5F7;
+    color: #1D1D1F;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-stretch: normal !important;
+    font-synthesis: none;
   }
   
   body {
@@ -56,10 +66,17 @@
     padding-right: env(safe-area-inset-right);
   }
 
+  /* Disallow ultra-heavy Black and Extended/Condensed font variants */
+  .font-black,
+  .font-extrabold {
+    font-weight: 600 !important;
+  }
+
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
-    color: #F4F5F7;
-    letter-spacing: -0.03em;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    color: #1D1D1F;
+    font-stretch: normal !important;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -84,14 +101,14 @@
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #070809;
+  background: #F5F5F7;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #FF2B43;
+  background: #9B1C22;
 }
 
 /* Lenis Smooth Scroll Configuration */

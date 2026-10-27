@@ -143,7 +143,6 @@ export default function WorkPage() {
                       href={`/work/${study.slug}`}
                       variant="primary"
                       size="sm"
-                      arrow
                     >
                       Case Study
                     </ButtonLink>
@@ -152,9 +151,9 @@ export default function WorkPage() {
                         href={study.externalLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[11px] font-mono tracking-wider uppercase text-neutral-400 hover:text-[#FF2B43] transition-colors"
+                        className="text-[11px] font-mono tracking-wider uppercase text-neutral-400 hover:text-[#9B1C22] transition-colors"
                       >
-                        External ↗
+                        External
                       </a>
                     )}
                   </div>

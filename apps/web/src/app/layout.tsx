@@ -6,6 +6,7 @@ import "@/app/website.css";
 import WebsiteHeader from "@/components/website/WebsiteHeader";
 import WebsiteFooter from "@/components/website/WebsiteFooter";
 import { LenisProvider } from "@/components/providers/LenisProvider";
+import { StudioLoader } from "@/components/ui/StudioLoader";
 
 export const metadata: Metadata = {
   title: "Creatiancy | We Build Legacies",
@@ -19,8 +20,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark bg-[#070809] text-[#F4F5F7]">
-      <body className="antialiased overscroll-none bg-[#070809] text-[#F4F5F7] selection:bg-[#FF2B43] selection:text-white">
+    <html lang="en" className="light bg-[#F5F5F7] text-[#1D1D1F]">
+      <body className="antialiased overscroll-none bg-[#F5F5F7] text-[#1D1D1F] selection:bg-[#9B1C22] selection:text-white">
         {/* Google Tag Manager (noscript) */}
         <noscript>
           <iframe
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </noscript>
         <MetaPixel />
         <LenisProvider>
+          <StudioLoader />
           <WebsiteHeader />
           <main className="min-h-[100svh]">
             {children}

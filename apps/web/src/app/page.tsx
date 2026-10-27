@@ -40,12 +40,14 @@ const jsonLd = {
 import { Hero } from "@/components/home/hero/Hero";
 import { TrustMarquee } from "@/components/home/marquee/TrustMarquee";
 import { Projects } from "@/components/home/projects/Projects";
+import { LegacyMetrics } from "@/components/home/metrics/LegacyMetrics";
 import { Services } from "@/components/home/services/Services";
 import { MethodologyAndTrust } from "@/components/home/process/MethodologyAndTrust";
+import { Testimonials } from "@/components/home/testimonials/Testimonials";
 
 export default function HomePage() {
   return (
-    <div className="creatiancy-scope bg-[#070809] text-[#F4F5F7] font-sans selection:bg-[#FF2B43] selection:text-[#070809]">
+    <div className="creatiancy-scope bg-[#F5F5F7] text-[#1D1D1F] font-sans selection:bg-[#9B1C22] selection:text-white">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -55,8 +57,10 @@ export default function HomePage() {
         <Hero />
         <TrustMarquee />
         <Projects />
+        <LegacyMetrics />
         <Services />
         <MethodologyAndTrust />
+        <Testimonials />
       </main>
     </div>
   );
