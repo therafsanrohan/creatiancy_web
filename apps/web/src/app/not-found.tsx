@@ -1,61 +1,45 @@
 "use client";
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import React from "react";
+import Link from "next/link";
+import "@/app/website.css";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[var(--bg)] mt-[-80px]">
-      
-      <div className="absolute inset-0 z-0 flex items-center justify-center opacity-20 pointer-events-none">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.5, 1], 
-            rotate: [0, 90, 0] 
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] bg-[var(--accent)] rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen"
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1, 0.8, 1], 
-            rotate: [0, -90, 0] 
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute w-[50vw] h-[50vw] max-w-[700px] max-h-[700px] bg-[var(--text)] rounded-full blur-3xl mix-blend-multiply dark:mix-blend-screen"
-        />
-      </div>
-      
-      <div className="relative z-10 text-center space-y-8 px-4 flex flex-col items-center">
-        <motion.h1 
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="text-[10rem] md:text-[15rem] leading-none font-heading font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-[var(--text)] to-[var(--muted)] tracking-tighter drop-shadow-sm"
-        >
-          404
-        </motion.h1>
+    <div className="creatiancy-scope min-h-[85vh] flex items-center justify-center bg-[#070809] px-6 py-32">
+      <div className="max-w-2xl mx-auto text-center flex flex-col items-center gap-8">
+        <span className="text-[12px] font-mono font-semibold text-[#FF2B43] uppercase tracking-[0.2em] px-4 py-1.5 bg-white/[0.04] border border-white/10 rounded-full">
+          Error 404 &bull; Page Not Found
+        </span>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
-          className="space-y-6 max-w-lg"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Vision Not Found</h2>
-          <p className="text-[var(--muted-fg)] text-lg text-balance">
-            The creative intelligence you are looking for has been moved, renamed, or doesn't exist. Sometimes the boldest paths take us to dead ends.
-          </p>
-          
-          <div className="pt-6">
-            <Link 
-              href="/"
-              className="inline-flex items-center justify-center gap-2 px-10 py-4 bg-[var(--text)] text-[var(--bg)] rounded-full font-bold hover:bg-[var(--accent)] hover:text-white transition-all hover:scale-105 duration-300 shadow-xl shadow-black/5"
-            >
-              Return to Concept
-            </Link>
-          </div>
-        </motion.div>
+        <h1 className="text-[48px] sm:text-[68px] md:text-[84px] font-bold tracking-tight text-[#F4F5F7] leading-[1] uppercase">
+          Lost in the grid.
+        </h1>
+
+        <p className="text-[16px] md:text-[18px] text-neutral-400 font-light leading-relaxed max-w-lg">
+          The page or case study you are looking for has been moved, archived, or does not exist in our current directory.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+          <Link 
+            href="/"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#FF2B43] text-[#070809] rounded-full text-[13px] font-bold font-mono tracking-wider uppercase hover:bg-[#E01E37] transition-colors min-h-[48px]"
+          >
+            Studio Homepage
+          </Link>
+          <Link 
+            href="/work"
+            className="inline-flex items-center justify-center px-8 py-3.5 border border-white/15 text-[#F4F5F7] rounded-full text-[13px] font-medium font-mono tracking-wider uppercase hover:border-[#FF2B43] hover:text-[#FF2B43] transition-colors min-h-[48px]"
+          >
+            Explore Work
+          </Link>
+        </div>
+
+        <div className="pt-12 border-t border-white/[0.08] w-full flex justify-center gap-8 text-[12px] font-mono text-neutral-400">
+          <Link href="/services" className="hover:text-[#FF2B43]">Capabilities</Link>
+          <Link href="/about" className="hover:text-[#FF2B43]">About Studio</Link>
+          <Link href="/contact" className="hover:text-[#FF2B43]">Contact</Link>
+        </div>
       </div>
     </div>
   );

@@ -2,139 +2,162 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ButtonLink } from "@/components/ui/Button";
-import { motion } from "framer-motion";
-import { PROJECTS } from "@/lib/data/home";
 
-const RHYTHM = [
-  { 
-    span: "col-span-12", 
-    height: "h-[60vh] md:h-[85vh]", 
-    isFeatured: true 
+const SELECTED_WORKS = [
+  {
+    id: "atobd",
+    client: "AtoBD Logistics",
+    title: "Enterprise Logistics Product System",
+    metric: "99.8% UPTIME ARCHITECTURE",
+    category: "Product Interface & Systems",
+    tags: ["React Architecture", "Fleet Telematics", "Design System"],
+    image: "/images/omni_branding.png",
+    slug: "atobd-logistics",
+    gridSpan: "col-span-12 lg:col-span-7",
+    aspectRatio: "aspect-[16/10]",
   },
-  { 
-    span: "col-span-12 md:col-span-5 md:mt-20", 
-    height: "h-[50vh] md:h-[75vh]", 
-    isFeatured: false 
+  {
+    id: "elcardo",
+    client: "Elcardo Industrial",
+    title: "Global Industrial Commerce Platform",
+    metric: "+140% CONVERSION EFFICIENCY",
+    category: "Digital Platform & Architecture",
+    tags: ["Industrial UI/UX", "Next.js 16", "Global Catalog"],
+    image: "/images/project real.png",
+    slug: "elcardo-industrial",
+    gridSpan: "col-span-12 lg:col-span-5",
+    aspectRatio: "aspect-[16/11]",
   },
-  { 
-    span: "col-span-12 md:col-span-6 md:col-start-7 md:-mt-32", 
-    height: "h-[60vh] md:h-[90vh]", 
-    isFeatured: false 
+  {
+    id: "omni",
+    client: "OMNI CONNECTS",
+    title: "SaaS Identity & Interface Overhaul",
+    metric: "COMPLETE BRAND ARCHITECTURE",
+    category: "Brand Strategy & System",
+    tags: ["Geometric Mark", "Design Tokens", "SaaS Dashboard"],
+    image: "/images/omni_branding.png",
+    slug: "omni-connects",
+    gridSpan: "col-span-12 lg:col-span-5",
+    aspectRatio: "aspect-[16/11]",
   },
-  { 
-    span: "col-span-12", 
-    height: "h-[50vh] md:h-[70vh]", 
-    isFeatured: false 
+  {
+    id: "odl",
+    client: "ODL Global",
+    title: "Real Estate OOH & Spatial Campaign",
+    metric: "NATIONWIDE CAMPAIGN REACH",
+    category: "Creative Production & OOH",
+    tags: ["Billboard Systems", "Architectural Fencing", "Campaign Art"],
+    image: "/images/project real.png",
+    slug: "odl-ads",
+    gridSpan: "col-span-12 lg:col-span-7",
+    aspectRatio: "aspect-[16/10]",
   },
 ];
 
 export const Projects = () => {
   return (
-    <section className="py-24 md:py-40 px-6 md:px-12 bg-[#F5F5F7] overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-
-        <div className="mb-20 md:mb-32 max-w-3xl">
-          <motion.h2 
-            initial={{ opacity: 0, y: 30 }}
-            
-whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[50px] md:text-[80px] lg:text-[110px] font-bold tracking-tighter text-[#1E1E1E] leading-[0.85] uppercase mb-8"
-          >
-            SELECTED<br/>WORK
-          </motion.h2>
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            
-whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[18px] md:text-[24px] text-[#1E1E1E]/70 font-light leading-[1.4] max-w-xl"
-          >
-            A selection of ideas, identities, campaigns and digital experiences we&apos;ve built.
-          </motion.p>
+    <section id="selected-work" className="py-24 sm:py-32 px-6 md:px-12 bg-[#070809] border-b border-white/[0.08]">
+      <div className="max-w-[1440px] mx-auto">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between pb-12 sm:pb-16 border-b border-white/[0.08] gap-6">
+          <div>
+            <span className="text-[10px] font-mono tracking-[0.2em] text-[#FF2B43] uppercase block mb-3">
+              SELECTED ENGAGEMENTS &bull; 2024 &ndash; 2026
+            </span>
+            <h2 className="text-[34px] sm:text-[48px] md:text-[60px] font-bold tracking-tight text-[#F4F5F7] leading-none uppercase">
+              Selected Works
+            </h2>
+          </div>
+          <p className="text-[15px] sm:text-[17px] text-neutral-400 font-light max-w-md">
+            Asymmetrical cinematic case studies built for maximum brand equity and conversion impact.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-y-20 md:gap-y-32 gap-x-8">
-          {PROJECTS.slice(0, 4).map((project, idx) => {
-            const layout = RHYTHM[idx] || { span: "col-span-12", height: "h-[50vh]", isFeatured: false };
-            
-            return (
-              <motion.div 
-                key={project.id}
-                initial={{ opacity: 0, y: 60 }}
-                
-whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                className={`${layout.span} flex flex-col group`}
-              >
-                {layout.isFeatured && (
-                  <span className="text-[11px] font-bold tracking-[0.2em] text-[#9B1C22] uppercase block mb-6">
-                    Featured Work
-                  </span>
-                )}
-                
-                <Link href={`/work/${project.id}`} className="relative block overflow-hidden rounded-2xl md:rounded-[32px] w-full bg-[#EAEAEA]">
-                  <div className={`w-full ${layout.height} relative overflow-hidden`}>
+        {/* Asymmetrical Cinematic Grid (7-col & 5-col blocks) */}
+        <div className="grid grid-cols-12 gap-6 sm:gap-8 pt-12 sm:pt-16">
+          {SELECTED_WORKS.map((work, idx) => (
+            <div 
+              key={work.id} 
+              className={`${work.gridSpan} group flex flex-col justify-between p-6 sm:p-8 rounded-[24px] bg-[#0E1114] border border-white/[0.08] transition-all duration-500 hover:-translate-y-1.5 hover:border-[#FF2B43]/40 hover:shadow-[0_16px_40px_rgba(0,0,0,0.6)]`}
+            >
+              <div>
+                {/* Image Container */}
+                <Link 
+                  href={work.slug === "odl-ads" || work.slug === "omni-connects" ? `/work/${work.slug}` : "/work"}
+                  className="relative block overflow-hidden rounded-[16px] bg-neutral-900 border border-white/[0.06] mb-6 cursor-pointer"
+                  aria-label={`View ${work.client} case study`}
+                >
+                  <div className={`w-full ${work.aspectRatio} relative overflow-hidden`}>
+                    <Image
+                      src={work.image}
+                      alt={`${work.client} — ${work.title}`}
+                      fill
+                      className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.03]"
+                      sizes="(max-width: 1024px) 100vw, 55vw"
+                      priority={idx === 0}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                     
-                    <div className="absolute inset-0 bg-gradient-to-br from-[#D0D0D0] to-[#E0E0E0] transform transition-transform duration-1000 ease-[0.16,1,0.3,1] group-hover:scale-105" />
-
-                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  </div>
-
-                  <div className="absolute inset-0 hidden md:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-4 group-hover:translate-y-0 z-20 pointer-events-none">
-                    <div className="pointer-events-auto">
-                      <div className="inline-flex items-center justify-center font-medium transition-all duration-300 ease-out rounded-full active:scale-[0.98] text-center bg-[#9B1C22] text-white !text-white shadow-xl shadow-black/10 hover:bg-[#1E1E1E] hover:shadow-black/20 px-8 py-4 text-[14px]">
-                        View Case Study
-                      </div>
+                    {/* Performance Metric Badge */}
+                    <div className="absolute top-4 left-4 z-10">
+                      <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-mono tracking-wider text-[#FF2B43] uppercase">
+                        {work.metric}
+                      </span>
                     </div>
                   </div>
                 </Link>
 
-                <div className="mt-6 md:mt-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                  <div>
-                    <h3 className="text-[28px] md:text-[36px] font-medium tracking-tight text-[#1E1E1E] leading-none mb-2">
-                      {project.client}
-                    </h3>
-                    <p className="text-[15px] md:text-[16px] text-[#1E1E1E]/60 font-medium tracking-wide">
-                      {project.discipline}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between sm:flex-col sm:items-end gap-4 sm:gap-2">
-                    <span className="text-[14px] md:text-[15px] text-[#1E1E1E]/40 font-medium">
-                      {project.year}
+                {/* Meta details */}
+                <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-[#FF2B43] block mb-2">
+                  {work.category}
+                </span>
+                
+                <h3 className="text-[24px] sm:text-[30px] font-bold text-[#F4F5F7] tracking-tight leading-snug mb-3 group-hover:text-[#FF2B43] transition-colors">
+                  {work.client}
+                </h3>
+                
+                <p className="text-[14px] sm:text-[15px] text-neutral-400 font-light mb-6 leading-relaxed">
+                  {work.title}
+                </p>
+              </div>
+
+              {/* Tag Chips Row & Action Link */}
+              <div className="pt-4 border-t border-white/[0.06] flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap gap-1.5">
+                  {work.tags.map((tag) => (
+                    <span 
+                      key={tag} 
+                      className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-1 rounded-full bg-white/[0.03] text-neutral-400 border border-white/[0.08]"
+                    >
+                      {tag}
                     </span>
-                    
-                    <div className="md:hidden">
-                      <ButtonLink href={`/work/${project.id}`} variant="primary" size="sm">
-                        View Case Study
-                      </ButtonLink>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </motion.div>
-            );
-          })}
+
+                <Link
+                  href={work.slug === "odl-ads" || work.slug === "omni-connects" ? `/work/${work.slug}` : "/work"}
+                  className="text-[12px] font-mono tracking-wider uppercase text-neutral-300 group-hover:text-[#FF2B43] transition-colors flex items-center gap-1.5 min-h-[48px]"
+                >
+                  <span>Explore</span>
+                  <span>→</span>
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          
-whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="mt-32 pt-20 border-t border-[#1E1E1E]/10 flex flex-col items-center"
-        >
-          <ButtonLink href="/work" variant="primary" size="lg">
-            VIEW ALL WORK
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="ml-2 transform group-hover:translate-x-1 transition-transform">
-              <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+        {/* Bottom Work CTA */}
+        <div className="mt-14 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <span className="text-[13px] font-mono text-neutral-400">
+            Over 20+ verified client systems deployed globally.
+          </span>
+          <ButtonLink href="/work" variant="primary" size="md" arrow>
+            View Complete Archive
           </ButtonLink>
-        </motion.div>
+        </div>
 
       </div>
     </section>

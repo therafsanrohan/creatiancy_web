@@ -1,22 +1,20 @@
-
-
 import React from "react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Creatiancy — Strategy-Led Creative Agency",
-  description: "Creatiancy connects brand strategy, creative direction, and digital experiences to help ambitious businesses build clearer, more coherent, and more distinctive brands.",
+  title: "Creatiancy — Strategic Creative & Production Studio",
+  description: "Engineering brands that refuse to be ignored. Brand strategy, cinematic content, high-conversion UI/UX, and creative technology.",
   openGraph: {
-    title: "Creatiancy — Strategy-Led Creative Agency",
-    description: "We connect strategy, creative direction, and digital experiences to help ambitious businesses communicate with clarity and build brands with purpose.",
+    title: "Creatiancy — Strategic Creative & Production Studio",
+    description: "Engineering brands that refuse to be ignored. Brand strategy, cinematic content, high-conversion UI/UX, and creative technology.",
     url: "https://creatiancy.com",
     siteName: "Creatiancy",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Creatiancy — Strategy-Led Creative Agency",
-    description: "Brand strategy, creative direction, and digital experiences for ambitious businesses.",
+    title: "Creatiancy — Strategic Creative & Production Studio",
+    description: "Engineering brands that refuse to be ignored.",
   },
 };
 
@@ -26,7 +24,7 @@ const jsonLd = {
   "name": "Creatiancy",
   "url": "https://creatiancy.com",
   "logo": "https://creatiancy.com/logos/Creatiancy%20logo.svg",
-  "description": "Creatiancy connects brand strategy, creative direction, and digital experiences to help ambitious businesses build clearer, more coherent, and more distinctive brands.",
+  "description": "Creatiancy is a strategic creative & production studio engineering brands that refuse to be ignored.",
   "address": {
     "@type": "PostalAddress",
     "addressLocality": "Dhaka",
@@ -40,19 +38,14 @@ const jsonLd = {
 };
 
 import { Hero } from "@/components/home/hero/Hero";
-import { Services } from "@/components/home/services/Services";
+import { TrustMarquee } from "@/components/home/marquee/TrustMarquee";
 import { Projects } from "@/components/home/projects/Projects";
-import { FeaturedProject } from "@/components/home/featured-project/FeaturedProject";
-
-import { Process } from "@/components/home/process/Process";
-import { AboutPreview } from "@/components/home/about-preview/AboutPreview";
-import { Testimonials } from "@/components/home/testimonials/Testimonials";
-
-import { FinalCTA } from "@/components/home/final-cta/FinalCTA";
+import { Services } from "@/components/home/services/Services";
+import { MethodologyAndTrust } from "@/components/home/process/MethodologyAndTrust";
 
 export default function HomePage() {
   return (
-    <div className="creatiancy-scope bg-[#FBFDF9] text-[#1E1E1E] font-sans selection:bg-[#9B1C22] selection:text-white">
+    <div className="creatiancy-scope bg-[#070809] text-[#F4F5F7] font-sans selection:bg-[#FF2B43] selection:text-[#070809]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -60,15 +53,11 @@ export default function HomePage() {
       
       <main className="w-full relative">
         <Hero />
+        <TrustMarquee />
         <Projects />
         <Services />
-        <FeaturedProject />
-        <Process />
-        <AboutPreview />
-        <Testimonials />
-        <FinalCTA />
+        <MethodologyAndTrust />
       </main>
-
     </div>
   );
 }

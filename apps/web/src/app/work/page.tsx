@@ -1,117 +1,200 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
+import { ButtonLink } from "@/components/ui/Button";
 import "@/app/website.css";
 
-const workItems = [
-  { client: "Elcardo Industrial", discipline: "Brand Architecture & Platform", year: "2026", summary: "Industrial manufacturing digital presence.", slug: "elcardo" },
-  { client: "AtoBD Logistics", discipline: "Digital Systems", year: "2025", summary: "Real-time nationwide logistics interface.", slug: "atobd" },
-  { client: "ODL Global", discipline: "Creative Technology", year: "2025", summary: "Hardware and security enterprise web experience.", slug: "odl" },
-  { client: "Oven Brand", discipline: "Identity & Visual Direction", year: "2024", summary: "Modern culinary and packaging identity.", slug: "oven" },
+const featuredCaseStudies = [
+  { 
+    client: "ODL Developers Ltd.", 
+    title: "Real Estate OOH & Billboard Architecture",
+    discipline: "OOH Visual Strategy & Billboards", 
+    year: "2025", 
+    slug: "odl-ads",
+    image: "/images/project real.png",
+    tags: ["OOH Strategy", "Billboards", "Spatial Graphics", "Typography"],
+    externalLink: "https://www.behance.net/gallery/234613189/Real-Estate-Promotional-Poster-Design?platform=direct"
+  },
+  { 
+    client: "OMNI CONNECTS", 
+    title: "Enterprise Brand Architecture & Design System",
+    discipline: "Complete Corporate Identity & SaaS Interface", 
+    year: "2025", 
+    slug: "omni-connects",
+    image: "/images/omni_branding.png",
+    tags: ["Brand Architecture", "Corporate Marks", "Design Tokens", "SaaS UX"],
+    externalLink: "https://www.omniconnects.com"
+  },
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 30, scale: 0.98 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.2 } }
-};
+const clientRoster = [
+  { name: "Elcardo Industrial", scope: "Corporate Platform & Brand Architecture", year: "2026" },
+  { name: "AtoBD Logistics", scope: "Logistics Product Interface & Digital Architecture", year: "2025" },
+  { name: "ODL Developers Ltd.", scope: "Real Estate Billboard Systems & Creative Direction", year: "2025" },
+  { name: "Oven Culinary", scope: "Visual Identity & Packaging Direction", year: "2024" },
+  { name: "OMNI CONNECTS", scope: "Brand Architecture & Platform Overhaul", year: "2025" },
+  { name: "Sadiq Digital", scope: "Strategic Creative & Campaign Systems", year: "2025" },
+];
 
 export default function WorkPage() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
-  const yOffset = useTransform(scrollY, [0, 500], [0, 100]);
-  const opacityOffset = useTransform(scrollY, [0, 400], [1, 0]);
-
   return (
-    <div className="creatiancy-scope bg-[#FBFDF9]" ref={containerRef}>
-      
-      <main className="flex-1 w-full relative overflow-hidden">
-        
-        <section className="relative min-h-[45vh] md:min-h-[55vh] flex flex-col justify-end pt-32 pb-24 px-6 md:px-12 w-full z-10 bg-[#FBFDF9] overflow-hidden">
-          
-          <div className="w-full max-w-[1400px] mx-auto relative z-10">
-            <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-12 md:gap-8">
-              
-              <div className="flex-1 relative">
-                
-                <motion.div
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="absolute -top-10 -left-10 w-40 h-40 bg-[#9B1C22]/10 rounded-full blur-[40px] pointer-events-none"
-                />
+    <div className="creatiancy-scope bg-[#070809]">
+      <main className="w-full relative">
 
-                <motion.h1 
-                  initial={{ opacity: 0, y: 40 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                  className="text-[64px] sm:text-[80px] md:text-[110px] lg:text-[130px] font-semibold tracking-tighter text-[#1E1E1E] leading-[1.1]"
-                >
-                  Selected <br className="hidden md:block"/>
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1E1E1E] to-[#888888] pb-2 pr-2 inline-block">Case Studies</span><span className="text-[#9B1C22]">.</span>
-                </motion.h1>
-              </div>
+        {/* Work Hero */}
+        <section className="pt-40 pb-16 px-6 md:px-12 max-w-[1440px] mx-auto border-b border-white/[0.08]">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pb-8 border-b border-white/[0.08] text-[11px] font-mono tracking-[0.16em] uppercase text-neutral-400 mb-16">
+            <div>
+              <span className="text-[#FF2B43] mr-2">01</span>
+              <span>INDEX &bull; ARCHIVE</span>
+            </div>
+            <div>
+              <span className="text-[#FF2B43] mr-2">02</span>
+              <span>CASE STUDIES</span>
+            </div>
+            <div className="hidden md:block">
+              <span className="text-[#FF2B43] mr-2">03</span>
+              <span>PRODUCTION SYSTEMS</span>
+            </div>
+            <div className="text-right">
+              <span className="text-[#FF2B43] mr-2">04</span>
+              <span>2024 &ndash; 2026</span>
+            </div>
+          </div>
 
-              <div className="md:w-[450px] shrink-0 md:pb-6">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4, duration: 1 }}
-                  className="pl-6 md:pl-10 border-l-[2px] border-[#1E1E1E]/10"
-                >
-                  <p className="text-[18px] md:text-[22px] text-gray-500 font-light leading-[1.6]">
-                    We build rigorous brand systems and immersive digital experiences. Here is a curated selection of our most impactful work.
-                  </p>
-                </motion.div>
-              </div>
+          <div className="max-w-4xl">
+            <span className="text-[11px] font-mono tracking-[0.2em] text-[#FF2B43] uppercase block mb-4">
+              PORTFOLIO ARCHIVE
+            </span>
+            <h1 className="text-[40px] sm:text-[56px] md:text-[76px] font-bold tracking-[-0.035em] text-[#F4F5F7] leading-[1.0] mb-8 uppercase">
+              Work built to endure.
+            </h1>
+            <p className="text-[17px] md:text-[20px] text-neutral-400 font-light leading-relaxed max-w-2xl">
+              Curated verified case studies, identity systems, and production platforms.
+            </p>
+          </div>
+        </section>
 
+        {/* Image-Led Case Study Rows */}
+        <section className="pb-28 px-6 md:px-12 max-w-[1440px] mx-auto">
+          <div className="flex flex-col divide-y divide-white/[0.08]">
+            {featuredCaseStudies.map((study, idx) => (
+              <article 
+                key={study.slug} 
+                className="py-16 md:py-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center"
+              >
+                {/* Large Image Section with Glass Year Badge */}
+                <div className={`lg:col-span-8 ${idx % 2 === 1 ? 'lg:order-2' : ''}`}>
+                  <Link 
+                    href={`/work/${study.slug}`} 
+                    className="group relative block overflow-hidden rounded-[20px] bg-[#0E1114] border border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
+                  >
+                    <div className="relative aspect-[16/10] w-full overflow-hidden">
+                      <Image 
+                        src={study.image} 
+                        alt={study.title} 
+                        fill 
+                        className="object-cover group-hover:scale-103 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                        sizes="(max-width: 1024px) 100vw, 65vw"
+                        priority={idx === 0}
+                      />
+                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition-colors duration-500" />
+                      
+                      {/* Glass Badge */}
+                      <div className="absolute top-4 left-4 z-10">
+                        <div className="px-3.5 py-1.5 rounded-full bg-black/60 backdrop-blur-[16px] saturate-[140%] border border-white/20 text-white text-[11px] font-mono tracking-widest uppercase flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF2B43]" />
+                          <span>{study.year}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+
+                {/* Minimal Meta & Tag Chips Column */}
+                <div className={`lg:col-span-4 flex flex-col justify-between ${idx % 2 === 1 ? 'lg:order-1' : ''}`}>
+                  <div>
+                    <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#FF2B43] block mb-2">
+                      VERIFIED ENGAGEMENT
+                    </span>
+
+                    <h2 className="text-[28px] sm:text-[34px] font-bold tracking-[-0.025em] text-[#F4F5F7] leading-tight mb-2">
+                      {study.client}
+                    </h2>
+
+                    <p className="text-[14px] font-mono text-neutral-400 mb-6">
+                      {study.discipline}
+                    </p>
+
+                    {/* Tag Chips Row */}
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {study.tags.map((t) => (
+                        <span key={t} className="px-3 py-1 bg-white/[0.03] border border-white/[0.08] rounded-full text-[11px] font-mono text-neutral-300">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 pt-4 border-t border-white/[0.08]">
+                    <ButtonLink 
+                      href={`/work/${study.slug}`}
+                      variant="primary"
+                      size="sm"
+                      arrow
+                    >
+                      Case Study
+                    </ButtonLink>
+                    {study.externalLink && (
+                      <a 
+                        href={study.externalLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] font-mono tracking-wider uppercase text-neutral-400 hover:text-[#FF2B43] transition-colors"
+                      >
+                        External ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Client Roster */}
+        <section className="py-24 bg-[#0E1114] text-[#F4F5F7] px-6 md:px-12 border-t border-white/[0.08]">
+          <div className="max-w-[1440px] mx-auto">
+            <div className="max-w-2xl mb-12">
+              <span className="text-[11px] font-mono tracking-[0.2em] text-[#FF2B43] uppercase block mb-3">
+                CLIENT INDEX &bull; VERIFIED ROSTER
+              </span>
+              <h2 className="text-[32px] sm:text-[40px] font-bold tracking-[-0.03em] uppercase">Verified Partnerships</h2>
+              <p className="text-[15px] text-neutral-400 font-light mt-2">
+                Commercial partners across strategic direction, visual identity, and web engineering.
+              </p>
+            </div>
+
+            <div className="border-t border-white/[0.08] divide-y divide-white/[0.08]">
+              {clientRoster.map((client) => (
+                <div key={client.name} className="py-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center hover:bg-white/[0.02] transition-colors">
+                  <div className="md:col-span-5 text-[17px] font-medium text-[#F4F5F7]">
+                    {client.name}
+                  </div>
+                  <div className="md:col-span-5 text-[13px] text-neutral-400 font-light">
+                    {client.scope}
+                  </div>
+                  <div className="md:col-span-2 text-left md:text-right text-[11px] font-mono text-[#FF2B43]">
+                    {client.year}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="pb-32 px-6 md:px-12 max-w-[1400px] mx-auto relative z-10">
-          <div className="flex flex-col gap-24 md:gap-32 w-full mt-12">
-            {workItems.map((item, idx) => (
-              <motion.div 
-                key={item.client}
-                initial={{ opacity: 0, y: 40 }}
-                
-whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                className="group flex flex-col md:flex-row items-center gap-12 lg:gap-20 w-full"
-              >
-                
-                <div className={`w-full md:w-1/2 aspect-[4/3] rounded-[32px] overflow-hidden bg-gray-100 relative ${idx % 2 !== 0 ? 'md:order-2' : ''}`}>
-                   
-                   <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 group-hover:scale-105 transition-transform duration-700 ease-[0.16,1,0.3,1] flex items-center justify-center">
-                     <span className="text-[120px] md:text-[180px] font-serif text-black/5 opacity-50 select-none">
-                       0{idx + 1}
-                     </span>
-                   </div>
-                </div>
-
-                <div className="w-full md:w-1/2 flex flex-col items-start">
-                  <span className="text-[12px] font-bold tracking-[0.2em] text-[#9B1C22] uppercase mb-4">{item.discipline} &bull; {item.year}</span>
-                  <h2 className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[#1E1E1E] leading-none mb-6">
-                    {item.client}
-                  </h2>
-                  <p className="text-[18px] md:text-[22px] font-light text-gray-500 leading-[1.6] max-w-[500px] mb-10">
-                    {item.summary}
-                  </p>
-                  
-                  <Link 
-                    href={`/work/${item.slug}`}
-                    className="inline-flex items-center gap-3 px-8 py-4 bg-[#1E1E1E] !text-white rounded-full text-[15px] font-medium transition-all hover:bg-[#9B1C22] hover:-translate-y-1 focus:outline-none shadow-md"
-                  >
-                    View Case Study <span className="text-lg leading-none">→</span>
-                  </Link>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
       </main>
     </div>
   );

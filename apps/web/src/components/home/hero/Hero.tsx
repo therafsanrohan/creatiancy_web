@@ -1,131 +1,93 @@
 "use client";
 
 import React from "react";
-import { ButtonLink } from "@/components/ui/Button";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export const Hero = () => {
   return (
-    <section className="relative w-full min-h-[100svh] pt-32 pb-20 flex flex-col items-center justify-center overflow-hidden bg-white">
+    <section className="relative w-full pt-32 sm:pt-40 md:pt-48 pb-20 sm:pb-28 px-6 md:px-12 bg-[#070809] border-b border-white/[0.08] overflow-hidden">
+      <div className="max-w-[1440px] mx-auto">
 
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        
-        <div className="absolute -top-[20%] -left-[10%] w-[70vw] h-[70vw] rounded-full bg-[#9B1C22]/10 blur-3xl opacity-80" />
-        
-        <div className="absolute top-[10%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#9B1C22]/10 blur-3xl opacity-80" />
-      </div>
-
-      <div className="max-w-5xl mx-auto px-6 md:px-12 w-full relative z-10 flex flex-col items-center text-center mt-10 lg:mt-16">
-
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-6 w-full"
-        >
-          <h1 className="text-[12vw] sm:text-[60px] md:text-[80px] lg:text-[96px] font-bold tracking-tighter text-[#0F172A] leading-[1.05] max-w-4xl mx-auto">
-            Build a brand that knows where it&apos;s going.
-          </h1>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10 w-full"
-        >
-          <p className="text-[16px] md:text-[18px] text-[#475569] font-normal max-w-2xl mx-auto leading-[1.6]">
-            We connect strategy, creative direction, and digital experiences to help ambitious businesses communicate with clarity and build brands with purpose.
-          </p>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col sm:flex-row items-center gap-4"
-        >
-          <ButtonLink href="/contact" variant="primary" size="lg" className="px-8 py-4">
-            Start a Project
-          </ButtonLink>
-          <ButtonLink href="/work" variant="ghost" size="lg" className="px-8 py-4 text-[#475569] hover:text-[#1E1E1E]">
-            Explore Our Work →
-          </ButtonLink>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full mt-24 md:mt-32 flex flex-col items-center overflow-hidden"
-        >
-          <div className="w-full flex items-center justify-center gap-4 mb-12 opacity-70 px-6">
-            <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-[#E2E8F0]" />
-            <span className="text-[13px] text-[#64748B] font-medium tracking-wide">
-              Brands we&apos;ve worked with
+        {/* Main Display Headline in Helvetica Neue, Sentence Case */}
+        <div className="max-w-5xl mb-10 sm:mb-12">
+          <h1 className="text-[42px] sm:text-[64px] md:text-[80px] lg:text-[96px] font-medium tracking-[-0.035em] text-[#F4F5F7] leading-[1.0] text-balance">
+            Good creative <br />
+            starts with{" "}
+            <span className="text-[#FF2B43] font-normal">
+              better thinking
             </span>
-            <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-[#E2E8F0]" />
+            <span className="text-[#FF2B43]">.</span>
+          </h1>
+        </div>
+
+        {/* Human Narrative & Clear Next Step */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-end pt-4 pb-14 border-b border-white/[0.08]">
+          <div className="lg:col-span-7">
+            <p className="text-[18px] sm:text-[22px] md:text-[24px] text-neutral-400 font-normal leading-[1.45] max-w-2xl text-pretty">
+              We partner with founders and brands to craft clear positioning, distinct visual identities, and high-performance digital products that refuse to look like everyone else.
+            </p>
           </div>
 
-          <div className="relative w-full flex overflow-hidden mask-edges">
-            <div 
-              className="flex items-center w-max animate-smooth-marquee hover:[animation-play-state:paused]"
+          <div className="lg:col-span-5 flex flex-col sm:flex-row lg:justify-end items-start sm:items-center gap-4">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center gap-3 px-8 h-14 rounded-full text-[13px] font-mono font-medium tracking-wide bg-[#FF2B43] hover:bg-[#E01E37] text-white transition-all shadow-[0_4px_24px_rgba(255,43,67,0.3)] min-h-[48px] hover:scale-[1.01] active:scale-[0.99]"
             >
-              
-              {[...Array(2)].map((_, i) => (
-                <div key={i} className="flex items-center gap-16 md:gap-32 pr-16 md:pr-32">
-                  {[
-                    { name: "Elcardo", src: "/brands/elcardo_logo.png", width: 140, height: 45 },
-                    { name: "AtoBD", src: "/brands/AtoBD_logo.png", width: 110, height: 45 },
-                    { name: "ODL", src: "/brands/odl_logo.png", width: 100, height: 45 },
-                    { name: "Oven", src: "/brands/oven_logo.png", width: 105, height: 45 },
-                    { name: "Omni", src: "/brands/omni_logo.png", width: 125, height: 45 },
-                    { name: "S", src: "/brands/s_logo.png", width: 65, height: 45 }
-                  ].map((logo) => (
-                    <div 
-                      key={`${i}-${logo.name}`}
-                      className="relative group cursor-pointer flex items-center justify-center h-16 shrink-0"
-                    >
-                      
-                      <div className="relative w-full h-full flex items-center justify-center grayscale brightness-0 opacity-50 group-hover:opacity-100 transition-all duration-500 hover:scale-105">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
-                          src={logo.src} 
-                          alt={`${logo.name} Logo`} 
-                          style={{ 
-                            maxWidth: `${logo.width}px`, 
-                            maxHeight: `${logo.height}px`,
-                            width: 'auto',
-                            height: 'auto',
-                            objectFit: 'contain'
-                          }} 
-                          className="block"
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
+              <span>Start a project</span>
+              <ArrowUpRight className="w-4 h-4 text-white" />
+            </Link>
+
+            <Link
+              href="/work"
+              className="inline-flex items-center justify-center gap-2 px-7 h-14 rounded-full text-[13px] font-mono font-medium tracking-wide bg-white/[0.03] hover:bg-white/[0.07] text-[#F4F5F7] hover:text-[#FF2B43] border border-white/10 transition-all min-h-[48px]"
+            >
+              <span>Selected work</span>
+              <span className="text-neutral-500">↓</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Clean, authentic capabilities strip without AI clutter */}
+        <div className="pt-8 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+          <div>
+            <span className="text-xs font-mono text-[#FF2B43] block mb-1">01</span>
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Brand Strategy</h3>
+            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+              Positioning frameworks and distinct narrative architectures.
+            </p>
           </div>
 
-          <style dangerouslySetInnerHTML={{__html: `
-            .mask-edges {
-              mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-              -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
-            }
-            @keyframes smooth-marquee {
-              0% { transform: translate3d(0, 0, 0); }
-              100% { transform: translate3d(-50%, 0, 0); }
-            }
-            .animate-smooth-marquee {
-              animation: smooth-marquee 30s linear infinite;
-              will-change: transform;
-            }
-          `}} />
-        </motion.div>
-        
+          <div>
+            <span className="text-xs font-mono text-[#FF2B43] block mb-1">02</span>
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Visual Identity</h3>
+            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+              Design tokens, bespoke typographic systems, and art direction.
+            </p>
+          </div>
+
+          <div>
+            <span className="text-xs font-mono text-[#FF2B43] block mb-1">03</span>
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Digital Products</h3>
+            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+              Next.js full-stack web platforms engineered for sub-second speed.
+            </p>
+          </div>
+
+          <div>
+            <span className="text-xs font-mono text-[#FF2B43] block mb-1">04</span>
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Commercial Media</h3>
+            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+              Cinematic film direction and 3D motion design.
+            </p>
+          </div>
+        </div>
+
       </div>
     </section>
   );
 };
+
+
+
+

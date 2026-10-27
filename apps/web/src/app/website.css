@@ -1,15 +1,19 @@
 :root {
-  --cr-red: #9B1C22;
-  --cr-black: #1E1E1E;
-  --cr-lotion: #FBFDF9;
-  --cr-white: #FFFFFF;
-  --cr-border: rgba(30, 30, 30, 0.08);
-  --cr-font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --cr-void: #070809;
+  --cr-surface: #0E1114;
+  --cr-mint: #FF2B43;
+  --cr-mint-hover: #E01E37;
+  --cr-heading: #F4F5F7;
+  --cr-muted: #9CA3AF;
+  --cr-subtle: #6B7280;
+  --cr-border: rgba(255, 255, 255, 0.08);
+  --cr-font: "Helvetica Neue", -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --cr-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .creatiancy-scope {
-  background-color: var(--cr-lotion);
-  color: var(--cr-black);
+  background-color: var(--cr-void);
+  color: var(--cr-heading);
   font-family: var(--cr-font);
   min-height: 100vh;
   display: flex;
@@ -28,7 +32,33 @@
   color: inherit;
 }
 
-.glass-nav {
-  background-color: var(--cr-lotion);
+/* Editorial Typography utilities */
+.type-display-huge {
+  font-size: clamp(2.75rem, 9.5vw, 8.5rem);
+  line-height: 0.94;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+}
+
+.type-display-title {
+  font-size: clamp(2rem, 5.5vw, 4.75rem);
+  line-height: 1.0;
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+
+.type-meta-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-family: var(--cr-font);
+  font-weight: 600;
+}
+
+.hairline-b {
   border-bottom: 1px solid var(--cr-border);
+}
+
+.hairline-t {
+  border-top: 1px solid var(--cr-border);
 }

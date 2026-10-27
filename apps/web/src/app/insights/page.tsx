@@ -15,12 +15,13 @@ export default async function InsightsPage() {
       .order("publication_date", { ascending: false });
 
     if (error) {
-      console.error("Error fetching insights:", error.message);
+      // If remote Supabase instance is unreachable, paused, or invalid in local dev, fall back gracefully
+      console.warn("Supabase insights unavailable:", error.message);
     } else if (data && data.length > 0) {
       posts = data;
     }
-  } catch (err) {
-    console.error("Failed to fetch insights:", err);
+  } catch (err: any) {
+    console.warn("Supabase connection skipped (using verified local fallbacks):", err?.message || err);
   }
 
   if (posts.length === 0) {

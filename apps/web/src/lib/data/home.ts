@@ -22,7 +22,7 @@ export const PROCESS_STEPS = [
   { step: "Refine", detail: "Engineer with precision and scale in mind." }
 ];
 
-export const CLIENTS = ["Elcardo", "AtoBD", "ODL", "Oven", "Web.ai", "Omni", "Lumina", "Nexus", "Vertex"];
+export const CLIENTS = ["Elcardo", "AtoBD", "ODL", "Oven", "Web.ai", "Omni"];
 
 export const TESTIMONIALS = [
   {

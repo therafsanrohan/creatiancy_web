@@ -2,40 +2,30 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #FBFDF9;
-  /* Lotion */
-  --text: #1E1E1E;
-  /* Eerie Black */
-  --ruby-red: #9B1C22;
-  /* Ruby Red Accent */
-  --accent: #9B1C22;
-
-  --muted: #EAEAEA;
-  --muted-fg: #666666;
-  --border: #E5E5EA;
-}
-
-.dark {
-  --bg: #1E1E1E;
-  /* Eerie Black */
-  --text: #FFFFFF;
-  /* White */
-  --ruby-red: #9B1C22;
-  /* Ruby Red Accent */
-  --accent: #9B1C22;
-
-  --muted: #333333;
-  --muted-fg: #A3A3A3;
-  --border: #2C2C2E;
+  --bg: #070809;
+  --surface: #0E1114;
+  --text: #F4F5F7;
+  --text-muted: #9CA3AF;
+  --crimson: #FF2B43;
+  --crimson-hover: #E01E37;
+  --mint: #FF2B43;
+  --mint-hover: #E01E37;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.04);
 }
 
 @theme {
-  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-  --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+  --font-heading: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-  --color-primary: var(--bg);
-  --color-foreground: var(--text);
-  --color-ruby: var(--ruby-red);
+  --color-void: #070809;
+  --color-surface: #0E1114;
+  --color-crimson: #FF2B43;
+  --color-crimson-hover: #E01E37;
+  --color-mint: #FF2B43;
+  --color-mint-hover: #E01E37;
+  --color-heading: #F4F5F7;
 }
 
 @layer base {
@@ -45,15 +35,19 @@
     padding: 0;
   }
   
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
   html, body {
     overflow-x: hidden;
     -webkit-tap-highlight-color: transparent;
+    background-color: #070809;
+    color: #F4F5F7;
   }
   
   body {
-    background-color: var(--bg);
-    color: var(--text);
-    transition: background-color 0.3s ease, color 0.3s ease;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     padding-top: env(safe-area-inset-top);
@@ -64,32 +58,106 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    color: #F4F5F7;
+    letter-spacing: -0.03em;
   }
+}
 
+/* Page Section Reveal Animation */
+.page-fade-in {
+  animation: pageFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom Frictionless Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070809;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF2B43;
+}
+
+/* Lenis Smooth Scroll Configuration */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+  pointer-events: none;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-  .animate-marquee {
-    animation: marquee 35s linear infinite;
+  
+  /* Hardware-accelerated infinite marquee */
+  .animate-marquee-infinite {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll 28s linear infinite;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+  }
+  
+  .animate-marquee-infinite:hover {
+    animation-play-state: paused;
+  }
+
+  /* Bento & Glass surfaces */
+  .glass-card {
+    background: rgba(14, 17, 20, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card-hover {
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .glass-card-hover:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255, 43, 67, 0.35);
+    box-shadow: 0 12px 36px -8px rgba(255, 43, 67, 0.12);
   }
 }
 
-@keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); } 
+@keyframes marquee-scroll {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); } 
 }
 
-/* ── Campaign Pages ──────────────────────────────────────────────
-   Hide main site Navbar and Footer on campaign routes (/gratitude etc.)
-   .campaign-page is injected by the campaign's layout.tsx wrapper.
-   .campaign-footer exempts the campaign's own footer from hiding.
-   Uses :has() — supported in all modern browsers (2023+).
-────────────────────────────────────────────────────────────────── */
+/* ── Campaign Pages ── */
 body:has(.campaign-page) header {
   display: none !important;
 }

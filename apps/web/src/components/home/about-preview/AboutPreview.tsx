@@ -1,64 +1,97 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { BentoCard } from "@/components/ui/BentoCard";
 import { ButtonLink } from "@/components/ui/Button";
+
+const PRINCIPLES = [
+  {
+    num: "01",
+    label: "STRATEGIC RULE",
+    title: "Clear Thinking",
+    copy: "Question the brief before drawing a pixel. Strategy dictates form.",
+    icon: "Compass",
+    size: "tall" as const,
+    theme: "dark" as const,
+    tags: ["Root Cause", "Commercial Focus"]
+  },
+  {
+    num: "02",
+    label: "AESTHETIC RULE",
+    title: "Distinct Creative",
+    copy: "Singular brand systems engineered to stand apart without generic templates.",
+    icon: "Layers",
+    size: "tall" as const,
+    theme: "red" as const,
+    tags: ["Custom Typography", "Brand Distinction"]
+  },
+  {
+    num: "03",
+    label: "DELIVERY RULE",
+    title: "Dependable Build",
+    copy: "Punctual delivery, accessible Next.js code, and direct partner accountability.",
+    icon: "Sliders",
+    size: "tall" as const,
+    theme: "dark" as const,
+    tags: ["Engineered Platforms", "Direct Partner"]
+  }
+];
 
 export const AboutPreview = () => {
   return (
-    <section className="py-32 md:py-48 px-4 md:px-8 lg:px-12 w-full relative bg-[#050505] overflow-hidden my-0">
-      
-      <div className="absolute top-0 left-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#9B1C22]/15 rounded-full blur-3xl md:blur-3xl -translate-y-1/2 pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-white/5 rounded-full blur-3xl translate-y-1/2 pointer-events-none" />
-      
-      <div className="max-w-[1200px] mx-auto w-full relative z-10">
-        <div className="flex flex-col items-start md:items-center text-left md:text-center">
-          
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            
-whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="flex items-center gap-3 px-6 py-2.5 rounded-full border border-white/10 bg-white/5 mb-8 md:mb-12 backdrop-blur-md"
-          >
-             <span className="w-2 h-2 rounded-full bg-[#9B1C22] animate-pulse" />
-             <span className="text-[12px] md:text-[14px] uppercase tracking-[0.2em] text-white/80 font-medium">Creative Engineering Studio</span>
-          </motion.div>
-
-          <motion.h2 
-            initial={{ opacity: 0, y: 30 }}
-            
-whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[36px] md:text-[64px] lg:text-[88px] font-medium tracking-tight text-[#FAFAFA] leading-[1.05] mb-12 md:mb-20 max-w-5xl text-left md:text-center"
-          >
-            We exist to build brands and digital products that <br className="hidden md:block"/>
-            <span className="relative inline-block mt-2">
-               <span className="relative z-10 italic font-serif text-[#9B1C22]">perform flawlessly</span>
-               <span className="absolute bottom-2 md:bottom-4 left-0 w-full h-[30%] bg-[#9B1C22]/20 -z-10 -rotate-2 skew-x-12" />
-            </span> 
-            {" "}and look exceptional.
-          </motion.h2>
-
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            
-whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 w-full sm:w-auto"
-          >
-            <ButtonLink href="/about" variant="primary" size="lg" className="w-full sm:w-auto min-w-[200px]">
-              Explore Creatiancy
-            </ButtonLink>
-            <ButtonLink href="/contact" variant="secondary" size="lg" className="w-full sm:w-auto min-w-[200px] bg-white/10 text-white hover:bg-white/20 border border-white/10">
-              Work With Us
-            </ButtonLink>
-          </motion.div>
-          
+    <section className="py-28 md:py-36 px-6 md:px-12 w-full bg-[#111111] text-white border-b border-white/10">
+      <div className="max-w-[1440px] mx-auto">
+        
+        {/* Section Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 pb-12 border-b border-white/10 mb-16 items-end">
+          <div className="lg:col-span-8">
+            <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-[#9B1C22] block mb-3">
+              STUDIO PHILOSOPHY &bull; CORE THESIS
+            </span>
+            <h2 className="text-[36px] sm:text-[48px] md:text-[64px] font-semibold tracking-[-0.035em] text-white leading-[1.02]">
+              Think Together.<br />
+              <span className="text-white/40">Build what stands apart.</span>
+            </h2>
+          </div>
+          <div className="lg:col-span-4 flex flex-col justify-end">
+            <p className="text-[15px] md:text-[17px] text-white/70 font-light leading-relaxed">
+              Senior creative leadership partnering directly on your brief from strategy to launch.
+            </p>
+          </div>
         </div>
+
+        {/* 3 Principles Asymmetrical Bento Grid */}
+        <div className="grid grid-cols-12 gap-6">
+          {PRINCIPLES.map((p) => (
+            <BentoCard
+              key={p.num}
+              numeral={p.num}
+              label={p.label}
+              title={p.title}
+              copy={p.copy}
+              icon={p.icon}
+              theme={p.theme}
+              size={p.size}
+              tags={p.tags}
+            />
+          ))}
+        </div>
+
+        {/* Action Row */}
+        <div className="mt-14 pt-8 border-t border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <span className="text-[13px] font-mono text-white/50">
+            Founded in Dhaka &bull; Working with global brands and ambitious leaders.
+          </span>
+          <div className="flex items-center gap-4">
+            <ButtonLink href="/about" variant="primary" size="md" arrow>
+              Studio Manifesto
+            </ButtonLink>
+            <ButtonLink href="/contact" variant="on-dark" size="md" arrow>
+              Start Conversation
+            </ButtonLink>
+          </div>
+        </div>
+
       </div>
     </section>
   );

@@ -22,8 +22,8 @@ export default async function InsightPostPage({ params }: { params: Promise<{ sl
     if (data) {
       post = data;
     }
-  } catch (err) {
-    console.error("Failed to fetch post from Supabase:", err);
+  } catch (err: any) {
+    console.warn("Supabase post connection skipped (using verified local fallbacks):", err?.message || err);
   }
 
   if (!post) {
