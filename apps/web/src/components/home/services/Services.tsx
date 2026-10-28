@@ -154,29 +154,7 @@ export function Services() {
               We engineer brand positioning, digital products, and cinematic campaigns built for scale and retention.
             </p>
 
-            {/* Quick-Filter Navigation */}
-            <div className="hidden lg:flex flex-col gap-1.5 pt-5 border-t border-black/[0.08]">
-              <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#86868B] mb-1">
-                Select Discipline
-              </span>
-              {servicesData.map((item) => {
-                const isCurrent = activeId === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveId(item.id)}
-                    className={`flex items-center justify-between text-left px-3 py-2 rounded-lg text-[13px] transition-all duration-200 ${
-                      isCurrent
-                        ? "bg-white text-[#9B1C22] font-semibold shadow-sm border border-black/5"
-                        : "text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-black/[0.02]"
-                    }`}
-                  >
-                    <span className="truncate pr-2">{item.title}</span>
-                    <span className="font-mono text-[11px] opacity-50">{item.number}</span>
-                  </button>
-                );
-              })}
-            </div>
+
 
             {/* Compact CTA Note */}
             <div className="mt-6 pt-5 border-t border-black/[0.08] hidden sm:block">
