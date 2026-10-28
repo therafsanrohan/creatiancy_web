@@ -85,37 +85,49 @@ export const Hero = () => {
         </div>
 
         {/* Clean, authentic capabilities strip with subtle glass accents */}
-        <div className="pt-8 grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
+        <div className="pt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 border-t border-white/10">
           <div>
             <span className="text-xs font-mono text-[#FF4D5E] block mb-1">01</span>
-            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Brand Strategy</h3>
-            <p className="text-xs text-white/60 font-sans leading-relaxed">
-              Positioning frameworks and distinct narrative architectures.
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Strategy & Branding</h3>
+            <p className="text-xs text-white/60 font-sans leading-relaxed mb-2">
+              Brand audit, positioning, messaging, identity, rebranding ও brand guidelines।
             </p>
+            <div className="text-[11px] font-mono text-white/40">
+              <span className="text-[#FF4D5E]/80">Main sale:</span> Brand Sprint, Brand System.
+            </div>
           </div>
 
           <div>
             <span className="text-xs font-mono text-[#FF4D5E] block mb-1">02</span>
-            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Visual Identity</h3>
-            <p className="text-xs text-white/60 font-sans leading-relaxed">
-              Design tokens, bespoke typographic systems, and art direction.
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Digital Experience</h3>
+            <p className="text-xs text-white/60 font-sans leading-relaxed mb-2">
+              Corporate website, e-commerce, landing pages, UX/UI, conversion-focused redesign ও website optimization।
             </p>
+            <div className="text-[11px] font-mono text-white/40">
+              <span className="text-[#FF4D5E]/80">Main sale:</span> Digital Launch, Website Experience.
+            </div>
           </div>
 
           <div>
             <span className="text-xs font-mono text-[#FF4D5E] block mb-1">03</span>
-            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Digital Products</h3>
-            <p className="text-xs text-white/60 font-sans leading-relaxed">
-              Next.js full-stack web platforms engineered for sub-second speed.
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Creative & Campaign Studio</h3>
+            <p className="text-xs text-white/60 font-sans leading-relaxed mb-2">
+              Creative direction, campaign concepts, graphic design, motion, video editing, product visuals ও OOH design।
             </p>
+            <div className="text-[11px] font-mono text-white/40">
+              <span className="text-[#FF4D5E]/80">Main sale:</span> Campaign Project, Monthly Creative Partner.
+            </div>
           </div>
 
           <div>
             <span className="text-xs font-mono text-[#FF4D5E] block mb-1">04</span>
-            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Commercial Media</h3>
-            <p className="text-xs text-white/60 font-sans leading-relaxed">
-              Cinematic film direction and 3D motion design.
+            <h3 className="text-sm sm:text-base font-medium text-white mb-1">Growth & Performance</h3>
+            <p className="text-xs text-white/60 font-sans leading-relaxed mb-2">
+              Paid media management, creative testing, campaign tracking, landing-page improvement ও performance reporting।
             </p>
+            <div className="text-[11px] font-mono text-white/40">
+              <span className="text-[#FF4D5E]/80">Main sale:</span> Monthly Growth Partner.
+            </div>
           </div>
         </div>
 

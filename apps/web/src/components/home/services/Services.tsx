@@ -8,47 +8,126 @@ interface ServiceItem {
   id: string;
   number: string;
   title: string;
-  summary: string;
+  tagline: string;
   tags: string[];
+  scope: string[];
+  idealClients: string;
 }
 
 const servicesData: ServiceItem[] = [
   {
-    id: "strategy",
+    id: "brand-strategy",
     number: "01.",
-    title: "Strategy Plan",
-    summary:
-      "We deconstruct ambiguous market landscapes to engineer distinct positioning frameworks, category definitions, and brand architectures that command pricing power.",
-    tags: ["Digital Marketing", "Strategy Planner", "Content Planning", "Brand Architecture"],
+    title: "Brand Strategy & Identity",
+    tagline: "Think clearly. Stand distinctly.",
+    tags: [
+      "Brand Positioning",
+      "Competitor Research",
+      "Visual Identity",
+      "Brand Architecture",
+      "Packaging",
+    ],
+    scope: [
+      "Brand positioning ও competitor research",
+      "Brand strategy, naming ও messaging",
+      "Visual identity, logo ও brand guidelines",
+      "Rebranding ও brand architecture",
+      "Packaging এবং brand collateral",
+    ],
+    idealClients: "নতুন brand, premium business, growing companies।",
   },
   {
-    id: "seo",
+    id: "digital-web",
     number: "02.",
-    title: "Seo optimize",
-    summary:
-      "Algorithmic search architecture, technical performance engineering, and conversion telemetry designed to multiply organic inbound pipeline.",
-    tags: ["Technical SEO", "Growth Optimization", "Content Architecture", "Funnel Telemetry"],
+    title: "Digital Experience & Web",
+    tagline: "Build digital experiences with purpose.",
+    tags: [
+      "Corporate Website",
+      "E-commerce",
+      "UI/UX Design",
+      "Landing Page",
+      "Optimization",
+    ],
+    scope: [
+      "Business ও corporate website",
+      "E-commerce website",
+      "Landing page ও campaign microsite",
+      "UI/UX design ও website redesign",
+      "Conversion-focused user journeys",
+      "Website maintenance ও optimization",
+    ],
+    idealClients: "E-commerce, service businesses, startups ও established brands।",
   },
   {
-    id: "content",
+    id: "creative-production",
     number: "03.",
-    title: "Content Lab",
-    summary:
-      "Cinematic visual storytelling, commercial art direction, and 4K motion design engineered to hold viewer retention across international platforms.",
-    tags: ["Commercial Film", "3D Motion Design", "Social Engines", "Visual Direction"],
+    title: "Creative Production & Content",
+    tagline: "Make the brand impossible to ignore.",
+    tags: [
+      "Campaign Concept",
+      "Commercial Shoots",
+      "Motion Graphics",
+      "Short-Form Video",
+      "Ad Creative",
+    ],
+    scope: [
+      "Campaign concept ও creative direction",
+      "Product photography ও commercial shoots",
+      "Social media creative design",
+      "Motion graphics ও video editing",
+      "Reels, short-form video ও branded content",
+      "Advertising creative adaptation",
+    ],
+    idealClients: "Fashion, beauty, lifestyle, FMCG, food ও retail brands।",
   },
   {
-    id: "branding",
+    id: "campaigns-activation",
     number: "04.",
-    title: "Branding Systems",
-    summary:
-      "Complete design tokens, bespoke typographic systems, high-conversion UI/UX, and physical production collateral built for category leaders.",
-    tags: ["Visual Identity", "Digital UI/UX", "Packaging Systems", "Design Tokens"],
+    title: "Campaigns & Brand Activation",
+    tagline: "Turn ideas into real-world impact.",
+    tags: [
+      "Integrated Campaigns",
+      "Outdoor (OOH)",
+      "Billboard Design",
+      "Event Branding",
+      "Brand Activation",
+    ],
+    scope: [
+      "Integrated creative campaign",
+      "Outdoor advertising (OOH) creative",
+      "Billboard ও retail communication design",
+      "Launch campaign ও promotional concepts",
+      "Campaign asset development",
+      "Event branding ও brand activation creative",
+    ],
+    idealClients: "Established brands, retail chains, product launches ও campaign-driven businesses।",
+  },
+  {
+    id: "growth-strategy",
+    number: "05.",
+    title: "Growth & Creative Strategy",
+    tagline: "Connect creative thinking with business goals.",
+    tags: [
+      "Marketing Strategy",
+      "Paid Media",
+      "Meta Advertising",
+      "Creative Testing",
+      "Growth Consulting",
+    ],
+    scope: [
+      "Marketing ও communication strategy",
+      "Paid media planning ও campaign management",
+      "Meta advertising campaign execution",
+      "Creative testing ও performance analysis",
+      "Audience research ও funnel strategy",
+      "Monthly growth consulting",
+    ],
+    idealClients: "যাদের marketing চলছে, কিন্তু sustainable growth বা measurable results দরকার।",
   },
 ];
 
 export function Services() {
-  const [activeId, setActiveId] = useState<string>("strategy");
+  const [activeId, setActiveId] = useState<string>("brand-strategy");
 
   const toggleService = (id: string) => {
     setActiveId((prev) => (prev === id ? "" : id));
@@ -139,6 +218,11 @@ export function Services() {
                         className="overflow-hidden"
                       >
                         <div className="pt-6 sm:pt-8 pl-8 sm:pl-12">
+                          {/* Tagline / Core Statement */}
+                          <p className="text-[18px] sm:text-[22px] font-medium text-[#1D1D1F] tracking-tight mb-4">
+                            {item.tagline}
+                          </p>
+
                           {/* Tags Pill Row */}
                           <div className="inline-flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2 rounded-full border border-black/10 bg-white/80 shadow-sm mb-6">
                             {item.tags.map((tag, tIdx) => (
@@ -153,10 +237,23 @@ export function Services() {
                             ))}
                           </div>
 
-                          {/* Descriptive Paragraph */}
-                          <p className="text-[15px] sm:text-[17px] text-[#6E6E73] font-normal leading-relaxed max-w-2xl mb-6">
-                            {item.summary}
-                          </p>
+                          {/* Detailed Scope List */}
+                          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-2.5 max-w-3xl">
+                            {item.scope.map((point, pIdx) => (
+                              <div key={pIdx} className="flex items-start gap-2 text-[14px] sm:text-[15px] text-[#6E6E73]">
+                                <span className="text-[#9B1C22] font-bold leading-none mt-1 select-none">•</span>
+                                <span className="leading-snug">{point}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Ideal Clients */}
+                          <div className="pt-4 border-t border-black/[0.08] mb-6 max-w-3xl">
+                            <p className="text-[13px] text-[#6E6E73]">
+                              <span className="font-semibold text-[#1D1D1F]">Ideal clients: </span>
+                              {item.idealClients}
+                            </p>
+                          </div>
 
                           {/* Action Button */}
                           <div>
@@ -164,7 +261,7 @@ export function Services() {
                               href="/services"
                               className="inline-flex items-center gap-2 text-[13px] font-medium text-[#9B1C22] hover:text-[#82151B] transition-colors uppercase tracking-wider min-h-[44px]"
                             >
-                              <span>Explore System Specifications</span>
+                              <span>Explore Full Scope & Capabilities</span>
                               <span>&rarr;</span>
                             </Link>
                           </div>
