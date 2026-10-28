@@ -136,33 +136,69 @@ export function Services() {
   return (
     <section
       id="services"
-      className="relative w-full bg-[#F5F5F7] py-24 sm:py-32 md:py-40 px-6 md:px-12 text-[#1D1D1F] overflow-hidden border-t border-black/[0.08] select-none"
+      className="relative w-full bg-[#F5F5F7] py-16 sm:py-20 md:py-24 px-6 md:px-12 text-[#1D1D1F] overflow-hidden border-t border-black/[0.08]"
     >
-      {/* Subtle Noise Grain Texture */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-multiply">
-        <svg className="w-full h-full">
-          <filter id="services-noise">
-            <feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="3" stitchTiles="stitch" />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#services-noise)" />
-        </svg>
-      </div>
-
-      {/* Subtle Ambient Glow */}
-      <div className="absolute top-1/4 right-1/4 w-[500px] h-[350px] bg-[#9B1C22]/[0.035] blur-[160px] pointer-events-none rounded-full" />
-
-      <div className="max-w-[1440px] mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      <div className="max-w-[1360px] mx-auto relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
-          {/* Left Column: Services label and section intro */}
-          <div className="lg:col-span-4 flex flex-col justify-start">
-            <p className="text-[13px] sm:text-[14px] font-mono tracking-[0.18em] uppercase text-[#6E6E73] leading-relaxed">
-              services that <br />
-              we provide
+          {/* Left Column: Clear, concise sticky overview */}
+          <div className="lg:col-span-4 lg:sticky lg:top-28 flex flex-col justify-start">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#9B1C22]" />
+              <p className="text-[11px] font-mono tracking-[0.2em] uppercase text-[#6E6E73]">
+                Capabilities & Services
+              </p>
+            </div>
+
+            <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight text-[#1D1D1F] leading-tight mb-3">
+              The Creative Lab <br className="hidden sm:inline" />
+              & Systems.
+            </h2>
+
+            <p className="text-[14px] text-[#6E6E73] font-normal leading-relaxed mb-6 max-w-sm">
+              We engineer brand positioning, digital products, and cinematic campaigns built for scale and retention.
             </p>
+
+            {/* Quick-Filter Navigation */}
+            <div className="hidden lg:flex flex-col gap-1.5 pt-5 border-t border-black/[0.08]">
+              <span className="text-[10px] font-mono uppercase tracking-[0.16em] text-[#86868B] mb-1">
+                Select Discipline
+              </span>
+              {servicesData.map((item) => {
+                const isCurrent = activeId === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveId(item.id)}
+                    className={`flex items-center justify-between text-left px-3 py-2 rounded-lg text-[13px] transition-all duration-200 ${
+                      isCurrent
+                        ? "bg-white text-[#9B1C22] font-semibold shadow-sm border border-black/5"
+                        : "text-[#6E6E73] hover:text-[#1D1D1F] hover:bg-black/[0.02]"
+                    }`}
+                  >
+                    <span className="truncate pr-2">{item.title}</span>
+                    <span className="font-mono text-[11px] opacity-50">{item.number}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Compact CTA Note */}
+            <div className="mt-6 pt-5 border-t border-black/[0.08] hidden sm:block">
+              <p className="text-[12px] text-[#86868B] leading-relaxed mb-2">
+                Need a tailored combination across multiple disciplines?
+              </p>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors uppercase tracking-wider"
+              >
+                <span>Request Custom Brief</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
           </div>
 
-          {/* Right Column: Interactive Editorial Accordion List */}
+          {/* Right Column: Clean, Compact, Intuitive Accordion */}
           <div className="lg:col-span-8 flex flex-col border-t border-black/10">
             {servicesData.map((item) => {
               const isActive = activeId === item.id;
@@ -170,35 +206,36 @@ export function Services() {
               return (
                 <div
                   key={item.id}
-                  className="border-b border-black/10 transition-colors py-8 sm:py-10 cursor-pointer group"
+                  className={`border-b border-black/10 transition-all duration-200 py-5 sm:py-6 cursor-pointer ${
+                    isActive ? "bg-white/60 -mx-3 px-3 sm:-mx-5 sm:px-5 rounded-xl border-transparent" : "hover:bg-black/[0.01]"
+                  }`}
                   onClick={() => toggleService(item.id)}
                 >
-                  {/* Top Line: Number, Massive Title, and Red Action Dot */}
+                  {/* Top Line: Number, Scaled Title, and State Indicator */}
                   <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-baseline gap-4 sm:gap-6 flex-wrap">
-                      {/* Number in Creatiancy Brand Red */}
-                      <span className="text-[16px] sm:text-[20px] font-mono font-medium text-[#9B1C22] tracking-wider select-none">
+                    <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+                      <span className={`text-[13px] font-mono font-medium tracking-wider select-none ${
+                        isActive ? "text-[#9B1C22]" : "text-[#86868B]"
+                      }`}>
                         {item.number}
                       </span>
 
-                      {/* Display Title with Smooth Hover & Active State */}
                       <h3
-                        className={`text-[36px] sm:text-[54px] md:text-[68px] lg:text-[76px] font-medium tracking-[-0.03em] leading-[1.0] transition-colors ${
+                        className={`text-[20px] sm:text-[24px] md:text-[26px] font-medium tracking-tight transition-colors ${
                           isActive
                             ? "text-[#1D1D1F]"
-                            : "text-[#86868B]/70 group-hover:text-[#1D1D1F]"
+                            : "text-[#1D1D1F]/80 group-hover:text-[#1D1D1F]"
                         }`}
                       >
                         {item.title}
                       </h3>
                     </div>
 
-                    {/* Action Circle Indicator */}
                     <div
-                      className={`w-9 h-9 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                      className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 ${
                         isActive
-                          ? "bg-[#9B1C22] text-white shadow-[0_4px_16px_rgba(155,28,34,0.35)] scale-105"
-                          : "bg-black/[0.04] text-[#1D1D1F]/50 group-hover:bg-[#9B1C22] group-hover:text-white"
+                          ? "bg-[#9B1C22] text-white shadow-sm"
+                          : "bg-black/[0.04] text-[#1D1D1F]/60 group-hover:bg-black/[0.08]"
                       }`}
                     >
                       <span className="text-xs font-bold leading-none select-none">
@@ -207,61 +244,58 @@ export function Services() {
                     </div>
                   </div>
 
-                  {/* Active Expandable Drawer: Tags Pills & Summary */}
+                  {/* Active Content: Crisp, Scannable & Structured */}
                   <AnimatePresence>
                     {isActive && (
                       <motion.div
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.35, ease: "easeInOut" }}
+                        transition={{ duration: 0.25, ease: "easeInOut" }}
                         className="overflow-hidden"
                       >
-                        <div className="pt-6 sm:pt-8 pl-8 sm:pl-12">
-                          {/* Tagline / Core Statement */}
-                          <p className="text-[18px] sm:text-[22px] font-medium text-[#1D1D1F] tracking-tight mb-4">
+                        <div className="pt-4 sm:pt-5 pl-7 sm:pl-9">
+                          {/* Tagline */}
+                          <p className="text-[15px] sm:text-[16px] font-medium text-[#1D1D1F] tracking-tight mb-3">
                             {item.tagline}
                           </p>
 
-                          {/* Tags Pill Row */}
-                          <div className="inline-flex flex-wrap items-center gap-2 sm:gap-3 px-4 py-2 rounded-full border border-black/10 bg-white/80 shadow-sm mb-6">
-                            {item.tags.map((tag, tIdx) => (
-                              <React.Fragment key={tag}>
-                                <span className="text-[12px] sm:text-[13px] font-medium text-[#1D1D1F]/80">
-                                  {tag}
-                                </span>
-                                {tIdx < item.tags.length - 1 && (
-                                  <span className="text-[10px] text-black/30 select-none">&bull;</span>
-                                )}
-                              </React.Fragment>
+                          {/* Quick Deliverable Tags */}
+                          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-4">
+                            {item.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-white border border-black/[0.08] text-[#1D1D1F]/80 shadow-2xs"
+                              >
+                                {tag}
+                              </span>
                             ))}
                           </div>
 
-                          {/* Detailed Scope List */}
-                          <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-2.5 max-w-3xl">
+                          {/* Deliverables Scope Checklist */}
+                          <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl">
                             {item.scope.map((point, pIdx) => (
-                              <div key={pIdx} className="flex items-start gap-2 text-[14px] sm:text-[15px] text-[#6E6E73]">
-                                <span className="text-[#9B1C22] font-bold leading-none mt-1 select-none">•</span>
+                              <div 
+                                key={pIdx} 
+                                className="flex items-start gap-2 text-[13px] text-[#555558]"
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-[#9B1C22] shrink-0 mt-1.5" />
                                 <span className="leading-snug">{point}</span>
                               </div>
                             ))}
                           </div>
 
-                          {/* Ideal Clients */}
-                          <div className="pt-4 border-t border-black/[0.08] mb-6 max-w-3xl">
-                            <p className="text-[13px] text-[#6E6E73]">
-                              <span className="font-semibold text-[#1D1D1F]">Ideal clients: </span>
+                          {/* Ideal Fit & Action Row */}
+                          <div className="pt-3 border-t border-black/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <p className="text-[12px] text-[#6E6E73]">
+                              <span className="font-semibold text-[#1D1D1F]">Best for: </span>
                               {item.idealClients}
                             </p>
-                          </div>
-
-                          {/* Action Button */}
-                          <div>
                             <Link
-                              href="/services"
-                              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#9B1C22] hover:text-[#82151B] transition-colors uppercase tracking-wider min-h-[44px]"
+                              href="/contact"
+                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors whitespace-nowrap shrink-0 uppercase tracking-wider"
                             >
-                              <span>Explore Full Scope & Capabilities</span>
+                              <span>Start Project</span>
                               <span>&rarr;</span>
                             </Link>
                           </div>
