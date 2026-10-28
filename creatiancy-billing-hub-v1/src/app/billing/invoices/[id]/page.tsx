@@ -278,6 +278,24 @@ export default function InvoiceDetailsPage() {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
+  const handleWhatsAppShare = () => {
+    if (!invoice) return;
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app';
+    const docLink = publicUrl || `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
+    const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (invoice.currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+    const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+    const waUrl = cleanPhone
+      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+    if (typeof window !== 'undefined') {
+      const win = window.open(waUrl, '_blank');
+      if (!win) {
+        window.location.href = waUrl;
+      }
+    }
+  };
+
   const handleRotatePublicLink = async () => {
     if (!confirm('Rotate public link? Old link signatures will be invalidated immediately.')) return;
     setLinkActionLoading(true);
@@ -439,7 +457,7 @@ export default function InvoiceDetailsPage() {
 
       // Construct live dynamic mailto URL with secure invoice token link
       const origin = typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app';
-      const secureLink = `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
+      const secureLink = publicUrl || `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
       const fullBody = `${emailMessage}\n\n----------------------------------------\nDirect Public Invoice Link (Pay & View Online):\n${secureLink}`;
       
       const mailtoUrl = `mailto:${encodeURIComponent(emailRecipient)}?cc=${encodeURIComponent(emailCC)}&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(fullBody)}`;
@@ -842,15 +860,16 @@ export default function InvoiceDetailsPage() {
                 </button>
               )}
 
-              {/* Send via WhatsApp (Routes to preview with query param) */}
+              {/* Send via WhatsApp */}
               {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
-                <Link
-                  href={`/billing/invoices/${id}/preview?whatsapp=true`}
-                  className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#25D366] py-3 text-xs font-bold text-white hover:bg-[#128C7E] shadow-sm transition"
+                <button
+                  type="button"
+                  onClick={handleWhatsAppShare}
+                  className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#25D366] py-3 text-xs font-bold text-white hover:bg-[#128C7E] shadow-sm transition cursor-pointer"
                 >
                   <Send className="h-4 w-4" />
                   <span>Send via WhatsApp</span>
-                </Link>
+                </button>
               )}
 
               {/* Record manual payment trigger */}
