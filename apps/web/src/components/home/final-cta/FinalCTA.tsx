@@ -24,7 +24,7 @@ export const FinalCTA = () => {
 
         <div className="lg:col-span-4 flex flex-col sm:flex-row lg:flex-col gap-4">
           <ButtonLink 
-            href="/contact" 
+            href="/#contact" 
             variant="primary" 
             size="lg" 
             className="w-full justify-center"

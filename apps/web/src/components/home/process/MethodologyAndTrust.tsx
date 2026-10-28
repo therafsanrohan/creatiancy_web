@@ -45,7 +45,7 @@ export const MethodologyAndTrust = () => {
         {/* Minimalist Apple Header: Crisp & Straightforward */}
         <div className="pb-10 sm:pb-12 border-b border-black/[0.08] mb-10 sm:mb-12">
           <h2 className="text-[28px] sm:text-[36px] md:text-[40px] font-medium tracking-tight text-[#1D1D1F] leading-tight mb-2">
-            The Blueprint Protocol.
+            The Blueprint Protocol
           </h2>
           <p className="text-[14px] sm:text-[15px] text-[#6E6E73] font-normal max-w-xl">
             A structured, collaborative sequence engineered to take your brand from initial brief to production.

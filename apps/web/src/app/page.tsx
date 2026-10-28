@@ -44,6 +44,7 @@ import { LegacyMetrics } from "@/components/home/metrics/LegacyMetrics";
 import { Services } from "@/components/home/services/Services";
 import { MethodologyAndTrust } from "@/components/home/process/MethodologyAndTrust";
 import { Testimonials } from "@/components/home/testimonials/Testimonials";
+import { ContactSection } from "@/components/home/contact/ContactSection";
 
 export default function HomePage() {
   return (
@@ -61,6 +62,7 @@ export default function HomePage() {
         <Services />
         <MethodologyAndTrust />
         <Testimonials />
+        <ContactSection />
       </main>
     </div>
   );

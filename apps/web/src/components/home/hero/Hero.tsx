@@ -7,21 +7,33 @@ import Image from "next/image";
 export const Hero = () => {
   return (
     <section id="hero-section" className="relative w-full pt-36 sm:pt-40 md:pt-44 pb-24 sm:pb-32 px-6 md:px-12 bg-[#0C0708] overflow-hidden text-white">
-      {/* 1. Cinematic Silhouette Background with Brand Red (#9B1C22) Ambient Lighting */}
-      <div className="absolute inset-0 z-0 pointer-events-none select-none">
-        <Image
-          src="/hero/cinematic-silhouette.png"
-          alt="Creatiancy Studio Production & Creative Direction"
-          fill
-          priority
-          className="object-cover object-center opacity-85 mix-blend-screen scale-[1.02]"
+      {/* 1. Atmospheric Studio Background with Subtle Noise, Blur & Ambient Red Vignette */}
+      <div className="absolute inset-0 z-0 pointer-events-none select-none overflow-hidden">
+        {/* Soft Background Image - Low Opacity, Blurred, Atmospheric Depth */}
+        <div className="absolute inset-0 scale-[1.05] filter blur-[2.5px] contrast-[1.1] grayscale opacity-20 mix-blend-luminosity">
+          <Image
+            src="/hero/creative-studio-meeting.jpg"
+            alt="Creatiancy Strategic Creative Collaboration"
+            fill
+            priority
+            className="object-cover object-center"
+          />
+        </div>
+
+        {/* Subtle Film Grain Noise Overlay */}
+        <div 
+          className="absolute inset-0 opacity-[0.035] mix-blend-overlay pointer-events-none"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
         />
 
-        {/* Ambient Dark-Crimson Spotlight Glow */}
-        <div className="absolute inset-0 bg-radial-[at_50%_35%] from-[#9B1C22]/40 via-[#0C0708]/85 to-[#0C0708] pointer-events-none" />
+        {/* Ambient Dark-Crimson Spotlight Glow behind text */}
+        <div className="absolute inset-0 bg-radial-[at_50%_35%] from-[#9B1C22]/30 via-[#0C0708]/90 to-[#0C0708] pointer-events-none" />
 
-        {/* Soft dark base vignette at very bottom */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0C0708] to-transparent pointer-events-none" />
+        {/* Multi-directional soft edge fades */}
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-[#0C0708] to-transparent pointer-events-none" />
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-[#0C0708] to-transparent pointer-events-none" />
       </div>
 
       {/* 2. Editorial Studio Wireframe / Dimension Grid Lines (from reference) */}
@@ -55,7 +67,6 @@ export const Hero = () => {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4D5E] via-[#D32F38] to-[#9B1C22] font-normal">
               better thinking
             </span>
-            <span className="text-[#FF4D5E]">.</span>
           </h1>
         </div>
 
@@ -69,7 +80,15 @@ export const Hero = () => {
 
           <div className="lg:col-span-5 flex flex-col sm:flex-row lg:justify-end items-stretch sm:items-center gap-3 sm:gap-4 w-full">
             <Link
-              href="/contact"
+              href="/#contact"
+              onClick={(e) => {
+                const el = document.getElementById("contact");
+                if (el) {
+                  e.preventDefault();
+                  el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  window.history.replaceState(null, "", "/#contact");
+                }
+              }}
               className="group inline-flex items-center justify-center px-7 h-13 rounded-full text-[13px] font-medium tracking-wide bg-gradient-to-b from-[#A8242A] to-[#9B1C22] hover:from-[#9B1C22] hover:to-[#82151B] text-white transition-all duration-200 border border-[#9B1C22]/40 shadow-[0_4px_24px_rgba(155,28,34,0.45)] hover:shadow-[0_6px_30px_rgba(155,28,34,0.6)] min-h-[48px] active:scale-[0.99] w-full sm:w-auto text-center"
             >
               <span>Start a project</span>

@@ -4,14 +4,40 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ChevronUp } from "lucide-react";
+import { WorldMapVector } from "./WorldMapVector";
 
-// Global presence pins matching the real geographic world map coordinates (950x620 viewBox)
-const MAP_PINS = [
-  { city: "New York", x: 275, y: 220 },
-  { city: "London", x: 475, y: 175 },
-  { city: "Dubai", x: 590, y: 260 },
-  { city: "Dhaka", x: 675, y: 285 },
-  { city: "Sydney", x: 820, y: 460 },
+// Key global regions where Creatiancy delivers client engagements
+const REGION_PINS = [
+  { 
+    region: "Americas", 
+    city: "New York & Miami",
+    x: 235, 
+    y: 195 
+  },
+  { 
+    region: "Europe", 
+    city: "London & Berlin",
+    x: 488, 
+    y: 185 
+  },
+  { 
+    region: "Middle East", 
+    city: "Dubai & Riyadh",
+    x: 598, 
+    y: 280 
+  },
+  { 
+    region: "Asia", 
+    city: "Dhaka & Singapore",
+    x: 700, 
+    y: 275 
+  },
+  { 
+    region: "Oceania", 
+    city: "Sydney & Melbourne",
+    x: 825, 
+    y: 475 
+  },
 ];
 
 export default function WebsiteFooter() {
@@ -27,44 +53,53 @@ export default function WebsiteFooter() {
 
       <div className="max-w-[1360px] mx-auto flex flex-col items-center relative z-10">
         
-        {/* 1. Upper CTA Section with Actual Geographic World Map & Red Glowing Location Pins */}
+        {/* 1. Upper CTA Section with Organic Curve World Map & Precision Beacon Pins */}
         <div className="w-full flex flex-col items-center text-center mb-16 sm:mb-20">
           
-          {/* Actual World Map Container with Location Markers */}
-          <div className="relative w-full max-w-[960px] h-[260px] sm:h-[340px] md:h-[420px] flex items-center justify-center mb-8">
-            <div className="relative w-full h-full opacity-[0.35] text-white select-none pointer-events-none">
-              <Image
-                src="/images/actual_world_map.svg"
-                alt="Actual Geographic World Map"
-                fill
-                priority
-                className="object-contain filter invert opacity-95"
-              />
+          {/* Organic World Map Canvas (No Box Feel, Fades Organically) */}
+          <div className="relative w-full max-w-[1040px] h-[280px] sm:h-[360px] md:h-[460px] flex items-center justify-center mb-6">
+            
+            {/* Soft Ambient Glow centered on global delivery footprint */}
+            <div className="absolute inset-0 bg-radial-[at_50%_50%] from-[#9B1C22]/10 via-transparent to-transparent pointer-events-none" />
+
+            {/* Seamless Natural Dotted Continents */}
+            <div className="relative w-full h-full flex items-center justify-center select-none pointer-events-none">
+              <WorldMapVector />
             </div>
 
-            {/* Glowing Map Pins at Actual Geographic Coordinates */}
-            {MAP_PINS.map((pin) => (
+            {/* Premium Glowing Region Beacon Pins on Actual Continents */}
+            {REGION_PINS.map((pin) => (
               <div
-                key={pin.city}
+                key={pin.region}
                 style={{
                   left: `${(pin.x / 950) * 100}%`,
                   top: `${(pin.y / 620) * 100}%`,
                 }}
-                className="absolute -translate-x-1/2 -translate-y-full group cursor-pointer z-10"
+                className="absolute -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10"
               >
-                {/* Ping wave */}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-[#9B1C22] animate-ping opacity-75" />
+                {/* Outer Ping Wave */}
+                <span className="absolute inset-0 -m-1.5 rounded-full bg-[#FF4D5E] animate-ping opacity-60" />
                 
-                {/* Pin Icon with Brand Red Accent */}
-                <div className="relative flex items-center justify-center w-5 h-6 text-[#9B1C22] drop-shadow-[0_2px_10px_rgba(155,28,34,0.9)]">
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-full h-full">
-                    <path d="M12 0c-4.418 0-8 3.582-8 8 0 5.25 8 16 8 16s8-10.75 8-16c0-4.418-3.582-8-8-8zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
-                  </svg>
+                {/* Secondary Soft Pulse */}
+                <span className="absolute inset-0 -m-3 rounded-full bg-[#9B1C22]/40 animate-pulse pointer-events-none" />
+
+                {/* Sleek Modern Beacon Core */}
+                <div className="relative w-3.5 h-3.5 rounded-full bg-gradient-to-tr from-[#9B1C22] to-[#FF4D5E] border border-white/80 shadow-[0_0_14px_rgba(255,77,94,0.9)] flex items-center justify-center group-hover:scale-125 transition-transform duration-200">
+                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
                 </div>
 
-                {/* City Tooltip on Hover */}
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-black/90 text-white text-[10px] font-mono tracking-widest px-2 py-0.5 rounded pointer-events-none whitespace-nowrap border border-white/10 shadow-lg">
-                  {pin.city}
+                {/* Modern Floating Region Tag on Hover */}
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none whitespace-nowrap z-20 flex flex-col items-center">
+                  <div className="bg-[#140E0F]/95 backdrop-blur-md text-white px-3 py-1.5 rounded-lg border border-white/15 shadow-[0_8px_24px_rgba(0,0,0,0.6)] flex flex-col items-center">
+                    <span className="text-[11px] font-semibold text-[#FF4D5E] tracking-wide">
+                      {pin.region}
+                    </span>
+                    <span className="text-[10px] text-white/70 font-mono">
+                      {pin.city}
+                    </span>
+                  </div>
+                  {/* Small triangular tooltip arrow */}
+                  <div className="w-2 h-2 bg-[#140E0F] rotate-45 border-r border-b border-white/15 -mt-1" />
                 </div>
               </div>
             ))}
@@ -75,14 +110,44 @@ export default function WebsiteFooter() {
             We&apos;re eager to learn about your goals. Contact us today for a free consultation and discover how we can drive real results.
           </p>
 
-          {/* Unified Pill CTA Button: contact for work (clean circle container with minimalist dot) */}
+          {/* Creative, High-Impact & Understandable Footer CTA */}
           <Link
-            href="/contact"
-            className="group inline-flex items-center gap-3 px-8 h-12 sm:h-13 rounded-full bg-[#1F1E22] hover:bg-[#28272C] text-white border border-white/10 hover:border-white/20 transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.5)] active:scale-95 text-[13px] sm:text-[14px] font-medium tracking-wide uppercase min-h-[48px]"
+            href="/#contact"
+            className="group relative inline-flex items-center gap-4 px-8 sm:px-10 h-14 sm:h-15 rounded-full bg-gradient-to-b from-[#1C1718] to-[#120D0E] hover:from-[#261E20] hover:to-[#171213] text-white border border-[#9B1C22]/30 hover:border-[#FF5C6C]/60 transition-all duration-300 shadow-[0_4px_30px_rgba(155,28,34,0.35)] hover:shadow-[0_8px_40px_rgba(155,28,34,0.6)] active:scale-[0.98] min-h-[52px]"
           >
-            <span>contact for work</span>
-            <span className="w-7 h-7 rounded-full bg-white text-[#0C0708] flex items-center justify-center font-bold text-xs group-hover:bg-[#9B1C22] group-hover:text-white transition-colors">
-              <span className="w-2 h-2 rounded-full bg-current" />
+            {/* Subtle inner pulse glow */}
+            <span className="absolute inset-0 rounded-full bg-gradient-to-r from-[#9B1C22]/20 via-transparent to-[#9B1C22]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+
+            {/* Live Availability Status Dot */}
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#22C55E] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#22C55E]" />
+            </span>
+
+            {/* Clear, Understandable Copy */}
+            <div className="flex flex-col text-left">
+              <span className="text-[13px] sm:text-[14px] font-semibold tracking-wide text-white group-hover:text-white transition-colors">
+                Start a Project
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-mono text-[#86868B] group-hover:text-[#FF5C6C] transition-colors">
+                Available for H1 Engagements
+              </span>
+            </div>
+
+            {/* Creative Vector Icon Orb */}
+            <span className="w-8 h-8 rounded-full bg-gradient-to-b from-[#A8242A] to-[#9B1C22] group-hover:from-[#DC2626] group-hover:to-[#9B1C22] text-white flex items-center justify-center shadow-md transition-all duration-300 ml-1 group-hover:translate-x-0.5">
+              <svg 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+              >
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="7 7 17 7 17 17" />
+              </svg>
             </span>
           </Link>
 
@@ -122,10 +187,10 @@ export default function WebsiteFooter() {
                   Links
                 </span>
                 <Link href="/about" className="text-[13px] text-white/80 hover:text-white transition-colors">About</Link>
-                <Link href="/services" className="text-[13px] text-white/80 hover:text-white transition-colors underline decoration-white/30 underline-offset-4">Services</Link>
+                <Link href="/#services" className="text-[13px] text-white/80 hover:text-white transition-colors">Services</Link>
                 <Link href="/work" className="text-[13px] text-white/80 hover:text-white transition-colors">Project</Link>
                 <Link href="/insights" className="text-[13px] text-white/80 hover:text-white transition-colors">News</Link>
-                <Link href="/contact" className="text-[13px] text-white/80 hover:text-white transition-colors">Contact</Link>
+                <Link href="/#contact" className="text-[13px] text-white/80 hover:text-white transition-colors">Contact</Link>
               </div>
 
               {/* Col 3: Location & Contact */}
@@ -244,9 +309,6 @@ export default function WebsiteFooter() {
                 </Link>
                 <Link href="/about" className="hover:text-white transition-colors">
                   FAQs
-                </Link>
-                <Link href="/contact" className="hover:text-white transition-colors uppercase tracking-wider font-semibold">
-                  CONTACT
                 </Link>
 
                 {/* Scroll to top chevron button */}

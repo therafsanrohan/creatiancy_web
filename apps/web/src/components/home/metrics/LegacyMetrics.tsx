@@ -2,8 +2,6 @@
 
 import React from "react";
 import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 
 export const LegacyMetrics = () => {
   return (
@@ -21,12 +19,18 @@ export const LegacyMetrics = () => {
       />
 
       <div className="max-w-6xl mx-auto relative z-10">
-        {/* Massive Headline Section */}
-        <div className="text-center mb-16 sm:mb-20 md:mb-24">
-          <h2 className="text-[32px] sm:text-[52px] md:text-[68px] lg:text-[80px] font-bold tracking-tight uppercase leading-[1.05] sm:leading-[1.02] text-white">
-            WE DON&apos;T BUILD BRANDS.
-            <br />
-            <span className="text-[#9B1C22]">WE BUILD LEGACIES.</span>
+        {/* Massive Headline Section with Impressive Creative Blend */}
+        <div className="text-center mb-16 sm:mb-20 md:mb-24 relative">
+          {/* Subtle soft backdrop flare behind the headline */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[220px] bg-[#9B1C22]/15 blur-[120px] pointer-events-none rounded-full -z-10" />
+
+          <h2 className="text-[32px] sm:text-[52px] md:text-[68px] lg:text-[80px] font-bold tracking-tight uppercase leading-[1.05] sm:leading-[1.02]">
+            <span className="block bg-gradient-to-r from-white via-[#E5E5EA] to-[#A1A1A6] bg-clip-text text-transparent">
+              WE DON&apos;T BUILD BRANDS
+            </span>
+            <span className="block mt-1 sm:mt-2 bg-gradient-to-r from-[#FF5C6C] via-[#DC2626] to-[#9B1C22] bg-clip-text text-transparent drop-shadow-[0_4px_35px_rgba(155,28,34,0.45)]">
+              WE BUILD LEGACIES
+            </span>
           </h2>
         </div>
 
@@ -107,26 +111,6 @@ export const LegacyMetrics = () => {
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Transition Lead-in to Services: "SERVICES THAT DRIVE BRAND GROWTH" */}
-        <div className="mt-24 sm:mt-32 pt-12 sm:pt-16 border-t border-white/[0.08] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div>
-            <span className="text-[11px] sm:text-[12px] font-medium tracking-widest uppercase text-[#9B1C22] block mb-2">
-              Capabilities &amp; Infrastructure
-            </span>
-            <h3 className="text-[28px] sm:text-[38px] md:text-[46px] font-bold tracking-tight uppercase leading-[1.05] text-white">
-              SERVICES THAT DRIVE <span className="text-[#9B1C22]">BRAND GROWTH</span>
-            </h3>
-          </div>
-
-          <Link
-            href="/contact"
-            className="group relative inline-flex items-center justify-center gap-2.5 rounded-full min-h-[48px] px-8 text-[13px] font-semibold tracking-wider uppercase bg-[#9B1C22] hover:bg-[#82151B] text-white transition-all duration-300 shadow-[0_4px_20px_rgba(155,28,34,0.4)] hover:shadow-[0_6px_24px_rgba(155,28,34,0.6)] active:scale-95 shrink-0 border border-[#9B1C22]/40"
-          >
-            <span>Start Your Brand</span>
-            <ArrowRight className="w-4 h-4 text-white transition-transform duration-200 group-hover:translate-x-1" />
-          </Link>
         </div>
       </div>
     </section>

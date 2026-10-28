@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -128,7 +128,39 @@ const servicesData: ServiceItem[] = [
 ];
 
 export function Services() {
-  const [activeId, setActiveId] = useState<string>("brand-strategy");
+  const [activeId, setActiveId] = useState<string>("");
+  const sectionRef = React.useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    // Check if user came from another page wanting to view Creative Lab
+    if (typeof window !== "undefined") {
+      const target = sessionStorage.getItem("scroll_to_section");
+      if (target === "creative-lab") {
+        sessionStorage.removeItem("scroll_to_section");
+        setTimeout(() => {
+          sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
+      }
+    }
+
+    // Only auto-collapse when the section scrolls completely out of viewport
+    const sectionEl = sectionRef.current;
+    if (!sectionEl) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            setActiveId("");
+          }
+        });
+      },
+      { threshold: 0 } // fires when 0% of the section is visible
+    );
+
+    observer.observe(sectionEl);
+    return () => observer.disconnect();
+  }, []);
 
   const toggleService = (id: string) => {
     setActiveId((prev) => (prev === id ? "" : id));
@@ -136,7 +168,8 @@ export function Services() {
 
   return (
     <section
-      id="services"
+      ref={sectionRef}
+      id="creative-lab"
       className="relative w-full bg-[#F5F5F7] py-16 sm:py-20 md:py-24 px-6 md:px-12 text-[#1D1D1F] overflow-hidden border-t border-black/[0.08]"
     >
       <div className="max-w-[1360px] mx-auto relative z-10">
@@ -147,7 +180,7 @@ export function Services() {
 
             <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight text-[#1D1D1F] leading-tight mb-3">
               The Creative Lab <br className="hidden sm:inline" />
-              & Systems.
+              & Systems
             </h2>
 
             <p className="text-[14px] text-[#6E6E73] font-normal leading-relaxed mb-6 max-w-sm">
@@ -162,7 +195,15 @@ export function Services() {
                 Need a tailored combination across multiple disciplines?
               </p>
               <Link
-                href="/contact"
+                href="/#contact"
+                onClick={(e) => {
+                  const el = document.getElementById("contact");
+                  if (el) {
+                    e.preventDefault();
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                    window.history.replaceState(null, "", "/#contact");
+                  }
+                }}
                 className="group inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors uppercase tracking-wider"
               >
                 <span>Request Custom Brief</span>
@@ -265,7 +306,15 @@ export function Services() {
                               {item.idealClients}
                             </p>
                             <Link
-                              href="/contact"
+                              href="/#contact"
+                              onClick={(e) => {
+                                const el = document.getElementById("contact");
+                                if (el) {
+                                  e.preventDefault();
+                                  el.scrollIntoView({ behavior: "smooth", block: "start" });
+                                  window.history.replaceState(null, "", "/#contact");
+                                }
+                              }}
                               className="group inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors whitespace-nowrap shrink-0 uppercase tracking-wider"
                             >
                               <span>Start Project</span>

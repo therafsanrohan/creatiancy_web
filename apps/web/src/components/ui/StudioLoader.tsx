@@ -45,24 +45,24 @@ export const StudioLoader = () => {
             </svg>
           </div>
 
-          {/* Center Typographic Choreography: ONLY "Think" and "Together" */}
+          {/* Center Typographic Choreography: ONLY "THINK" and "TOGETHER" in ALL CAPS */}
           <div className="text-center flex flex-col items-center justify-center relative z-10 px-6">
             <motion.div
               initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-              className="text-[44px] sm:text-[68px] md:text-[92px] lg:text-[112px] font-medium tracking-[-0.04em] leading-none text-white/40"
+              className="text-[44px] sm:text-[68px] md:text-[92px] lg:text-[112px] font-bold tracking-[-0.04em] leading-none text-white/40 uppercase"
             >
-              Think
+              THINK
             </motion.div>
 
             <motion.div
               initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
               animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
               transition={{ duration: 0.75, ease: [0.16, 1, 0.3, 1], delay: 0.6 }}
-              className="text-[52px] sm:text-[80px] md:text-[108px] lg:text-[132px] font-medium tracking-[-0.045em] leading-[0.95] text-white mt-1 sm:mt-2"
+              className="text-[52px] sm:text-[80px] md:text-[108px] lg:text-[132px] font-bold tracking-[-0.04em] leading-[0.95] text-white mt-1 sm:mt-2 uppercase"
             >
-              Together<span className="text-[#9B1C22]">.</span>
+              TOGETHER
             </motion.div>
           </div>
         </motion.div>

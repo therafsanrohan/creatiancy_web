@@ -57,8 +57,22 @@ const SELECTED_WORKS = [
 ];
 
 export const Projects = () => {
+  const sectionRef = React.useRef<HTMLElement>(null);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const target = sessionStorage.getItem("scroll_to_section");
+      if (target === "selected-work") {
+        sessionStorage.removeItem("scroll_to_section");
+        setTimeout(() => {
+          sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 120);
+      }
+    }
+  }, []);
+
   return (
-    <section id="selected-work" className="py-24 sm:py-32 px-6 md:px-12 bg-[#F5F5F7] border-b border-black/[0.06]">
+    <section ref={sectionRef} id="selected-work" className="py-24 sm:py-32 px-6 md:px-12 bg-[#F5F5F7] border-b border-black/[0.06]">
       <div className="max-w-[1440px] mx-auto">
         
         {/* Section Header */}

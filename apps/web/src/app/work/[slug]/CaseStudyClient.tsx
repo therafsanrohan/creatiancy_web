@@ -87,7 +87,7 @@ export default function CaseStudyClient({ project }: { project: Record<string, a
                 External Showcase
               </a>
             )}
-            <ButtonLink href="/contact" variant="primary" size="md">
+            <ButtonLink href="/#contact" variant="primary" size="md">
               Start a Project
             </ButtonLink>
           </div>

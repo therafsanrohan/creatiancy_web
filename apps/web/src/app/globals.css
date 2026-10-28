@@ -17,8 +17,8 @@
 }
 
 @theme {
-  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-heading: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "Helvetica Neue", Helvetica, Arial, sans-serif;
 
   --color-void: #F5F5F7;
@@ -37,14 +37,14 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-stretch: normal !important;
+    font-stretch: 100% !important;
   }
   
   html {
     scroll-behavior: smooth;
     color-scheme: light;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-stretch: normal !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-stretch: 100% !important;
   }
 
   html, body {
@@ -52,8 +52,8 @@
     -webkit-tap-highlight-color: transparent;
     background-color: #F5F5F7;
     color: #1D1D1F;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-stretch: normal !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-stretch: 100% !important;
     font-synthesis: none;
   }
   
@@ -73,10 +73,15 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #1D1D1F;
     font-stretch: normal !important;
-    letter-spacing: -0.02em;
+    letter-spacing: normal;
+  }
+
+  .font-mono {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+    font-feature-settings: "tnum" on, "lnum" on;
   }
 }
 

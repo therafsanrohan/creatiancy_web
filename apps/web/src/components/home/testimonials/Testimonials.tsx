@@ -140,106 +140,90 @@ export const Testimonials = () => {
 
           </div>
 
-          {/* Right Column: Actual Geographic World Map ONLY behind Client Avatars */}
-          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[420px] sm:min-h-[500px] md:min-h-[560px]">
+          {/* Right Column: Invisible Axis Constellation (Active Client on Left, Others on Subtle Dark Side) */}
+          <div className="lg:col-span-6 relative flex items-center justify-center min-h-[380px] sm:min-h-[440px]">
             
-            {/* Real World Map Image strictly on the right side behind the avatars */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0 opacity-[0.22] text-white">
+            {/* Real World Map Image strictly in background */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0 opacity-[0.16] text-white">
               <Image
                 src="/images/actual_world_map.svg"
                 alt="Global Clients Map"
                 fill
-                className="object-contain filter invert opacity-90 scale-110"
+                className="object-contain filter invert opacity-90 scale-105"
               />
             </div>
 
-            {/* Floating Client Avatar Spheres Constellation */}
-            <div className="relative w-full h-[400px] sm:h-[480px] md:h-[540px] z-10">
-              
-              {/* Central Featured Avatar (Active Client with Red Spotlight Glow) */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                <div className="relative group cursor-pointer">
-                  {/* Atmospheric Red Halo Glow */}
-                  <div className="absolute -inset-3 rounded-full bg-gradient-to-br from-[#FF4D5E]/30 via-[#9B1C22]/40 to-transparent blur-lg pointer-events-none animate-pulse" />
-                  
-                  {/* Main Avatar Sphere */}
-                  <div className="relative w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full overflow-hidden border-2 border-[#9B1C22] shadow-[0_0_30px_rgba(155,28,34,0.5)] bg-gradient-to-br from-[#6E0F14] via-[#9B1C22] to-[#0C0708]">
-                    <Image
-                      src={current.avatar}
-                      alt={current.name}
-                      fill
-                      className="object-cover object-center filter saturate-125"
-                    />
-                    {/* Crimson vignette overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#9B1C22]/50 via-transparent to-transparent mix-blend-color-burn" />
-                  </div>
-                </div>
-              </div>
+            {/* Invisible Orbital Axis Track: Active Client Always on the Left Side, Others arranged on the right */}
+            <div className="relative w-full max-w-xl flex items-center justify-start gap-5 sm:gap-8 px-4 z-10">
+              {(() => {
+                const activeItem = clientTestimonials[currentIndex];
+                const otherItems = clientTestimonials
+                  .map((item, originalIndex) => ({ item, originalIndex }))
+                  .filter(({ originalIndex }) => originalIndex !== currentIndex);
+                
+                const orderedItems = [
+                  { item: activeItem, originalIndex: currentIndex, isActive: true },
+                  ...otherItems.map(o => ({ ...o, isActive: false }))
+                ];
 
-              {/* Orbiting Avatar 1: Top Right */}
-              <div 
-                onClick={() => setCurrentIndex(1)}
-                className="absolute top-4 sm:top-8 right-8 sm:right-16 md:right-20 z-10 cursor-pointer group"
-              >
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-white/15 bg-gradient-to-br from-[#A8242A]/40 to-black/80 shadow-lg group-hover:scale-105 group-hover:border-[#9B1C22] transition-all duration-300">
-                  <Image
-                    src={clientTestimonials[1].avatar}
-                    alt={clientTestimonials[1].name}
-                    fill
-                    className="object-cover opacity-75 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-              </div>
+                return orderedItems.map(({ item, originalIndex, isActive }) => {
+                  return (
+                    <motion.div
+                      layout
+                      key={item.id}
+                      onClick={() => setCurrentIndex(originalIndex)}
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      className="flex flex-col items-center cursor-pointer group select-none"
+                    >
+                      {/* Compact Avatar Frame with Dynamic Left/Right State */}
+                      <div className="relative">
+                        {/* Active Red Accent Halo */}
+                        {isActive && (
+                          <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-[#FF4D5E]/30 to-[#9B1C22]/40 blur-md pointer-events-none animate-pulse" />
+                        )}
 
-              {/* Orbiting Avatar 2: Mid Top Left */}
-              <div 
-                onClick={() => setCurrentIndex(2)}
-                className="absolute top-8 sm:top-12 left-8 sm:left-14 md:left-18 z-10 cursor-pointer group"
-              >
-                <div className="relative w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full overflow-hidden border border-white/15 bg-gradient-to-br from-[#A8242A]/40 to-black/80 shadow-lg group-hover:scale-105 group-hover:border-[#9B1C22] transition-all duration-300">
-                  <Image
-                    src={clientTestimonials[2].avatar}
-                    alt={clientTestimonials[2].name}
-                    fill
-                    className="object-cover opacity-75 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-              </div>
+                        {/* Avatar Image Frame */}
+                        <div
+                          className={`relative rounded-full overflow-hidden transition-all duration-500 ease-out ${
+                            isActive
+                              ? "w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 border-2 border-[#9B1C22] shadow-[0_0_28px_rgba(155,28,34,0.55)] scale-100"
+                              : "w-14 h-14 sm:w-16 sm:h-16 md:w-18 md:h-18 border border-white/10 opacity-35 group-hover:opacity-75 group-hover:border-white/30"
+                          } bg-[#151518]`}
+                        >
+                          <Image
+                            src={item.avatar}
+                            alt={item.name}
+                            fill
+                            className={`object-cover object-center transition-all duration-500 ${
+                              isActive
+                                ? "grayscale-0 contrast-105"
+                                : "grayscale brightness-75 group-hover:grayscale-0 group-hover:brightness-90"
+                            }`}
+                          />
+                          {/* Soft Dark Overlay for Inactive Clients */}
+                          {!isActive && (
+                            <div className="absolute inset-0 bg-black/45 group-hover:bg-transparent transition-colors" />
+                          )}
+                        </div>
+                      </div>
 
-              {/* Orbiting Avatar 3: Bottom Left */}
-              <div 
-                onClick={() => setCurrentIndex(0)}
-                className="absolute bottom-8 sm:bottom-12 left-10 sm:left-18 md:left-24 z-10 cursor-pointer group"
-              >
-                <div className="relative w-16 h-16 sm:w-18 sm:h-18 md:w-22 md:h-22 rounded-full overflow-hidden border border-white/15 bg-gradient-to-br from-[#A8242A]/40 to-black/80 shadow-lg group-hover:scale-105 group-hover:border-[#9B1C22] transition-all duration-300">
-                  <Image
-                    src={clientTestimonials[0].avatar}
-                    alt={clientTestimonials[0].name}
-                    fill
-                    className="object-cover opacity-75 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-              </div>
-
-              {/* Orbiting Avatar 4: Bottom Right */}
-              <div 
-                onClick={() => setCurrentIndex(1)}
-                className="absolute bottom-6 sm:bottom-10 right-10 sm:right-18 md:right-28 z-10 cursor-pointer group"
-              >
-                <div className="relative w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full overflow-hidden border border-white/15 bg-gradient-to-br from-[#A8242A]/40 to-black/80 shadow-lg group-hover:scale-105 group-hover:border-[#9B1C22] transition-all duration-300">
-                  <Image
-                    src={clientTestimonials[1].avatar}
-                    alt={clientTestimonials[1].name}
-                    fill
-                    className="object-cover opacity-65 group-hover:opacity-100 transition-opacity"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                </div>
-              </div>
-
+                      {/* Name & Location Indicator */}
+                      <div className="mt-3 text-center">
+                        <span
+                          className={`text-[12px] sm:text-[13px] font-medium tracking-tight block transition-colors ${
+                            isActive ? "text-white font-semibold" : "text-white/40 group-hover:text-white/70"
+                          }`}
+                        >
+                          {item.name.split(" ")[0]}
+                        </span>
+                        <span className="text-[10px] font-mono text-[#86868B] block">
+                          {item.location.split(",")[0]}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                });
+              })()}
             </div>
 
           </div>
