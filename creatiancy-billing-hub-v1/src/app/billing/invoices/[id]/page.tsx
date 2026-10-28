@@ -28,6 +28,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { generateInvoiceMessage } from '@/lib/templates/invoice-messages';
 
 export default function InvoiceDetailsPage() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function InvoiceDetailsPage() {
   // Modal and action states
   const [recordingPayment, setRecordingPayment] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Public Link & QR Code states
@@ -278,11 +280,32 @@ export default function InvoiceDetailsPage() {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
+  const getActiveDocLink = () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app';
+    return publicUrl || `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
+  };
+
+  const getDynamicMessageTemplates = () => {
+    if (!invoice) return null;
+    return generateInvoiceMessage({
+      clientName: client?.contact_person || client?.company_name || 'Valued Client',
+      projectName: invoice.project_name,
+      invoiceNumber: invoice.invoice_number || 'Draft',
+      status: invoice.status,
+      currency: invoice.currency,
+      totalPayable: totals.totalPayable,
+      amountPaid: totals.amountPaid,
+      amountDue: totals.amountDue,
+      dueDate: invoice.due_date,
+      publicUrl: getActiveDocLink(),
+      entityName: entity ? entity.legal_name : (invoice.currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC'),
+    });
+  };
+
   const handleWhatsAppShare = () => {
     if (!invoice) return;
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app';
-    const docLink = publicUrl || `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
-    const message = `Hello ${client?.contact_person || client?.company_name || 'Valued Client'},\n\nPlease find the official invoice ${invoice.invoice_number || 'Draft'} for ${invoice.project_name}.\n\nView & Download Digital Invoice:\n${docLink}\n\nThank you,\n${entity ? entity.legal_name : (invoice.currency === 'BDT' ? 'Creatiancy Limited' : 'Creatiancy LLC')}`;
+    const templates = getDynamicMessageTemplates();
+    const message = templates?.whatsApp || `Hello ${client?.contact_person || 'Client'}, please review your invoice: ${getActiveDocLink()}`;
     const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
     const waUrl = cleanPhone
       ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
@@ -293,6 +316,18 @@ export default function InvoiceDetailsPage() {
       if (!win) {
         window.location.href = waUrl;
       }
+    }
+  };
+
+  const handleSMSShare = () => {
+    if (!invoice) return;
+    const templates = getDynamicMessageTemplates();
+    const message = templates?.sms || `Invoice ${invoice.invoice_number}: ${getActiveDocLink()}`;
+    const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+    const smsUrl = cleanPhone ? `sms:${cleanPhone}?&body=${encodeURIComponent(message)}` : `sms:?&body=${encodeURIComponent(message)}`;
+    
+    if (typeof window !== 'undefined') {
+      window.location.href = smsUrl;
     }
   };
 
@@ -860,7 +895,27 @@ export default function InvoiceDetailsPage() {
                 </button>
               )}
 
-              {/* Send via WhatsApp */}
+              {/* Send / Reminder Multi-Channel Hub */}
+              {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
+                <button
+                  type="button"
+                  onClick={() => setShareModalOpen(true)}
+                  className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#9B1C22] py-3 text-xs font-bold text-white hover:bg-[#7D161B] shadow-sm transition cursor-pointer"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span>
+                    {invoice.status === 'paid'
+                      ? 'Share Paid Receipt (WA/SMS/Email)'
+                      : invoice.status === 'overdue'
+                      ? 'Send Overdue Reminder (WA/SMS/Email)'
+                      : invoice.status === 'partially_paid'
+                      ? 'Send Partial Balance Notice'
+                      : 'Share Invoice & Reminder'}
+                  </span>
+                </button>
+              )}
+
+              {/* Send via WhatsApp Direct */}
               {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
                 <button
                   type="button"
@@ -868,7 +923,7 @@ export default function InvoiceDetailsPage() {
                   className="w-full flex items-center justify-center space-x-2 rounded-xl bg-[#25D366] py-3 text-xs font-bold text-white hover:bg-[#128C7E] shadow-sm transition cursor-pointer"
                 >
                   <Send className="h-4 w-4" />
-                  <span>Send via WhatsApp</span>
+                  <span>Quick WhatsApp Share</span>
                 </button>
               )}
 
@@ -1211,6 +1266,151 @@ export default function InvoiceDetailsPage() {
           </div>
         </div>
       )}
+
+      {/* Multi-Channel Dynamic Share & Reminder Modal */}
+      {shareModalOpen && (() => {
+        const templates = getDynamicMessageTemplates();
+        const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
+        const waText = templates?.whatsApp || '';
+        const smsText = templates?.sms || '';
+        const emailBodyText = templates?.emailBody || '';
+        const emailSubText = templates?.emailSubject || '';
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 no-print">
+            <div className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 space-y-4 border border-gray-100 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+                <div className="flex items-center space-x-2">
+                  <div className="h-8 w-8 rounded-full bg-[#9B1C22]/10 flex items-center justify-center text-[#9B1C22]">
+                    <MessageCircle className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-gray-900">
+                      {invoice.status === 'paid'
+                        ? 'Share Payment Receipt'
+                        : invoice.status === 'overdue'
+                        ? 'Dispatch Overdue Reminder'
+                        : invoice.status === 'partially_paid'
+                        ? 'Share Partial Payment Notice'
+                        : 'Share Invoice & Payment Notice'}
+                    </h3>
+                    <p className="text-[11px] text-gray-500">Auto-tailored according to status: <span className="font-bold uppercase text-gray-700">{invoice.status}</span></p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShareModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 rounded-lg p-1"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Channel 1: WhatsApp */}
+              <div className="rounded-xl border border-gray-200 p-3.5 bg-gray-50/50 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+                    <span className="h-2 w-2 rounded-full bg-[#25D366]"></span>
+                    <span>WhatsApp Template</span>
+                  </span>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(waText);
+                        showNotif('Copied', 'WhatsApp message copied to clipboard.', 'success');
+                      }}
+                      className="px-2 py-1 text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleWhatsAppShare}
+                      className="px-2.5 py-1 text-[10px] font-bold text-white bg-[#25D366] hover:bg-[#128C7E] rounded-lg flex items-center space-x-1 cursor-pointer"
+                    >
+                      <Send className="h-3 w-3" />
+                      <span>Open WhatsApp</span>
+                    </button>
+                  </div>
+                </div>
+                <pre className="text-[11px] text-gray-700 bg-white p-2.5 rounded-lg border border-gray-200 font-sans whitespace-pre-wrap leading-relaxed">
+                  {waText}
+                </pre>
+              </div>
+
+              {/* Channel 2: SMS */}
+              <div className="rounded-xl border border-gray-200 p-3.5 bg-gray-50/50 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+                    <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                    <span>SMS Template ({smsText.length} chars)</span>
+                  </span>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(smsText);
+                        showNotif('Copied', 'SMS message copied to clipboard.', 'success');
+                      }}
+                      className="px-2 py-1 text-[10px] font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSMSShare}
+                      className="px-2.5 py-1 text-[10px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg flex items-center space-x-1 cursor-pointer"
+                    >
+                      <Send className="h-3 w-3" />
+                      <span>Open SMS App</span>
+                    </button>
+                  </div>
+                </div>
+                <pre className="text-[11px] text-gray-700 bg-white p-2.5 rounded-lg border border-gray-200 font-sans whitespace-pre-wrap leading-relaxed">
+                  {smsText}
+                </pre>
+              </div>
+
+              {/* Channel 3: Email */}
+              <div className="rounded-xl border border-gray-200 p-3.5 bg-gray-50/50 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+                    <span className="h-2 w-2 rounded-full bg-[#9B1C22]"></span>
+                    <span>Email Template</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmailSubject(emailSubText);
+                      setEmailMessage(emailBodyText);
+                      setShareModalOpen(false);
+                      setSendingEmail(true);
+                    }}
+                    className="px-2.5 py-1 text-[10px] font-bold text-white bg-[#9B1C22] hover:bg-[#7D161B] rounded-lg flex items-center space-x-1 cursor-pointer"
+                  >
+                    <Mail className="h-3 w-3" />
+                    <span>Send via Billing Email</span>
+                  </button>
+                </div>
+                <div className="text-[11px] text-gray-700 bg-white p-2.5 rounded-lg border border-gray-200 space-y-1">
+                  <div><span className="font-semibold text-gray-500">Subject:</span> {emailSubText}</div>
+                  <div className="pt-1 border-t border-gray-100 whitespace-pre-wrap leading-relaxed">{emailBodyText}</div>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShareModalOpen(false)}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* QR Code Capability Modal */}
       {qrModalOpen && (
