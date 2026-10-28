@@ -1,9 +1,23 @@
+import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { getSanitizedPublicInvoice } from '@/lib/services/public-invoice-service';
 import PublicInvoiceViewClient from './public-invoice-client';
 import { ShieldCheck } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
+};
 
 export default async function PublicInvoicePage({
   params
