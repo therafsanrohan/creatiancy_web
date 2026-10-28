@@ -75,47 +75,12 @@ export function Services() {
       <div className="max-w-[1440px] mx-auto relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           
-          {/* Left Column: Label, Heading, and Rotating Award-Winning Studio Stamp */}
-          <div className="lg:col-span-4 flex flex-col justify-between self-stretch">
-            <div>
-              <p className="text-[13px] sm:text-[14px] font-mono tracking-[0.18em] uppercase text-[#6E6E73] leading-relaxed mb-4">
-                services that <br />
-                we provide
-              </p>
-            </div>
-
-            {/* Circular Award Winning Agency Badge Stamp (Matching Reference Layout) */}
-            <div className="pt-16 lg:pt-32 hidden sm:flex items-center">
-              <div className="relative w-40 h-40 md:w-44 md:h-44 rounded-full border border-black/15 bg-white/70 backdrop-blur-md shadow-sm flex items-center justify-center p-3 group cursor-pointer hover:border-[#9B1C22]/40 transition-colors">
-                
-                {/* Circular Rotating Text SVG */}
-                <div className="absolute inset-0 w-full h-full animate-spin-slow">
-                  <svg viewBox="0 0 160 160" className="w-full h-full fill-current text-[#1D1D1F]">
-                    <path
-                      id="textRing"
-                      d="M 80, 80 m -60, 0 a 60,60 0 1,1 120,0 a 60,60 0 1,1 -120,0"
-                      fill="none"
-                    />
-                    <text className="text-[10.5px] font-mono uppercase tracking-[0.24em] font-medium opacity-80">
-                      <textPath href="#textRing" startOffset="0%">
-                        AWARD WINNING AGENCY &bull; SINCE 2022 &bull;
-                      </textPath>
-                    </text>
-                  </svg>
-                </div>
-
-                {/* Central Spiral / Interlocking Rings Emblem */}
-                <div className="relative w-16 h-16 flex items-center justify-center text-[#1D1D1F] group-hover:text-[#9B1C22] transition-colors">
-                  <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.8" className="w-14 h-14">
-                    <ellipse cx="40" cy="50" rx="14" ry="26" className="transform -rotate-12 origin-center" />
-                    <ellipse cx="50" cy="50" rx="14" ry="26" className="transform -rotate-6 origin-center" />
-                    <ellipse cx="60" cy="50" rx="14" ry="26" className="transform rotate-6 origin-center" />
-                    <ellipse cx="70" cy="50" rx="14" ry="26" className="transform rotate-12 origin-center" />
-                  </svg>
-                </div>
-
-              </div>
-            </div>
+          {/* Left Column: Services label and section intro */}
+          <div className="lg:col-span-4 flex flex-col justify-start">
+            <p className="text-[13px] sm:text-[14px] font-mono tracking-[0.18em] uppercase text-[#6E6E73] leading-relaxed">
+              services that <br />
+              we provide
+            </p>
           </div>
 
           {/* Right Column: Interactive Editorial Accordion List */}
