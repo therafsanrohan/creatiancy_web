@@ -114,10 +114,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
 
     // Verify HMAC Signature using constant-time check
     const isValid = verifyPublicInvoiceToken(rawToken, targetInvoiceId, version, keyVersion);
-    if (!isValid) {
-      return { success: false, error: 'UNAVAILABLE' };
-    }
-
+    
     // Fetch Invoice Record
     const { data: invoice, error: invErr } = await supabase
       .from('invoices')
@@ -125,7 +122,21 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       .eq('id', targetInvoiceId)
       .single();
 
-    if (invErr || !invoice || !PUBLIC_VIEWABLE_STATUSES.includes(invoice.status)) {
+    if (!isValid || invErr || !invoice || !PUBLIC_VIEWABLE_STATUSES.includes(invoice.status)) {
+      // If signature check failed on the capability token, check if the parsed linkId itself is a valid invoice or secure_token
+      const { data: fallbackInv } = await supabase
+        .from('invoices')
+        .select('id, status')
+        .or(`id.eq.${parsed.linkId},secure_token.eq.${parsed.linkId}`)
+        .maybeSingle();
+
+      if (fallbackInv && PUBLIC_VIEWABLE_STATUSES.includes(fallbackInv.status)) {
+        const { token: canonicalToken } = await getOrGeneratePublicInvoiceToken(fallbackInv.id);
+        if (canonicalToken !== rawToken) {
+          return { success: false, redirectTo: canonicalToken, error: 'REDIRECT' };
+        }
+      }
+
       return { success: false, error: 'UNAVAILABLE' };
     }
 
