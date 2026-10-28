@@ -121,9 +121,10 @@ export const LegacyMetrics = () => {
 
           <Link
             href="/contact"
-            className="inline-flex items-center justify-center rounded-full min-h-[48px] px-8 text-[13px] font-medium tracking-wide uppercase bg-white text-[#1D1D1F] hover:bg-[#9B1C22] hover:text-white transition-all duration-300 shadow-lg active:scale-95 shrink-0"
+            className="group relative inline-flex items-center justify-center gap-2 rounded-full min-h-[48px] px-8 text-[13px] font-semibold tracking-wider uppercase bg-[#9B1C22] hover:bg-[#82151B] text-white transition-all duration-300 shadow-[0_4px_20px_rgba(155,28,34,0.4)] hover:shadow-[0_6px_24px_rgba(155,28,34,0.6)] active:scale-95 shrink-0 border border-[#9B1C22]/40"
           >
-            Start Your Brand
+            <span>Start Your Brand</span>
+            <span className="text-white/80 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
           </Link>
         </div>
       </div>

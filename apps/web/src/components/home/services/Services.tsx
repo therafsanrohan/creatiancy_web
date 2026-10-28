@@ -143,12 +143,6 @@ export function Services() {
           
           {/* Left Column: Clear, concise sticky overview */}
           <div className="lg:col-span-4 lg:sticky lg:top-28 flex flex-col justify-start">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#9B1C22]" />
-              <p className="text-[11px] font-mono tracking-[0.2em] uppercase text-[#6E6E73]">
-                Capabilities & Services
-              </p>
-            </div>
 
             <h2 className="text-[26px] sm:text-[32px] font-medium tracking-tight text-[#1D1D1F] leading-tight mb-3">
               The Creative Lab <br className="hidden sm:inline" />
