@@ -1,5 +1,7 @@
 /**
- * Helper to generate status-aware communication messages for Email, SMS, and WhatsApp.
+ * Enhanced status-aware communication engine for WhatsApp, SMS, Email, and Copy.
+ * Supports Unicode, channel-appropriate formatting (*bold*, _italic_), emojis,
+ * and SMS segment/length estimation.
  */
 
 export interface MessageTemplateData {
@@ -21,7 +23,35 @@ export function formatCurrencyDisplay(amount: number, currency: string = 'BDT'):
   return `${symbol}${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-export function generateInvoiceMessage(data: MessageTemplateData) {
+/**
+ * Calculates estimated SMS character count and GSM-7 vs UCS-2 segment count.
+ */
+export function estimateSmsSegments(text: string): { chars: number; encoding: 'GSM-7' | 'UCS-2'; segments: number } {
+  const chars = Array.from(text).length;
+  // Check for non-GSM-7 characters (emojis, Bengali characters, etc.)
+  const isUcs2 = /[^\u0020-\u007E\r\n]/.test(text);
+
+  if (isUcs2) {
+    // UCS-2 (Unicode SMS): 70 chars for single segment, 67 chars/segment if concatenated
+    const segments = chars <= 70 ? 1 : Math.ceil(chars / 67);
+    return { chars, encoding: 'UCS-2', segments };
+  } else {
+    // GSM-7 (Standard ASCII SMS): 160 chars for single segment, 153 chars/segment if concatenated
+    const segments = chars <= 160 ? 1 : Math.ceil(chars / 153);
+    return { chars, encoding: 'GSM-7', segments };
+  }
+}
+
+export interface GeneratedChannelMessages {
+  emailSubject: string;
+  emailBody: string;
+  whatsApp: string;
+  sms: string;
+  plainCopy: string;
+  smsStats: { chars: number; encoding: 'GSM-7' | 'UCS-2'; segments: number };
+}
+
+export function generateInvoiceMessage(data: MessageTemplateData): GeneratedChannelMessages {
   const {
     clientName,
     projectName,
@@ -40,11 +70,16 @@ export function generateInvoiceMessage(data: MessageTemplateData) {
   const paidStr = formatCurrencyDisplay(amountPaid, currency);
   const dueStr = formatCurrencyDisplay(amountDue, currency);
 
+  let emailSubject = '';
+  let emailBody = '';
+  let whatsApp = '';
+  let sms = '';
+  let plainCopy = '';
+
   switch (status) {
     case 'paid': {
-      return {
-        emailSubject: `Receipt & Paid Confirmation: Invoice ${invoiceNumber} - ${entityName}`,
-        emailBody: `Dear ${clientName},
+      emailSubject = `Receipt & Paid Confirmation: Invoice ${invoiceNumber} - ${entityName}`;
+      emailBody = `Dear ${clientName},
 
 We are pleased to confirm receipt of your payment in full for invoice ${invoiceNumber} (${projectName}).
 
@@ -58,9 +93,9 @@ ${publicUrl}
 Thank you for your business and partnership!
 
 Warm regards,
-${entityName}`,
-        
-        whatsApp: `Hello ${clientName},
+${entityName}`;
+
+      whatsApp = `Hello ${clientName},
 
 ✅ *Payment Received & Confirmed*
 Invoice: *${invoiceNumber}* (${projectName})
@@ -70,16 +105,27 @@ Total Paid: *${totalStr}*
 📄 *Official Digital Receipt & Invoice:*
 ${publicUrl}
 
-Thank you for choosing ${entityName}!`,
+Thank you for choosing ${entityName}!`;
 
-        sms: `Dear ${clientName}, payment of ${totalStr} for invoice ${invoiceNumber} is confirmed. Status: PAID. View receipt: ${publicUrl} - ${entityName}`,
-      };
+      sms = `Dear ${clientName}, payment of ${totalStr} for invoice ${invoiceNumber} is confirmed. Status: PAID. View receipt: ${publicUrl} - ${entityName}`;
+
+      plainCopy = `Hello ${clientName},
+
+Payment Received & Confirmed
+Invoice: ${invoiceNumber} (${projectName})
+Status: PAID IN FULL
+Total Paid: ${totalStr}
+
+Official Digital Receipt & Invoice:
+${publicUrl}
+
+Thank you for choosing ${entityName}!`;
+      break;
     }
 
     case 'partially_paid': {
-      return {
-        emailSubject: `Payment Received (Partial): Invoice ${invoiceNumber} - ${entityName}`,
-        emailBody: `Dear ${clientName},
+      emailSubject = `Payment Received (Partial): Invoice ${invoiceNumber} - ${entityName}`;
+      emailBody = `Dear ${clientName},
 
 Thank you for your recent payment towards invoice ${invoiceNumber} (${projectName}).
 
@@ -93,9 +139,9 @@ Please review your updated invoice and payment history here:
 ${publicUrl}
 
 Thank you,
-${entityName}`,
+${entityName}`;
 
-        whatsApp: `Hello ${clientName},
+      whatsApp = `Hello ${clientName},
 
 💳 *Payment Received (Partial)*
 Invoice: *${invoiceNumber}* (${projectName})
@@ -107,16 +153,29 @@ Due Date: *${dueDate}*
 ${publicUrl}
 
 Thank you,
-${entityName}`,
+${entityName}`;
 
-        sms: `Dear ${clientName}, received ${paidStr} for inv ${invoiceNumber}. Remaining due: ${dueStr} (Due: ${dueDate}). Pay online: ${publicUrl} - ${entityName}`,
-      };
+      sms = `Dear ${clientName}, received ${paidStr} for inv ${invoiceNumber}. Remaining due: ${dueStr} (Due: ${dueDate}). Pay online: ${publicUrl} - ${entityName}`;
+
+      plainCopy = `Hello ${clientName},
+
+Payment Received (Partial)
+Invoice: ${invoiceNumber} (${projectName})
+Amount Paid: ${paidStr}
+Remaining Balance: ${dueStr}
+Due Date: ${dueDate}
+
+View Updated Invoice & Settle Balance:
+${publicUrl}
+
+Thank you,
+${entityName}`;
+      break;
     }
 
     case 'overdue': {
-      return {
-        emailSubject: `URGENT / OVERDUE REMINDER: Invoice ${invoiceNumber} - ${entityName}`,
-        emailBody: `Dear ${clientName},
+      emailSubject = `URGENT / OVERDUE REMINDER: Invoice ${invoiceNumber} - ${entityName}`;
+      emailBody = `Dear ${clientName},
 
 This is an urgent reminder that payment for invoice ${invoiceNumber} (${projectName}) is currently OVERDUE. The scheduled due date was ${dueDate}.
 
@@ -130,9 +189,9 @@ ${publicUrl}
 If you have already processed this transaction, kindly reply with the transaction reference so we can reconcile it promptly.
 
 Sincerely,
-${entityName}`,
+${entityName}`;
 
-        whatsApp: `Hello ${clientName},
+      whatsApp = `Hello ${clientName},
 
 ⚠️ *Overdue Payment Reminder*
 Invoice *${invoiceNumber}* for *${projectName}* is currently overdue since *${dueDate}*.
@@ -146,17 +205,32 @@ ${publicUrl}
 If payment has already been made, please share the transaction slip/reference.
 
 Thank you,
-${entityName}`,
+${entityName}`;
 
-        sms: `REMINDER: Invoice ${invoiceNumber} is OVERDUE since ${dueDate}. Outstanding amount: ${dueStr}. Please pay via: ${publicUrl} - ${entityName}`,
-      };
+      sms = `REMINDER: Invoice ${invoiceNumber} is OVERDUE since ${dueDate}. Outstanding amount: ${dueStr}. Please pay via: ${publicUrl} - ${entityName}`;
+
+      plainCopy = `Hello ${clientName},
+
+Overdue Payment Reminder
+Invoice ${invoiceNumber} for ${projectName} is currently overdue since ${dueDate}.
+
+• Outstanding Amount: ${dueStr}
+• Status: OVERDUE
+
+Review & Settle Online Now:
+${publicUrl}
+
+If payment has already been made, please share the transaction slip/reference.
+
+Thank you,
+${entityName}`;
+      break;
     }
 
     default: {
       // approved, sent, viewed
-      return {
-        emailSubject: `Official Invoice ${invoiceNumber} for ${projectName} - ${entityName}`,
-        emailBody: `Dear ${clientName},
+      emailSubject = `Official Invoice ${invoiceNumber} for ${projectName} - ${entityName}`;
+      emailBody = `Dear ${clientName},
 
 Please find the official digital invoice ${invoiceNumber} for ${projectName}.
 
@@ -170,9 +244,9 @@ ${publicUrl}
 Thank you for your business!
 
 Best regards,
-${entityName}`,
+${entityName}`;
 
-        whatsApp: `Hello ${clientName},
+      whatsApp = `Hello ${clientName},
 
 📄 *Official Invoice ${invoiceNumber}*
 Project: *${projectName}*
@@ -183,10 +257,34 @@ Due Date: *${dueDate}*
 ${publicUrl}
 
 Thank you,
-${entityName}`,
+${entityName}`;
 
-        sms: `Dear ${clientName}, invoice ${invoiceNumber} (${totalStr}) for ${projectName} is ready. Due: ${dueDate}. View & pay: ${publicUrl} - ${entityName}`,
-      };
+      sms = `Dear ${clientName}, invoice ${invoiceNumber} (${totalStr}) for ${projectName} is ready. Due: ${dueDate}. View & pay: ${publicUrl} - ${entityName}`;
+
+      plainCopy = `Hello ${clientName},
+
+Official Invoice ${invoiceNumber}
+Project: ${projectName}
+Total Payable: ${totalStr}
+Due Date: ${dueDate}
+
+View & Pay Online:
+${publicUrl}
+
+Thank you,
+${entityName}`;
+      break;
     }
   }
+
+  const smsStats = estimateSmsSegments(sms);
+
+  return {
+    emailSubject,
+    emailBody,
+    whatsApp,
+    sms,
+    plainCopy,
+    smsStats,
+  };
 }

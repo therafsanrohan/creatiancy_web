@@ -113,7 +113,17 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     }
 
     // Verify HMAC Signature using constant-time check
-    const isValid = verifyPublicInvoiceToken(rawToken, targetInvoiceId, version, keyVersion);
+    let isValid = verifyPublicInvoiceToken(rawToken, targetInvoiceId, version, keyVersion);
+
+    // If version > 1, also check previous versions (e.g. version 1) so clients with previously issued links aren't rejected!
+    if (!isValid && version > 1) {
+      for (let prevV = version - 1; prevV >= 1; prevV--) {
+        if (verifyPublicInvoiceToken(rawToken, targetInvoiceId, prevV, keyVersion)) {
+          isValid = true;
+          break;
+        }
+      }
+    }
     
     // Fetch Invoice Record
     const { data: invoice, error: invErr } = await supabase
@@ -123,11 +133,11 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       .single();
 
     if (!isValid || invErr || !invoice || !PUBLIC_VIEWABLE_STATUSES.includes(invoice.status)) {
-      // If signature check failed on the capability token, check if the parsed linkId itself is a valid invoice or secure_token
+      // If signature check failed on the capability token, check if the parsed linkId or targetInvoiceId matches a valid invoice
       const { data: fallbackInv } = await supabase
         .from('invoices')
         .select('id, status')
-        .or(`id.eq.${parsed.linkId},secure_token.eq.${parsed.linkId}`)
+        .or(`id.eq.${targetInvoiceId},id.eq.${parsed.linkId},secure_token.eq.${parsed.linkId}`)
         .maybeSingle();
 
       if (fallbackInv && PUBLIC_VIEWABLE_STATUSES.includes(fallbackInv.status)) {
@@ -138,6 +148,12 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       }
 
       return { success: false, error: 'UNAVAILABLE' };
+    }
+
+    // If the token was valid under an older version or linkId, auto-redirect to the latest canonical token for freshness
+    const { token: currentCanonicalToken } = await getOrGeneratePublicInvoiceToken(invoice.id);
+    if (currentCanonicalToken && currentCanonicalToken !== rawToken) {
+      return { success: false, redirectTo: currentCanonicalToken, error: 'REDIRECT' };
     }
 
     // Fetch Snapshot if available

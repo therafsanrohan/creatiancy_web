@@ -1341,10 +1341,13 @@ export default function InvoiceDetailsPage() {
               {/* Channel 2: SMS */}
               <div className="rounded-xl border border-gray-200 p-3.5 bg-gray-50/50 space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+                  <div className="flex items-center space-x-1.5">
                     <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                    <span>SMS Template ({smsText.length} chars)</span>
-                  </span>
+                    <span className="font-bold text-xs text-gray-800">SMS Template</span>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      ({templates?.smsStats.chars} chars • {templates?.smsStats.segments} {templates?.smsStats.segments === 1 ? 'part' : 'parts'} {templates?.smsStats.encoding})
+                    </span>
+                  </div>
                   <div className="flex gap-1.5">
                     <button
                       type="button"
@@ -1396,6 +1399,29 @@ export default function InvoiceDetailsPage() {
                   <div><span className="font-semibold text-gray-500">Subject:</span> {emailSubText}</div>
                   <div className="pt-1 border-t border-gray-100 whitespace-pre-wrap leading-relaxed">{emailBodyText}</div>
                 </div>
+              </div>
+
+              {/* Channel 4: Clean Plain Text Copy */}
+              <div className="rounded-xl border border-gray-200 p-3.5 bg-gray-50/50 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs text-gray-800 flex items-center space-x-1.5">
+                    <span className="h-2 w-2 rounded-full bg-gray-400"></span>
+                    <span>Plain Text (Messenger / Teams / Slack)</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(templates?.plainCopy || '');
+                      showNotif('Copied', 'Clean plain text copied to clipboard.', 'success');
+                    }}
+                    className="px-2.5 py-1 text-[10px] font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg flex items-center space-x-1 cursor-pointer"
+                  >
+                    <span>Copy Text</span>
+                  </button>
+                </div>
+                <pre className="text-[11px] text-gray-700 bg-white p-2.5 rounded-lg border border-gray-200 font-sans whitespace-pre-wrap leading-relaxed">
+                  {templates?.plainCopy}
+                </pre>
               </div>
 
               <div className="flex justify-end pt-2 border-t border-gray-100">
