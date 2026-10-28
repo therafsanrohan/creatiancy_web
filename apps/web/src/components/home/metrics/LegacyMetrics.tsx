@@ -3,6 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export const LegacyMetrics = () => {
   return (
@@ -121,10 +122,10 @@ export const LegacyMetrics = () => {
 
           <Link
             href="/contact"
-            className="group relative inline-flex items-center justify-center gap-2 rounded-full min-h-[48px] px-8 text-[13px] font-semibold tracking-wider uppercase bg-[#9B1C22] hover:bg-[#82151B] text-white transition-all duration-300 shadow-[0_4px_20px_rgba(155,28,34,0.4)] hover:shadow-[0_6px_24px_rgba(155,28,34,0.6)] active:scale-95 shrink-0 border border-[#9B1C22]/40"
+            className="group relative inline-flex items-center justify-center gap-2.5 rounded-full min-h-[48px] px-8 text-[13px] font-semibold tracking-wider uppercase bg-[#9B1C22] hover:bg-[#82151B] text-white transition-all duration-300 shadow-[0_4px_20px_rgba(155,28,34,0.4)] hover:shadow-[0_6px_24px_rgba(155,28,34,0.6)] active:scale-95 shrink-0 border border-[#9B1C22]/40"
           >
             <span>Start Your Brand</span>
-            <span className="text-white/80 group-hover:translate-x-0.5 transition-transform">&rarr;</span>
+            <ArrowRight className="w-4 h-4 text-white transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 interface ServiceItem {
   id: string;
@@ -184,10 +185,10 @@ export function Services() {
               </p>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors uppercase tracking-wider"
+                className="group inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors uppercase tracking-wider"
               >
                 <span>Request Custom Brief</span>
-                <span>&rarr;</span>
+                <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
           </div>
@@ -287,10 +288,10 @@ export function Services() {
                             </p>
                             <Link
                               href="/contact"
-                              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors whitespace-nowrap shrink-0 uppercase tracking-wider"
+                              className="group inline-flex items-center gap-1.5 text-xs font-semibold text-[#9B1C22] hover:text-[#82151B] transition-colors whitespace-nowrap shrink-0 uppercase tracking-wider"
                             >
                               <span>Start Project</span>
-                              <span>&rarr;</span>
+                              <ArrowUpRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                             </Link>
                           </div>
                         </div>

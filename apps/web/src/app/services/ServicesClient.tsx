@@ -76,8 +76,9 @@ whileInView={{ opacity: 1, y: 0 }}
               <div className="space-y-4 sm:col-span-3 lg:col-span-1">
                 <Text variant="small" className="uppercase font-bold tracking-widest text-[var(--ruby-red)] border-b border-[var(--border)] pb-2">The Outcome</Text>
                 <Text className="font-semibold">{svc.outcome}</Text>
-                <CustomLink href="/contact" className="inline-block text-xs font-bold text-[var(--ruby-red)] hover:underline mt-4">
-                  Start a project &rarr;
+                <CustomLink href="/contact" className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--ruby-red)] hover:underline mt-4 group">
+                  <span>Start a project</span>
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
                 </CustomLink>
               </div>
             </Grid>
