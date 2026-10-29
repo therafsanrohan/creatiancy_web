@@ -20,8 +20,8 @@ const clientTestimonials: ClientTestimonial[] = [
     name: "Hector Oviedo",
     role: "Founder & CEO, OMNI CONNECTS",
     quote:
-      "Creatiancy brought clarity and order to our entire identity. They don't just design — they understand SaaS architecture, commercial strategy, and how to build systems that scale effortlessly.",
-    avatar: "/images/founder_v2.png",
+      "Amazing company to work with. They treat you like family with respect and kindness and customer service is A+. A company driven to meet your standards.",
+    avatar: "/clients/hector_img.jpg",
     location: "Miami, USA",
   },
   {
@@ -32,15 +32,6 @@ const clientTestimonials: ClientTestimonial[] = [
       "The communication was exceptional, and they are masters at their craft. They made sure to deliver the absolute best and worked relentlessly with us to achieve world-class results.",
     avatar: "/clients/Awais_img.webp",
     location: "London, UK",
-  },
-  {
-    id: "elcardo",
-    name: "Tariq Rahman",
-    role: "Managing Director, Elcardo Industrial",
-    quote:
-      "A complete paradigm shift for our industrial brand. The UI/UX architecture and brand positioning elevated our global presence and generated an immediate surge in enterprise inquiries.",
-    avatar: "/clients/hector_img.jpg",
-    location: "Global Enterprise",
   },
 ];
 
