@@ -225,6 +225,7 @@ export default function InvoiceDocument({ document: doc }: Props) {
             PAYMENT & REMITTANCE INSTRUCTIONS
           </span>
           
+          {/* Row 1: Bank Details & Mobile Wallets (2 columns on md+, stacked on mobile) */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             {/* Bank Account Box */}
             {doc.bankAccount ? (
@@ -243,7 +244,7 @@ export default function InvoiceDocument({ document: doc }: Props) {
               <p className="text-gray-400 italic text-xs">No bank account details specified.</p>
             )}
 
-            {/* Mobile Wallets & Instructions */}
+            {/* Mobile Wallets & Notes Box */}
             <div className="space-y-2">
               {isBdt && (doc.entity.bkashMerchant || doc.entity.nagadMerchant) && (
                 <div className="rounded-xl border border-gray-200/70 bg-gray-50 p-3 space-y-1.5">
@@ -265,50 +266,6 @@ export default function InvoiceDocument({ document: doc }: Props) {
                 </div>
               )}
 
-              {/* Bangla QR (Scan to Pay - Bangladesh Bank standard / bKash merchant) */}
-              {isBdt && (doc.entity.code === 'CLTD' || doc.entity.name?.toLowerCase().includes('creatiancy limited')) && (
-                <div className="rounded-xl border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-50/70 via-white to-emerald-50/30 p-3 flex items-center justify-between gap-3 shadow-xs">
-                  <div className="flex items-center space-x-3.5">
-                    {/* High-res large QR Frame */}
-                    <div className="relative rounded-xl bg-white p-2 border-2 border-emerald-300 shadow-sm shrink-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/logos/QR/bkashBanglaQR.svg"
-                        alt="Bangla QR Code - Scan to Pay"
-                        width={112}
-                        height={112}
-                        className="rounded-md w-28 h-28 object-contain"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <span className="font-black text-gray-900 text-sm tracking-tight">Bangla QR</span>
-                        <span className="text-[10px] font-black bg-[#9B1C22] text-white px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
-                          Easy Pay
-                        </span>
-                      </div>
-                      <p className="text-xs font-bold text-emerald-800">
-                        Scan for Easy Pay
-                      </p>
-                      <p className="text-gray-600 text-[10px] leading-relaxed max-w-[210px]">
-                        Scan with <strong>bKash</strong>, <strong>Nagad</strong>, or any <strong>Bangla QR</strong> enabled banking app to pay instantly.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="shrink-0 flex flex-col items-center justify-center pr-1.5 pl-2 border-l border-emerald-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/logos/QR/Bangla_QR_Logo.svg"
-                      alt="Bangla QR Official Logo"
-                      width={48}
-                      height={58}
-                      className="object-contain"
-                    />
-                    <span className="text-[8px] font-bold text-gray-500 mt-1 uppercase tracking-tight">Bangladesh Bank</span>
-                  </div>
-                </div>
-              )}
-
               {doc.paymentInstructions && (
                 <div className="rounded-xl bg-gray-50 p-2.5 border border-gray-200/70 text-[11px] text-gray-700 leading-relaxed italic">
                   {doc.paymentInstructions}
@@ -316,6 +273,50 @@ export default function InvoiceDocument({ document: doc }: Props) {
               )}
             </div>
           </div>
+
+          {/* Row 2: Bangla QR (Dedicated Full Width Row - Large Scan Code for instant scanning) */}
+          {isBdt && (doc.entity.code === 'CLTD' || doc.entity.name?.toLowerCase().includes('creatiancy limited')) && (
+            <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-50/80 via-white to-emerald-50/40 p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+              <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left w-full sm:w-auto">
+                {/* Massive High-Res QR Code (Direct scan, zero wasted margin) */}
+                <div className="relative rounded-2xl bg-white p-2 border-2 border-emerald-400 shadow-md shrink-0">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/logos/QR/bkashBanglaQR.svg"
+                    alt="Bangla QR Code - Scan to Pay"
+                    width={150}
+                    height={150}
+                    className="w-36 h-36 sm:w-40 sm:h-40 rounded-xl object-contain block"
+                  />
+                </div>
+                <div className="space-y-1.5 max-w-sm">
+                  <div className="flex items-center justify-center sm:justify-start space-x-2">
+                    <span className="font-black text-gray-900 text-base sm:text-lg tracking-tight">Bangla QR</span>
+                    <span className="text-[10px] font-black bg-[#9B1C22] text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+                      Easy Pay
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-emerald-800">
+                    Scan for Easy Pay
+                  </p>
+                  <p className="text-gray-600 text-xs leading-relaxed">
+                    Open your <strong>bKash</strong>, <strong>Nagad</strong>, or any <strong>Bangla QR</strong> supported banking app and scan this code to pay directly from mobile or printed copy.
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 flex flex-col items-center justify-center pt-2 sm:pt-0 sm:pl-4 border-t sm:border-t-0 sm:border-l border-emerald-200">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logos/QR/Bangla_QR_Logo.svg"
+                  alt="Bangla QR Official Logo"
+                  width={56}
+                  height={68}
+                  className="w-14 h-16 object-contain"
+                />
+                <span className="text-[9px] font-extrabold text-gray-600 mt-1 uppercase tracking-tight">Bangladesh Bank</span>
+              </div>
+            </div>
+          )}
 
           {/* QR Verification Badge */}
           {doc.verificationUrl && !doc.isDraft && (
