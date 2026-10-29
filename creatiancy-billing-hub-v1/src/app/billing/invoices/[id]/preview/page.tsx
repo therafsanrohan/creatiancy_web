@@ -7,6 +7,7 @@ import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
 import { ArrowLeft, Printer, Send, Loader2, Building2, ShieldCheck } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import Image from 'next/image';
 import NotificationModal from '@/components/NotificationModal';
 
 export default function InvoicePreviewPage() {
@@ -443,6 +444,46 @@ export default function InvoicePreviewPage() {
                           <span className="font-mono font-extrabold text-gray-900 text-xs">{entity.nagad_merchant}</span>
                         </div>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Bangla QR (Scan to Pay - Bangladesh Bank standard / bKash merchant) */}
+                {isBdt && (entity?.entity_code === 'CLTD' || entity?.legal_name?.toLowerCase().includes('creatiancy limited')) && (
+                  <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-2.5 flex items-center justify-between gap-3">
+                    <div className="flex items-center space-x-2.5">
+                      <div className="relative rounded-lg bg-white p-1 border border-gray-200 shadow-2xs shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/logos/QR/bkashBanglaQR.svg"
+                          alt="Bangla QR Code"
+                          width={68}
+                          height={68}
+                          className="rounded"
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-extrabold text-gray-900 text-xs tracking-tight">Bangla QR</span>
+                          <span className="text-[9px] font-bold bg-[#9B1C22] text-white px-1.5 py-0.2 rounded uppercase tracking-wider">Easy Pay</span>
+                        </div>
+                        <p className="text-[11px] font-semibold text-emerald-800 mt-0.5">
+                          Scan for Easy Pay
+                        </p>
+                        <p className="text-gray-500 text-[9px] leading-tight mt-0.5">
+                          Scan with bKash or any Bangla QR supported banking app.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex flex-col items-center justify-center pr-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src="/logos/QR/Bangla_QR_Logo.svg"
+                        alt="Bangla QR Official Logo"
+                        width={38}
+                        height={45}
+                        className="object-contain"
+                      />
                     </div>
                   </div>
                 )}
