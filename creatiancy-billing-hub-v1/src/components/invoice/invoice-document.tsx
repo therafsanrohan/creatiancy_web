@@ -30,11 +30,16 @@ export default function InvoiceDocument({ document: doc }: Props) {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-[#9B1C22] pb-6 mb-6 gap-6 relative z-10">
         <div>
-          <div className="flex items-center space-x-2">
-            <Building2 className="h-7 w-7 text-[#9B1C22]" />
-            <span className="text-2xl font-extrabold tracking-tight text-gray-900">{doc.entity.name}</span>
+          <div className="flex items-center space-x-3 mb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logos/Creatiancy%20logo.svg"
+              alt="Creatiancy"
+              className="h-8 sm:h-9 w-auto max-w-[180px] object-contain"
+            />
           </div>
-          <p className="text-xs text-gray-500 mt-1 max-w-sm whitespace-pre-line leading-relaxed">{doc.entity.address}</p>
+          <p className="text-sm font-bold text-gray-900">{doc.entity.name}</p>
+          <p className="text-xs text-gray-500 mt-0.5 max-w-sm whitespace-pre-line leading-relaxed">{doc.entity.address}</p>
           <div className="text-[11px] text-gray-500 mt-1.5 space-y-0.5">
             {doc.entity.taxId && <p><span className="font-semibold text-gray-700">Tax/BIN ID:</span> {doc.entity.taxId}</p>}
             {doc.entity.email && <p><span className="font-semibold text-gray-700">Email:</span> {doc.entity.email}</p>}
