@@ -302,13 +302,14 @@ export interface EmailLog {
   id: string;
   invoice_id: string;
   recipient: string;
-  cc: string;
-  email_type: 'invoice' | 'reminder' | 'receipt';
+  cc?: string;
+  email_type: 'invoice' | 'reminder' | 'receipt' | string;
+  channel?: 'email' | 'whatsapp' | 'sms' | 'copy';
   subject: string;
   message_body: string;
-  provider_message_id: string | null;
+  provider_message_id?: string | null;
   delivery_status: 'pending' | 'success' | 'failed';
-  error_message: string | null;
+  error_message?: string | null;
   sent_by: string;
   sent_at: string;
 }
@@ -4239,9 +4240,38 @@ export const db = {
     };
   },
 
-  // Email Actions
-  getEmailLogs: async (): Promise<EmailLog[]> => {
-    return localStore.emailLogs;
+  // Communication & Dispatch Logs (Email, WhatsApp, SMS, Copy)
+  getEmailLogs: async (invoiceId?: string): Promise<EmailLog[]> => {
+    if (isSupabaseConfigured && supabase) {
+      try {
+        let query = supabase.from('invoice_email_logs').select('*').order('sent_at', { ascending: false });
+        if (invoiceId) {
+          query = query.eq('invoice_id', invoiceId);
+        }
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          return data.map((d: any) => ({
+            id: d.id,
+            invoice_id: d.invoice_id,
+            recipient: d.recipient,
+            cc: d.cc || '',
+            email_type: d.email_type,
+            channel: (d.provider_message_id?.startsWith('wa_') ? 'whatsapp' : d.provider_message_id?.startsWith('sms_') ? 'sms' : 'email') as any,
+            subject: d.subject,
+            message_body: d.message_body,
+            provider_message_id: d.provider_message_id,
+            delivery_status: d.delivery_status || 'success',
+            error_message: d.error_message,
+            sent_by: d.sent_by || '',
+            sent_at: d.sent_at || new Date().toISOString()
+          }));
+        }
+      } catch (err) {
+        console.warn('Failed to load email logs from Supabase, using local store:', err);
+      }
+    }
+    const local = localStore.emailLogs;
+    return invoiceId ? local.filter(l => l.invoice_id === invoiceId) : local;
   },
 
   logEmail: async (log: Omit<EmailLog, 'id' | 'sent_at' | 'sent_by'>): Promise<EmailLog> => {
@@ -4250,11 +4280,32 @@ export const db = {
     const newLog: EmailLog = {
       ...log,
       id: `eml-${Date.now()}`,
-      sent_by: user.id,
+      sent_by: user?.id || '00000000-0000-4000-8000-000000000000',
       sent_at: new Date().toISOString()
     };
-    list.push(newLog);
+    list.unshift(newLog);
     localStore.emailLogs = list;
+
+    // Persist to Supabase if available
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('invoice_email_logs').insert({
+          invoice_id: log.invoice_id,
+          recipient: log.recipient,
+          cc: log.cc || null,
+          email_type: log.email_type,
+          subject: log.subject,
+          message_body: log.message_body,
+          provider_message_id: log.provider_message_id || null,
+          delivery_status: log.delivery_status || 'success',
+          error_message: log.error_message || null,
+          sent_by: user?.id && user.id.length === 36 ? user.id : null,
+          sent_at: newLog.sent_at
+        });
+      } catch (err) {
+        console.warn('Could not persist dispatch log to Supabase:', err);
+      }
+    }
 
     // Mark invoice as sent if sent successfully
     if (log.delivery_status === 'success') {

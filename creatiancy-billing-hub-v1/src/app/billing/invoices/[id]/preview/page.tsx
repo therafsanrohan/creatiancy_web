@@ -141,6 +141,20 @@ export default function InvoicePreviewPage() {
       ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
       : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
 
+    // Log WhatsApp dispatch to history
+    db.logEmail({
+      invoice_id: id,
+      recipient: client?.phone || client?.contact_person || 'Client WhatsApp',
+      cc: '',
+      email_type: invoice.status === 'paid' ? 'receipt' : invoice.status === 'overdue' ? 'reminder' : 'invoice',
+      channel: 'whatsapp',
+      subject: `WhatsApp Dispatch: ${invoice.invoice_number || 'Draft'} (${invoice.status.toUpperCase()})`,
+      message_body: message,
+      provider_message_id: `wa_${Date.now()}`,
+      delivery_status: 'success',
+      error_message: null
+    }).catch(err => console.warn('Could not record WhatsApp log:', err));
+
     // Open WhatsApp immediately and synchronously to bypass browser popup restrictions on mobile & desktop
     if (typeof window !== 'undefined') {
       const win = window.open(waUrl, '_blank');

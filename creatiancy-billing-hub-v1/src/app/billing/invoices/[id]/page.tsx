@@ -314,7 +314,7 @@ export default function InvoiceDetailsPage() {
     });
   };
 
-  const handleWhatsAppShare = () => {
+  const handleWhatsAppShare = async () => {
     if (!invoice) return;
     const templates = getDynamicMessageTemplates();
     const message = templates?.whatsApp || `Hello ${client?.contact_person || 'Client'}, please review your invoice: ${getActiveDocLink()}`;
@@ -322,6 +322,25 @@ export default function InvoiceDetailsPage() {
     const waUrl = cleanPhone
       ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
       : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+    // Log WhatsApp dispatch to communication history
+    try {
+      const newLog = await db.logEmail({
+        invoice_id: id,
+        recipient: client?.phone || client?.contact_person || 'Client WhatsApp',
+        cc: '',
+        email_type: invoice.status === 'paid' ? 'receipt' : invoice.status === 'overdue' ? 'reminder' : 'invoice',
+        channel: 'whatsapp',
+        subject: `WhatsApp Dispatch: ${invoice.invoice_number || 'Draft'} (${invoice.status.toUpperCase()})`,
+        message_body: message,
+        provider_message_id: `wa_${Date.now()}`,
+        delivery_status: 'success',
+        error_message: null
+      });
+      setEmailLogs(prev => [newLog, ...prev]);
+    } catch (e) {
+      console.warn('Could not record WhatsApp log:', e);
+    }
 
     if (typeof window !== 'undefined') {
       const win = window.open(waUrl, '_blank');
@@ -331,13 +350,32 @@ export default function InvoiceDetailsPage() {
     }
   };
 
-  const handleSMSShare = () => {
+  const handleSMSShare = async () => {
     if (!invoice) return;
     const templates = getDynamicMessageTemplates();
     const message = templates?.sms || `Invoice ${invoice.invoice_number}: ${getActiveDocLink()}`;
     const cleanPhone = client?.phone ? client.phone.replace(/[^0-9]/g, '') : '';
     const smsUrl = cleanPhone ? `sms:${cleanPhone}?&body=${encodeURIComponent(message)}` : `sms:?&body=${encodeURIComponent(message)}`;
     
+    // Log SMS dispatch to communication history
+    try {
+      const newLog = await db.logEmail({
+        invoice_id: id,
+        recipient: client?.phone || client?.contact_person || 'Client SMS',
+        cc: '',
+        email_type: invoice.status === 'paid' ? 'receipt' : invoice.status === 'overdue' ? 'reminder' : 'invoice',
+        channel: 'sms',
+        subject: `SMS Dispatch: ${invoice.invoice_number || 'Draft'} (${invoice.status.toUpperCase()})`,
+        message_body: message,
+        provider_message_id: `sms_${Date.now()}`,
+        delivery_status: 'success',
+        error_message: null
+      });
+      setEmailLogs(prev => [newLog, ...prev]);
+    } catch (e) {
+      console.warn('Could not record SMS log:', e);
+    }
+
     if (typeof window !== 'undefined') {
       window.location.href = smsUrl;
     }
@@ -744,32 +782,83 @@ export default function InvoiceDetailsPage() {
             </div>
           )}
 
-          {/* Email Logs */}
+          {/* Communication & Reminder History Log (WhatsApp, SMS, Email) */}
           {invoice.status !== 'draft' && (
             <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4">
-              <h3 className="font-bold text-sm text-gray-450 uppercase tracking-wider">CC Billing Email History Log</h3>
+              <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                <div>
+                  <h3 className="font-bold text-sm text-gray-800 uppercase tracking-wider flex items-center space-x-2">
+                    <MessageCircle className="h-4 w-4 text-[#9B1C22]" />
+                    <span>Client Communication & Reminder Log</span>
+                  </h3>
+                  <p className="text-[11px] text-gray-400 mt-0.5">
+                    Chronological audit record of all WhatsApp, SMS, and Email reminders dispatched.
+                  </p>
+                </div>
+                <span className="text-[10px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                  {emailLogs.length} {emailLogs.length === 1 ? 'Dispatch' : 'Dispatches'}
+                </span>
+              </div>
               
               {emailLogs.length === 0 ? (
-                <div className="text-sm text-gray-400 py-4 text-center">No emails dispatched yet.</div>
+                <div className="text-xs text-gray-400 py-6 text-center italic bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                  No reminders or messages dispatched to this client yet. Use &quot;Share & Remind Client&quot; above to send via WhatsApp, SMS, or Email.
+                </div>
               ) : (
-                <div className="divide-y divide-gray-50">
-                  {emailLogs.map((log) => (
-                    <div key={log.id} className="py-3 text-xs">
-                      <div className="flex justify-between">
-                        <span className="font-bold text-gray-800">To: {log.recipient}</span>
-                        <span className="text-gray-400">{log.sent_at.split('T')[0]}</span>
+                <div className="divide-y divide-gray-100">
+                  {emailLogs.map((log) => {
+                    const isWhatsApp = log.channel === 'whatsapp' || log.provider_message_id?.startsWith('wa_');
+                    const isSms = log.channel === 'sms' || log.provider_message_id?.startsWith('sms_');
+                    const channelName = isWhatsApp ? 'WhatsApp' : isSms ? 'SMS' : 'Billing Email';
+                    const badgeClass = isWhatsApp
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      : isSms
+                      ? 'bg-blue-50 text-blue-700 border-blue-200'
+                      : 'bg-rose-50 text-[#9B1C22] border-rose-200';
+
+                    return (
+                      <div key={log.id} className="py-3.5 text-xs space-y-1.5">
+                        <div className="flex flex-wrap items-center justify-between gap-1.5">
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${badgeClass}`}>
+                              {isWhatsApp && <span className="h-1.5 w-1.5 rounded-full bg-[#25D366]"></span>}
+                              {isSms && <span className="h-1.5 w-1.5 rounded-full bg-blue-500"></span>}
+                              {!isWhatsApp && !isSms && <span className="h-1.5 w-1.5 rounded-full bg-[#9B1C22]"></span>}
+                              <span>{channelName}</span>
+                            </span>
+                            <span className="font-bold text-gray-800">To: {log.recipient}</span>
+                          </div>
+                          <span className="text-[11px] text-gray-400 font-medium">
+                            {new Date(log.sent_at).toLocaleString('en-US', {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                        </div>
+
+                        <p className="text-gray-700 font-semibold truncate text-[11px]">
+                          {log.subject}
+                        </p>
+
+                        {log.message_body && (
+                          <div className="text-[10px] text-gray-500 bg-gray-50/80 p-2 rounded-lg border border-gray-150 font-sans line-clamp-2">
+                            {log.message_body}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-0.5 text-[10px] text-gray-400">
+                          <span className="font-mono">Ref ID: {log.provider_message_id || log.id}</span>
+                          <span className="text-emerald-700 font-bold uppercase tracking-wider flex items-center space-x-1">
+                            <CheckCircle className="h-3 w-3" />
+                            <span>Dispatched</span>
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-gray-600 mt-1 truncate">Subject: {log.subject}</p>
-                      <div className="flex justify-between items-center mt-1.5">
-                        <span className="text-[10px] text-gray-400 font-mono">ID: {log.provider_message_id}</span>
-                        <span className={`inline-block rounded px-1.5 py-0.2 text-[9px] uppercase font-semibold ${
-                          log.delivery_status === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'
-                        }`}>
-                          {log.delivery_status}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
