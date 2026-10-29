@@ -64,6 +64,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     let keyVersion = 1;
     let linkActive = true;
     let linkShortCode: string | undefined = undefined;
+    let activeLink: any = null;
 
     try {
       const { data: link, error: linkErr } = await supabase
@@ -73,6 +74,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
         .maybeSingle();
 
       if (!linkErr && link) {
+        activeLink = link;
         targetInvoiceId = link.invoice_id;
         version = link.version || 1;
         keyVersion = link.key_version || 1;
@@ -125,10 +127,12 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       return { success: false, error: 'UNAVAILABLE' };
     }
 
-    // If the token was valid under an older version or linkId, auto-redirect to the latest canonical token for freshness
-    const { token: currentCanonicalToken } = await getOrGeneratePublicInvoiceToken(invoice.id);
-    if (currentCanonicalToken && currentCanonicalToken !== rawToken) {
-      return { success: false, redirectTo: currentCanonicalToken, error: 'REDIRECT' };
+    // If the token is already the active version, skip re-querying token generation to avoid doubling DB latency
+    if (activeLink && activeLink.version !== version) {
+      const { token: currentCanonicalToken } = await getOrGeneratePublicInvoiceToken(invoice.id);
+      if (currentCanonicalToken && currentCanonicalToken !== rawToken) {
+        return { success: false, redirectTo: currentCanonicalToken, error: 'REDIRECT' };
+      }
     }
 
     // Parallelize all secondary fetches concurrently using Promise.all to slash DB latency
