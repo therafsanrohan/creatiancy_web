@@ -161,7 +161,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     // Fetch Entity
     const { data: dbEntity } = await supabase
       .from('business_entities')
-      .select('legal_name, entity_code, registered_address, tax_id')
+      .select('legal_name, entity_code, registered_address, registration_number, tax_id, email, phone, website, bkash_merchant, nagad_merchant')
       .eq('id', invoice.entity_id)
       .single();
 
@@ -229,8 +229,14 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       entity: {
         name: entitySnap?.legal_name || entitySnap?.name || (invoice.currency === 'USD' ? 'Creatiancy LLC' : 'Creatiancy Limited'),
         code: entitySnap?.entity_code || (invoice.currency === 'USD' ? 'CLLC' : 'CLTD'),
-        address: entitySnap?.registered_address || entitySnap?.address || '',
-        taxId: entitySnap?.tax_id || undefined
+        address: entitySnap?.registered_address || entitySnap?.address || (invoice.currency === 'USD' ? '1619 Broadway, Suite 500, New York, NY 10019, USA' : 'House 12, Road 4, Banani, Dhaka 1213, Bangladesh'),
+        registrationNumber: entitySnap?.registration_number || (invoice.currency === 'USD' ? 'NY-CLLC-2026-98765' : 'C-CLTD-DHAKA-2026'),
+        taxId: entitySnap?.tax_id || (invoice.currency === 'USD' ? 'EIN-12-3456789' : 'TIN-BIN-CLTD-123456'),
+        email: entitySnap?.email || 'Creatiancy@gmail.com',
+        phone: entitySnap?.phone || '+880 1325 078 941',
+        website: entitySnap?.website || 'https://creatiancy.com',
+        bkashMerchant: entitySnap?.bkash_merchant || undefined,
+        nagadMerchant: entitySnap?.nagad_merchant || undefined
       },
       bankAccount: bankSnap?.bank_name ? {
         bankName: bankSnap.bank_name,

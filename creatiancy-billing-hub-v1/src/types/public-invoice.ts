@@ -37,7 +37,13 @@ export interface PublicInvoiceViewModel {
     name: string;
     code: string;
     address: string;
+    registrationNumber?: string;
     taxId?: string;
+    email?: string;
+    phone?: string;
+    website?: string;
+    bkashMerchant?: string;
+    nagadMerchant?: string;
   };
   bankAccount?: {
     bankName: string;

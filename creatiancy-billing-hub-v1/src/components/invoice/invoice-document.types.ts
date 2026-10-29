@@ -49,6 +49,7 @@ export interface InvoiceDocumentViewModel {
     name: string;
     code: string;
     address: string;
+    registrationNumber?: string;
     email?: string;
     phone?: string;
     website?: string;

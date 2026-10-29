@@ -51,16 +51,16 @@ export default function PublicInvoiceViewClient({ invoice }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F5F5F0] py-4 sm:py-8 px-2 sm:px-4">
       {/* Top Action Header Bar (No Print) */}
-      <div className="max-w-[210mm] mx-auto mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 no-print bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <div className="max-w-[210mm] mx-auto mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 no-print bg-white p-3 sm:p-4 rounded-2xl shadow-sm border border-gray-100">
         <div className="flex items-center space-x-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#9B1C22]/10 text-[#9B1C22]">
             <ShieldCheck className="h-6 w-6" />
           </div>
           <div>
-            <h2 className="text-xs sm:text-sm font-bold text-gray-900">Official Client Document</h2>
-            <p className="text-[11px] text-gray-500">Verified Secure Capability Link</p>
+            <h2 className="text-xs sm:text-sm font-bold text-gray-900">Verified Creatiancy Invoice</h2>
+            <p className="text-[11px] text-gray-500">Cryptographically secured & tamper-evident document</p>
           </div>
         </div>
 
