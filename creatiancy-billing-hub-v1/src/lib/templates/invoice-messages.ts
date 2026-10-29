@@ -97,12 +97,12 @@ ${entityName}`;
 
       whatsApp = `Hello ${clientName},
 
-✅ *Payment Received & Confirmed*
+*Payment Received & Confirmed*
 Invoice: *${invoiceNumber}* (${projectName})
 Status: *PAID IN FULL*
 Total Paid: *${totalStr}*
 
-📄 *Official Digital Receipt & Invoice:*
+*Official Digital Receipt & Invoice:*
 ${publicUrl}
 
 Thank you for choosing ${entityName}!`;
@@ -143,13 +143,13 @@ ${entityName}`;
 
       whatsApp = `Hello ${clientName},
 
-💳 *Payment Received (Partial)*
+*Payment Received (Partial)*
 Invoice: *${invoiceNumber}* (${projectName})
 Amount Paid: *${paidStr}*
-⚠️ Remaining Balance: *${dueStr}*
+Remaining Balance: *${dueStr}*
 Due Date: *${dueDate}*
 
-🔗 *View Updated Invoice & Settle Balance:*
+*View Updated Invoice & Settle Balance:*
 ${publicUrl}
 
 Thank you,
@@ -193,13 +193,13 @@ ${entityName}`;
 
       whatsApp = `Hello ${clientName},
 
-⚠️ *Overdue Payment Reminder*
+*Overdue Payment Reminder*
 Invoice *${invoiceNumber}* for *${projectName}* is currently overdue since *${dueDate}*.
 
 • Outstanding Amount: *${dueStr}*
 • Status: *OVERDUE*
 
-🔗 *Review & Settle Online Now:*
+*Review & Settle Online Now:*
 ${publicUrl}
 
 If payment has already been made, please share the transaction slip/reference.
@@ -248,12 +248,12 @@ ${entityName}`;
 
       whatsApp = `Hello ${clientName},
 
-📄 *Official Invoice ${invoiceNumber}*
+*Official Invoice ${invoiceNumber}*
 Project: *${projectName}*
 Total Payable: *${totalStr}*
 Due Date: *${dueDate}*
 
-🔗 *View & Pay Online:*
+*View & Pay Online:*
 ${publicUrl}
 
 Thank you,

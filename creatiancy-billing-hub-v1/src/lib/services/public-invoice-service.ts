@@ -131,48 +131,22 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       return { success: false, redirectTo: currentCanonicalToken, error: 'REDIRECT' };
     }
 
-    // Fetch Snapshot if available
-    const { data: snapshot } = await supabase
-      .from('invoice_snapshots')
-      .select('*')
-      .eq('invoice_id', invoice.id)
-      .maybeSingle();
-
-    // Fetch Line Items
-    const { data: dbItems } = await supabase
-      .from('invoice_items')
-      .select('*')
-      .eq('invoice_id', invoice.id)
-      .order('sort_order', { ascending: true });
-
-    // Fetch Payments (for amount calculation only)
-    const { data: dbPayments } = await supabase
-      .from('invoice_payments')
-      .select('amount, payment_date')
-      .eq('invoice_id', invoice.id);
-
-    // Fetch Client
-    const { data: dbClient } = await supabase
-      .from('billing_clients')
-      .select('company_name, contact_person, billing_address, city, country, tax_number')
-      .eq('id', invoice.client_id)
-      .single();
-
-    // Fetch Entity
-    const { data: dbEntity } = await supabase
-      .from('business_entities')
-      .select('legal_name, entity_code, registered_address, registration_number, tax_id, email, phone, website, bkash_merchant, nagad_merchant')
-      .eq('id', invoice.entity_id)
-      .single();
-
-    // Fetch Bank Account
-    const { data: dbBank } = await supabase
-      .from('entity_bank_accounts')
-      .select('bank_name, account_holder, account_number, branch, routing_number, swift_bic')
-      .eq('entity_id', invoice.entity_id)
-      .eq('is_active', true)
-      .limit(1)
-      .maybeSingle();
+    // Parallelize all secondary fetches concurrently using Promise.all to slash DB latency
+    const [
+      { data: snapshot },
+      { data: dbItems },
+      { data: dbPayments },
+      { data: dbClient },
+      { data: dbEntity },
+      { data: dbBank }
+    ] = await Promise.all([
+      supabase.from('invoice_snapshots').select('*').eq('invoice_id', invoice.id).maybeSingle(),
+      supabase.from('invoice_items').select('*').eq('invoice_id', invoice.id).order('sort_order', { ascending: true }),
+      supabase.from('invoice_payments').select('amount, payment_date').eq('invoice_id', invoice.id),
+      supabase.from('billing_clients').select('company_name, contact_person, billing_address, city, country, tax_number').eq('id', invoice.client_id).single(),
+      supabase.from('business_entities').select('legal_name, entity_code, registered_address, registration_number, tax_id, email, phone, website, bkash_merchant, nagad_merchant').eq('id', invoice.entity_id).single(),
+      supabase.from('entity_bank_accounts').select('bank_name, account_holder, account_number, branch, routing_number, swift_bic').eq('entity_id', invoice.entity_id).eq('is_active', true).limit(1).maybeSingle()
+    ]);
 
     const items = (dbItems || []).map(i => ({
       serviceName: i.service_name || i.description || 'Service Item',
