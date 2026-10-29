@@ -267,46 +267,50 @@ export default function InvoiceDocument({ document: doc }: Props) {
 
               {/* Bangla QR (Scan to Pay - Bangladesh Bank standard / bKash merchant) */}
               {isBdt && (doc.entity.code === 'CLTD' || doc.entity.name?.toLowerCase().includes('creatiancy limited')) && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-2.5 flex items-center justify-between gap-3">
-                  <div className="flex items-center space-x-2.5">
-                    <div className="relative rounded-lg bg-white p-1 border border-gray-200 shadow-2xs shrink-0">
+                <div className="rounded-xl border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-50/70 via-white to-emerald-50/30 p-3 flex items-center justify-between gap-3 shadow-xs">
+                  <div className="flex items-center space-x-3.5">
+                    {/* High-res large QR Frame */}
+                    <div className="relative rounded-xl bg-white p-2 border-2 border-emerald-300 shadow-sm shrink-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src="/logos/QR/bkashBanglaQR.svg"
-                        alt="Bangla QR Code"
-                        width={68}
-                        height={68}
-                        className="rounded"
+                        alt="Bangla QR Code - Scan to Pay"
+                        width={112}
+                        height={112}
+                        className="rounded-md w-28 h-28 object-contain"
                       />
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-1.5">
-                        <span className="font-extrabold text-gray-900 text-xs tracking-tight">Bangla QR</span>
-                        <span className="text-[9px] font-bold bg-[#9B1C22] text-white px-1.5 py-0.2 rounded uppercase tracking-wider">Easy Pay</span>
+                    <div className="space-y-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-black text-gray-900 text-sm tracking-tight">Bangla QR</span>
+                        <span className="text-[10px] font-black bg-[#9B1C22] text-white px-2 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+                          Easy Pay
+                        </span>
                       </div>
-                      <p className="text-[11px] font-semibold text-emerald-800 mt-0.5">
+                      <p className="text-xs font-bold text-emerald-800">
                         Scan for Easy Pay
                       </p>
-                      <p className="text-gray-500 text-[9px] leading-tight mt-0.5">
-                        Scan with bKash or any Bangla QR supported banking app.
+                      <p className="text-gray-600 text-[10px] leading-relaxed max-w-[210px]">
+                        Scan with <strong>bKash</strong>, <strong>Nagad</strong>, or any <strong>Bangla QR</strong> enabled banking app to pay instantly.
                       </p>
                     </div>
                   </div>
-                  <div className="shrink-0 flex flex-col items-center justify-center pr-1">
+                  <div className="shrink-0 flex flex-col items-center justify-center pr-1.5 pl-2 border-l border-emerald-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src="/logos/QR/Bangla_QR_Logo.svg"
                       alt="Bangla QR Official Logo"
-                      width={38}
-                      height={45}
+                      width={48}
+                      height={58}
                       className="object-contain"
                     />
+                    <span className="text-[8px] font-bold text-gray-500 mt-1 uppercase tracking-tight">Bangladesh Bank</span>
                   </div>
                 </div>
               )}
 
               {doc.paymentInstructions && (
-                <div className="rounded-xl bg-gray-50 p-3 border border-gray-200/70 text-[11px] text-gray-700 leading-relaxed italic">
+                <div className="rounded-xl bg-gray-50 p-2.5 border border-gray-200/70 text-[11px] text-gray-700 leading-relaxed italic">
                   {doc.paymentInstructions}
                 </div>
               )}
