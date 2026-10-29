@@ -21,19 +21,6 @@ interface ProjectItem {
 
 const SELECTED_WORKS: ProjectItem[] = [
   {
-    id: "kazi-canvas",
-    client: "Kazi Canvas Gallery",
-    title: "Fine Art eCommerce & Digital Gallery Architecture",
-    metric: "FINE ART DIGITAL GALLERY",
-    category: "Web & Digital Architecture",
-    tags: ["Fine Art Gallery", "eCommerce", "Next.js"],
-    image: "/images/kazi_canvas_showcase.png",
-    slug: "kazi-canvas",
-    externalLink: "https://kazicanvasgallery.com/",
-    gridSpan: "col-span-12 lg:col-span-7",
-    aspectRatio: "aspect-[16/10]",
-  },
-  {
     id: "rafsan-rohan",
     client: "Rafsan Rohan",
     title: "Visual Strategist & Creative Direction Platform",
@@ -43,8 +30,8 @@ const SELECTED_WORKS: ProjectItem[] = [
     image: "/images/rafsan_rohan_showcase.png",
     slug: "rafsan-rohan",
     externalLink: "https://www.rafsanrohan.com",
-    gridSpan: "col-span-12 lg:col-span-5",
-    aspectRatio: "aspect-[16/11]",
+    gridSpan: "col-span-12 lg:col-span-7",
+    aspectRatio: "aspect-[16/10]",
   },
   {
     id: "omni",
@@ -67,8 +54,8 @@ const SELECTED_WORKS: ProjectItem[] = [
     tags: ["Billboard Systems", "Architectural Fencing", "Campaign Art"],
     image: "/images/project real.png",
     slug: "odl-ads",
-    gridSpan: "col-span-12 lg:col-span-7",
-    aspectRatio: "aspect-[16/10]",
+    gridSpan: "col-span-12",
+    aspectRatio: "aspect-[21/9]",
   },
 ];
 
