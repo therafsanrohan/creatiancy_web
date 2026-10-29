@@ -65,6 +65,13 @@ export interface InvoiceDocumentViewModel {
     routingNumber?: string;
     swiftBic?: string;
   };
+  payments?: Array<{
+    amount: number;
+    paymentDate?: string;
+    paymentMethod?: string;
+    transactionReference?: string;
+    receiptNumber?: string;
+  }>;
   paymentInstructions?: string;
   termsConditions?: string;
   verificationUrl?: string;

@@ -37,6 +37,7 @@ export default function PublicInvoiceViewClient({ invoice }: Props) {
     client: invoice.client,
     entity: invoice.entity,
     bankAccount: invoice.bankAccount,
+    payments: invoice.payments,
     paymentInstructions: invoice.paymentInstructions,
     termsConditions: invoice.termsConditions,
     verificationUrl: canonicalUrl,

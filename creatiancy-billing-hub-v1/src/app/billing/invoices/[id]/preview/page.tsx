@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { db, Invoice, BillingClient, InvoiceItem, Payment, BankAccount, BusinessEntity } from '@/lib/db';
 import { calculateTotals, formatCurrency } from '@/lib/calculations';
 import Link from 'next/link';
-import { ArrowLeft, Printer, Send, Loader2, Building2, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Printer, Send, Loader2, Building2, ShieldCheck, CheckCircle2, Receipt } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import Image from 'next/image';
 import NotificationModal from '@/components/NotificationModal';
@@ -402,13 +402,94 @@ export default function InvoicePreviewPage() {
             </div>
           </div>
 
-          {/* Full Width Bank Details & Payment Instructions Section */}
-          <div className="border-t border-gray-200 pt-3 space-y-3 avoid-break">
-            <span className="font-extrabold text-[10px] uppercase tracking-wider text-gray-400 block">
-              PAYMENT & REMITTANCE INSTRUCTIONS
-            </span>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          {/* Full Width Bank Details & Payment Instructions Section OR Payment Confirmation Receipt if Paid */}
+          {invoice.status === 'paid' || totals.amountDue <= 0 ? (
+            <div className="border-t border-emerald-300 pt-3 space-y-3 avoid-break">
+              <span className="font-extrabold text-[10px] uppercase tracking-wider text-emerald-700 block">
+                OFFICIAL PAYMENT RECEIPT & SETTLEMENT RECORD
+              </span>
+
+              <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-r from-emerald-50/90 via-white to-emerald-50/50 p-4 shadow-xs">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-emerald-200/60 pb-3">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="rounded-full bg-emerald-600 p-1.5 text-white shadow-xs">
+                      <CheckCircle2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-black text-gray-900 text-sm tracking-tight">Invoice Fully Paid</span>
+                        <span className="text-[10px] font-black bg-emerald-600 text-white px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-2xs">
+                          PAID IN FULL
+                        </span>
+                      </div>
+                      <p className="text-gray-500 text-xs">
+                        Payment received and reconciled. No further balance is due on this invoice.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-left sm:text-right">
+                    <span className="text-[10px] font-semibold text-gray-400 block uppercase">Settled Amount</span>
+                    <span className="text-base font-black text-emerald-800">{formatCurrency(totals.totalPayable, invoice.currency)}</span>
+                  </div>
+                </div>
+
+                {/* Payment transactions history breakdown */}
+                {payments && payments.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    <span className="text-[10px] font-extrabold uppercase text-gray-500 tracking-wider flex items-center space-x-1">
+                      <Receipt className="h-3 w-3 text-emerald-600" />
+                      <span>Payment Transaction Records</span>
+                    </span>
+                    <div className="divide-y divide-gray-150 rounded-xl bg-white border border-gray-200/80 overflow-hidden text-xs">
+                      {payments.map((p, idx) => (
+                        <div key={idx} className="p-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-gray-50/40">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center space-x-2">
+                              <span className="font-bold text-gray-900">
+                                {p.payment_method ? p.payment_method.replace(/_/g, ' ').toUpperCase() : 'DIRECT PAYMENT'}
+                              </span>
+                              {p.receipt_number && (
+                                <span className="font-mono text-[10px] bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded font-semibold">
+                                  Receipt #{p.receipt_number}
+                                </span>
+                              )}
+                            </div>
+                            {(p.transaction_reference || p.reference_number) && (
+                              <p className="text-[11px] text-gray-500 font-mono">
+                                Trx Ref: <span className="font-bold text-gray-800">{p.transaction_reference || p.reference_number}</span>
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end sm:space-x-4">
+                            {p.payment_date && (
+                              <span className="text-[11px] text-gray-500 font-medium">
+                                {new Date(p.payment_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                            <span className="font-black text-emerald-700 text-sm">
+                              +{formatCurrency(p.amount, invoice.currency)}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 text-xs text-gray-600 italic">
+                    Payment confirmed in full via recorded transaction. Thank you for your partnership!
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="border-t border-gray-200 pt-3 space-y-3 avoid-break">
+              <span className="font-extrabold text-[10px] uppercase tracking-wider text-gray-400 block">
+                PAYMENT & REMITTANCE INSTRUCTIONS
+              </span>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
               {/* Bank Account Box */}
               {bankAccount ? (
                 <div className="rounded-xl bg-gray-50 p-3 border border-gray-200/70 space-y-1 text-gray-700">
@@ -499,8 +580,10 @@ export default function InvoicePreviewPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
 
-            {/* QR Verification Badge */}
+        {/* QR Verification Badge */}
             {verifyUrl && (
               <div className="mt-2 flex items-center justify-between rounded-xl border border-[#9B1C22]/20 bg-[#9B1C22]/5 p-2.5 avoid-break">
                 <div className="flex items-center space-x-2.5">
@@ -529,7 +612,6 @@ export default function InvoicePreviewPage() {
                 </div>
               </div>
             )}
-          </div>
 
           {/* Legal footer */}
           <div className="mt-4 pt-2 border-t border-gray-200 text-[9px] text-gray-500 text-center leading-normal space-y-0.5 avoid-break">

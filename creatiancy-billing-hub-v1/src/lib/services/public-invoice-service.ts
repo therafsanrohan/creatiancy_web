@@ -146,7 +146,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     ] = await Promise.all([
       supabase.from('invoice_snapshots').select('*').eq('invoice_id', invoice.id).maybeSingle(),
       supabase.from('invoice_items').select('*').eq('invoice_id', invoice.id).order('sort_order', { ascending: true }),
-      supabase.from('invoice_payments').select('amount, payment_date').eq('invoice_id', invoice.id),
+      supabase.from('invoice_payments').select('amount, payment_date, payment_method, transaction_reference, receipt_number').eq('invoice_id', invoice.id).order('payment_date', { ascending: false }),
       supabase.from('billing_clients').select('company_name, contact_person, billing_address, city, country, tax_number').eq('id', invoice.client_id).single(),
       supabase.from('business_entities').select('legal_name, entity_code, registered_address, registration_number, tax_id, email, phone, website, bkash_merchant, nagad_merchant').eq('id', invoice.entity_id).single(),
       supabase.from('entity_bank_accounts').select('bank_name, account_holder, account_number, branch, routing_number, swift_bic').eq('entity_id', invoice.entity_id).eq('is_active', true).limit(1).maybeSingle()
@@ -161,7 +161,13 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       amount: Number(i.amount) || 0
     }));
 
-    const payments = (dbPayments || []).map(p => ({ amount: Number(p.amount) }));
+    const payments = (dbPayments || []).map(p => ({
+      amount: Number(p.amount) || 0,
+      paymentDate: p.payment_date || undefined,
+      paymentMethod: p.payment_method || undefined,
+      transactionReference: p.transaction_reference || undefined,
+      receiptNumber: p.receipt_number || undefined,
+    }));
 
     const calc = calculateTotals({
       items: items.map(i => ({ quantity: i.quantity, rate: i.rate })),
@@ -224,6 +230,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
         routingNumber: bankSnap.routing_number || undefined,
         swiftBic: bankSnap.swift_bic || undefined
       } : undefined,
+      payments,
       paymentInstructions: invoice.payment_instructions || undefined,
       termsConditions: invoice.terms_conditions || undefined,
       canonicalToken: rawToken,
