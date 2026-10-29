@@ -99,3 +99,26 @@ export function getCanonicalPublicInvoiceUrl(token: string): string {
     (typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app');
   return `${baseUrl.replace(/\/$/, '')}/invoice/${token}`;
 }
+
+/**
+ * Generates an unguessable, URL-safe 10-character alphanumeric short code
+ * Uses crypto.randomBytes to ensure 60+ bits of entropy (avoiding lookalikes 0, O, I, l)
+ */
+export function generateShortInvoiceCode(length: number = 10): string {
+  const alphabet = '23456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz';
+  const bytes = crypto.randomBytes(length);
+  let code = '';
+  for (let i = 0; i < length; i++) {
+    code += alphabet[bytes[i] % alphabet.length];
+  }
+  return code;
+}
+
+/**
+ * Resolves the short public invoice URL
+ */
+export function getShortPublicInvoiceUrl(shortCode: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+    (typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app');
+  return `${baseUrl.replace(/\/$/, '')}/i/${shortCode}`;
+}

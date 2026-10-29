@@ -52,8 +52,10 @@ export default function InvoiceDetailsPage() {
 
   // Public Link & QR Code states
   const [publicUrl, setPublicUrl] = useState<string>('');
+  const [shortUrl, setShortUrl] = useState<string>('');
   const [publicToken, setPublicToken] = useState<string>('');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedShortLink, setCopiedShortLink] = useState(false);
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [linkActionLoading, setLinkActionLoading] = useState(false);
 
@@ -155,6 +157,7 @@ export default function InvoiceDetailsPage() {
             const data = await res.json();
             if (data.success && data.url) {
               setPublicUrl(data.url);
+              setShortUrl(data.shortUrl || '');
               setPublicToken(data.token);
             }
           } catch {
@@ -273,16 +276,25 @@ export default function InvoiceDetailsPage() {
   };
 
   const handleCopyPublicLink = () => {
+    const linkToCopy = shortUrl || publicUrl;
+    if (!linkToCopy) return;
+    navigator.clipboard.writeText(linkToCopy);
+    setCopiedLink(true);
+    showNotif('Link Copied', 'Shareable public invoice link copied to clipboard.', 'success');
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
+
+  const handleCopyFullCapabilityLink = () => {
     if (!publicUrl) return;
     navigator.clipboard.writeText(publicUrl);
-    setCopiedLink(true);
-    showNotif('Link Copied', 'HMAC-signed public capability link copied to clipboard.', 'success');
-    setTimeout(() => setCopiedLink(false), 2500);
+    setCopiedShortLink(true);
+    showNotif('Full Capability Link Copied', 'Direct HMAC-signed capability link copied to clipboard.', 'success');
+    setTimeout(() => setCopiedShortLink(false), 2500);
   };
 
   const getActiveDocLink = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://creatiancy-web.vercel.app';
-    return publicUrl || `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
+    return shortUrl || publicUrl || `${origin}/invoice/${invoice?.secure_token || invoice?.id || id}`;
   };
 
   const getDynamicMessageTemplates = () => {
@@ -343,8 +355,9 @@ export default function InvoiceDetailsPage() {
       const data = await res.json();
       if (data.success && data.url) {
         setPublicUrl(data.url);
+        setShortUrl(data.shortUrl || '');
         setPublicToken(data.token);
-        showNotif('Link Rotated', 'Public link rotated successfully. Previous link signatures are now invalid.', 'success');
+        showNotif('Link Rotated', 'Public link rotated successfully with new short URL. Previous link signatures are now invalid.', 'success');
       } else {
         showNotif('Rotation Failed', data.error || 'Failed to rotate link.', 'error');
       }
@@ -367,6 +380,7 @@ export default function InvoiceDetailsPage() {
       const data = await res.json();
       if (data.success) {
         setPublicUrl('');
+        setShortUrl('');
         setPublicToken('');
         showNotif('Link Revoked', 'Public link revoked successfully.', 'info');
       } else {
@@ -770,27 +784,45 @@ export default function InvoiceDetailsPage() {
           {invoice.status !== 'draft' && invoice.status !== 'rejected' && (
             <div className="bg-white border border-gray-100 rounded-2xl p-6 space-y-4 shadow-sm">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-xs uppercase tracking-wider text-gray-500">Secure Public Link</h3>
+                <div>
+                  <h3 className="font-bold text-xs uppercase tracking-wider text-gray-500">Public Invoice Link</h3>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Short, professional shareable client URL</p>
+                </div>
                 <span className="inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
-                  HMAC Signed
+                  {shortUrl ? 'Short Link Active' : 'HMAC Signed'}
                 </span>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  readOnly
-                  value={publicUrl || 'Generating secure link...'}
-                  className="flex-1 rounded-xl border border-gray-200 bg-gray-50 text-xs px-3 py-2.5 font-mono text-gray-600 truncate focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={handleCopyPublicLink}
-                  disabled={!publicUrl}
-                  className="rounded-xl bg-[#9B1C22] px-3.5 py-2.5 text-xs font-bold text-white hover:bg-[#80171C] transition cursor-pointer shrink-0"
-                >
-                  {copiedLink ? 'Copied!' : 'Copy'}
-                </button>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={shortUrl || publicUrl || 'Generating secure link...'}
+                    className="flex-1 rounded-xl border border-gray-200 bg-gray-50 text-xs px-3 py-2.5 font-mono text-gray-700 font-medium truncate focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleCopyPublicLink}
+                    disabled={!publicUrl && !shortUrl}
+                    className="rounded-xl bg-[#9B1C22] px-3.5 py-2.5 text-xs font-bold text-white hover:bg-[#80171C] transition cursor-pointer shrink-0"
+                  >
+                    {copiedLink ? 'Copied!' : 'Copy Short Link'}
+                  </button>
+                </div>
+
+                {shortUrl && publicUrl && (
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-[10px] text-gray-400">Direct Capability Link</span>
+                    <button
+                      type="button"
+                      onClick={handleCopyFullCapabilityLink}
+                      className="text-[10px] font-medium text-[#9B1C22] hover:underline cursor-pointer"
+                    >
+                      {copiedShortLink ? 'Copied Full Token!' : 'Copy Full Capability Link'}
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-between gap-2 pt-1 text-xs">
@@ -1453,15 +1485,15 @@ export default function InvoiceDetailsPage() {
             </div>
 
             <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 inline-block">
-              {publicUrl ? (
-                <QRCodeSVG value={publicUrl} size={180} level="H" />
+              {(shortUrl || publicUrl) ? (
+                <QRCodeSVG value={shortUrl || publicUrl} size={180} level="H" />
               ) : (
                 <div className="h-44 w-44 flex items-center justify-center text-xs text-gray-400">Loading QR...</div>
               )}
             </div>
 
-            <p className="text-xs text-gray-500 font-mono text-center truncate">
-              {publicUrl}
+            <p className="text-xs text-gray-700 font-mono text-center font-semibold truncate">
+              {shortUrl || publicUrl}
             </p>
 
             <div className="flex gap-2">

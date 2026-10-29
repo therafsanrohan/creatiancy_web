@@ -1,7 +1,6 @@
 'use client';
 
-import { PublicInvoiceViewModel } from '@/lib/services/public-invoice-service';
-import { getCanonicalPublicInvoiceUrl } from '@/lib/security/public-invoice-token';
+import { PublicInvoiceViewModel } from '@/types/public-invoice';
 import InvoiceDocument from '@/components/invoice/invoice-document';
 import { InvoiceDocumentViewModel } from '@/components/invoice/invoice-document.types';
 import { Printer, Download, ShieldCheck } from 'lucide-react';
@@ -11,7 +10,7 @@ interface Props {
 }
 
 export default function PublicInvoiceViewClient({ invoice }: Props) {
-  const canonicalUrl = getCanonicalPublicInvoiceUrl(invoice.canonicalToken);
+  const canonicalUrl = invoice.verificationUrl || (typeof window !== 'undefined' ? window.location.href : `/invoice/${invoice.canonicalToken}`);
 
   const doc: InvoiceDocumentViewModel = {
     invoiceId: invoice.invoiceId,

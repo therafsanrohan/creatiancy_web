@@ -8,73 +8,20 @@ import {
   verifyPublicInvoiceToken,
   createPublicInvoiceToken,
   hashLegacyToken,
-  getCanonicalPublicInvoiceUrl
+  getCanonicalPublicInvoiceUrl,
+  generateShortInvoiceCode,
+  getShortPublicInvoiceUrl
 } from '@/lib/security/public-invoice-token';
 import { calculateTotals } from '@/lib/calculations';
+import { PublicInvoiceViewModel, PublicInvoiceResult } from '@/types/public-invoice';
 
-export interface PublicInvoiceViewModel {
-  invoiceId: string;
-  invoiceNumber: string;
-  status: string;
-  issueDate: string;
-  dueDate: string;
-  currency: 'BDT' | 'USD';
-  projectName: string;
-  servicePeriod?: string;
-  poNumber?: string;
-  referenceNumber?: string;
-  items: Array<{
-    serviceName: string;
-    description: string;
-    quantity: number;
-    unit: string;
-    rate: number;
-    amount: number;
-  }>;
-  totals: {
-    subtotal: number;
-    discountAmount: number;
-    vatAmount: number;
-    totalPayable: number;
-    amountPaid: number;
-    amountDue: number;
-  };
-  client: {
-    companyName: string;
-    contactPerson: string;
-    billingAddress: string;
-    city: string;
-    country: string;
-    taxNumber?: string;
-  };
-  entity: {
-    name: string;
-    code: string;
-    address: string;
-    taxId?: string;
-  };
-  bankAccount?: {
-    bankName: string;
-    accountHolder: string;
-    accountNumber: string;
-    branch: string;
-    routingNumber?: string;
-    swiftBic?: string;
-  };
-  paymentInstructions?: string;
-  termsConditions?: string;
-  canonicalToken: string;
-}
-
-export type PublicInvoiceResult = 
-  | { success: true; invoice: PublicInvoiceViewModel }
-  | { success: false; redirectTo?: string; error: string };
+export type { PublicInvoiceViewModel, PublicInvoiceResult };
 
 const PUBLIC_VIEWABLE_STATUSES = ['approved', 'sent', 'viewed', 'partially_paid', 'paid', 'overdue'];
 
 /**
  * Server-Side Sanitized Public Invoice Fetcher
- * Strictly validates HMAC signed capability links and returns non-sensitive view models.
+ * Strictly validates HMAC signed capability links and short codes, returning non-sensitive view models.
  */
 export async function getSanitizedPublicInvoice(rawToken: string): Promise<PublicInvoiceResult> {
   if (!rawToken || typeof rawToken !== 'string') {
@@ -82,6 +29,32 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
   }
 
   const supabase = createAdminClient();
+
+  // 0. Check if rawToken is a short code (e.g. 6 to 32 alphanumeric chars, no dots)
+  if (!rawToken.includes('.') && /^[a-zA-Z0-9_-]{6,32}$/.test(rawToken)) {
+    try {
+      const { data: shortLink, error: shortErr } = await supabase
+        .from('invoice_public_links')
+        .select('*')
+        .eq('short_code', rawToken)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (!shortErr && shortLink) {
+        // Resolve directly using canonical token logic
+        const canonicalToken = createPublicInvoiceToken(
+          shortLink.id,
+          shortLink.invoice_id,
+          shortLink.version,
+          shortLink.key_version
+        );
+        return getSanitizedPublicInvoice(canonicalToken);
+      }
+    } catch {
+      // short_code column might not exist yet
+    }
+  }
+
   const parsed = parsePublicInvoiceToken(rawToken);
 
   // 1. If rawToken is a valid Signed Token (linkId.signature)
@@ -90,6 +63,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
     let version = 1;
     let keyVersion = 1;
     let linkActive = true;
+    let linkShortCode: string | undefined = undefined;
 
     try {
       const { data: link, error: linkErr } = await supabase
@@ -103,6 +77,7 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
         version = link.version || 1;
         keyVersion = link.key_version || 1;
         linkActive = link.is_active ?? true;
+        linkShortCode = link.short_code || undefined;
       }
     } catch {
       // Table may not exist yet on Supabase - fallback to direct ID capability verification
@@ -267,7 +242,9 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
       } : undefined,
       paymentInstructions: invoice.payment_instructions || undefined,
       termsConditions: invoice.terms_conditions || undefined,
-      canonicalToken: rawToken
+      canonicalToken: rawToken,
+      verificationUrl: linkShortCode ? getShortPublicInvoiceUrl(linkShortCode) : getCanonicalPublicInvoiceUrl(rawToken),
+      shortUrl: linkShortCode ? getShortPublicInvoiceUrl(linkShortCode) : undefined
     };
 
     return { success: true, invoice: viewModel };
@@ -313,12 +290,13 @@ export async function getSanitizedPublicInvoice(rawToken: string): Promise<Publi
 }
 
 /**
- * Generates or fetches the active signed public token for an invoice
+ * Generates or fetches the active signed public token for an invoice,
+ * providing both short URL and HMAC-signed capability link.
  */
 export async function getOrGeneratePublicInvoiceToken(
   invoiceId: string,
   createdBy?: string
-): Promise<{ token: string; url: string }> {
+): Promise<{ token: string; url: string; shortUrl: string; shortCode: string }> {
   const supabase = createAdminClient();
 
   try {
@@ -331,6 +309,7 @@ export async function getOrGeneratePublicInvoiceToken(
     let linkRecord = existingLink;
 
     if (!linkRecord) {
+      const generatedShortCode = generateShortInvoiceCode(10);
       const { data: newLink, error: createErr } = await supabase
         .from('invoice_public_links')
         .insert({
@@ -339,13 +318,27 @@ export async function getOrGeneratePublicInvoiceToken(
           is_active: true,
           access_mode: 'LINK_ONLY',
           created_by: createdBy || null,
-          key_version: 1
+          key_version: 1,
+          short_code: generatedShortCode
         })
         .select('*')
         .single();
 
       if (!createErr && newLink) {
         linkRecord = newLink;
+      }
+    } else if (!linkRecord.short_code) {
+      // Lazy backfill short_code for existing link record
+      const generatedShortCode = generateShortInvoiceCode(10);
+      const { data: updatedLink } = await supabase
+        .from('invoice_public_links')
+        .update({ short_code: generatedShortCode })
+        .eq('id', linkRecord.id)
+        .select('*')
+        .maybeSingle();
+
+      if (updatedLink) {
+        linkRecord = updatedLink;
       }
     }
 
@@ -356,9 +349,12 @@ export async function getOrGeneratePublicInvoiceToken(
         linkRecord.version,
         linkRecord.key_version
       );
+      const effectiveShortCode = linkRecord.short_code || linkRecord.id.replace(/-/g, '').slice(0, 10);
       return {
         token,
-        url: getCanonicalPublicInvoiceUrl(token)
+        url: getCanonicalPublicInvoiceUrl(token),
+        shortUrl: getShortPublicInvoiceUrl(effectiveShortCode),
+        shortCode: effectiveShortCode
       };
     }
   } catch {
@@ -366,9 +362,12 @@ export async function getOrGeneratePublicInvoiceToken(
   }
 
   const fallbackToken = createPublicInvoiceToken(invoiceId, invoiceId, 1, 1);
+  const fallbackShort = invoiceId.replace(/-/g, '').slice(0, 10);
   return {
     token: fallbackToken,
-    url: getCanonicalPublicInvoiceUrl(fallbackToken)
+    url: getCanonicalPublicInvoiceUrl(fallbackToken),
+    shortUrl: getShortPublicInvoiceUrl(fallbackShort),
+    shortCode: fallbackShort
   };
 }
 
@@ -379,7 +378,7 @@ export async function rotatePublicInvoiceLink(
   invoiceId: string,
   reason?: string,
   rotatedBy?: string
-): Promise<{ token: string; url: string }> {
+): Promise<{ token: string; url: string; shortUrl: string; shortCode: string }> {
   const supabase = createAdminClient();
 
   try {
@@ -391,6 +390,7 @@ export async function rotatePublicInvoiceLink(
 
     if (existingLink) {
       const newVersion = (existingLink.version || 1) + 1;
+      const newShortCode = generateShortInvoiceCode(10);
 
       const { data: updatedLink, error: updateErr } = await supabase
         .from('invoice_public_links')
@@ -398,6 +398,7 @@ export async function rotatePublicInvoiceLink(
           version: newVersion,
           is_active: true,
           rotation_reason: reason || 'Manual Admin Rotation',
+          short_code: newShortCode,
           updated_at: new Date().toISOString()
         })
         .eq('id', existingLink.id)
@@ -411,9 +412,12 @@ export async function rotatePublicInvoiceLink(
           updatedLink.version,
           updatedLink.key_version
         );
+        const effectiveShortCode = updatedLink.short_code || newShortCode;
         return {
           token,
-          url: getCanonicalPublicInvoiceUrl(token)
+          url: getCanonicalPublicInvoiceUrl(token),
+          shortUrl: getShortPublicInvoiceUrl(effectiveShortCode),
+          shortCode: effectiveShortCode
         };
       }
     }
@@ -422,9 +426,12 @@ export async function rotatePublicInvoiceLink(
   }
 
   const fallbackToken = createPublicInvoiceToken(invoiceId, invoiceId, 2, 1);
+  const fallbackShort = invoiceId.replace(/-/g, '').slice(0, 10);
   return {
     token: fallbackToken,
-    url: getCanonicalPublicInvoiceUrl(fallbackToken)
+    url: getCanonicalPublicInvoiceUrl(fallbackToken),
+    shortUrl: getShortPublicInvoiceUrl(fallbackShort),
+    shortCode: fallbackShort
   };
 }
 
