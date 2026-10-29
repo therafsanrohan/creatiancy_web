@@ -1,9 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { PublicInvoiceViewModel } from '@/types/public-invoice';
 import InvoiceDocument from '@/components/invoice/invoice-document';
 import { InvoiceDocumentViewModel } from '@/components/invoice/invoice-document.types';
-import { Printer, Download, ShieldCheck } from 'lucide-react';
+import { Printer, Download, ShieldCheck, Loader2 } from 'lucide-react';
 
 interface Props {
   invoice: PublicInvoiceViewModel;
@@ -42,12 +43,47 @@ export default function PublicInvoiceViewClient({ invoice }: Props) {
     canonicalToken: invoice.canonicalToken
   };
 
+  const [isExporting, setIsExporting] = useState(false);
+
   const handlePrint = () => {
     window.print();
   };
 
-  const handleDownloadPdf = () => {
-    window.open(`/api/public/invoices/${invoice.canonicalToken}/pdf`, '_blank');
+  const handleDownloadPdf = async () => {
+    try {
+      setIsExporting(true);
+      const element = document.getElementById('print-area');
+      if (!element) {
+        window.print();
+        return;
+      }
+
+      // @ts-ignore
+      const html2pdf = (await import('html2pdf.js')).default;
+      const filename = `Invoice_${invoice.invoiceNumber.replace(/[\/\\?%*:|"<>]/g, '-')}.pdf`;
+      const opt: any = {
+        margin:       [4, 4, 6, 4],
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          logging: false,
+          windowWidth: 1024,
+          width: 794
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+    } catch (err) {
+      console.error('PDF export error, falling back to browser print:', err);
+      window.print();
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -76,10 +112,11 @@ export default function PublicInvoiceViewClient({ invoice }: Props) {
           <button
             type="button"
             onClick={handleDownloadPdf}
-            className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#80171C] shadow-md transition cursor-pointer"
+            disabled={isExporting}
+            className="flex-1 sm:flex-initial inline-flex items-center justify-center space-x-2 rounded-xl bg-[#9B1C22] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#80171C] shadow-md transition cursor-pointer disabled:opacity-60"
           >
-            <Download className="h-4 w-4" />
-            <span>Download PDF</span>
+            {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            <span>{isExporting ? 'Generating PDF...' : 'Download PDF'}</span>
           </button>
         </div>
       </div>
