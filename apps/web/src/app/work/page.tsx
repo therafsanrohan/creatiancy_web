@@ -22,6 +22,20 @@ interface WorkProject {
 
 const ALL_WORKS: WorkProject[] = [
   {
+    id: "rafsan-rohan",
+    client: "Rafsan Rohan",
+    title: "Visual Strategist & Creative Direction Platform",
+    headline: "Engineered a high-performance minimalist portfolio and digital brand experience showcasing visual strategy and creative direction.",
+    category: "digital",
+    discipline: "Digital Brand Experience & Web Architecture",
+    metric: "PERSONAL DIGITAL SHOWCASE",
+    year: "2026",
+    slug: "rafsan-rohan",
+    image: "/images/rafsan_rohan_showcase.png",
+    tags: ["Next.js", "Creative Strategy", "Visual Identity", "Web Architecture"],
+    externalLink: "https://www.rafsanrohan.com",
+  },
+  {
     id: "odl-ads",
     client: "ODL Developers Ltd.",
     title: "Real Estate OOH & Billboard Architecture",
@@ -234,7 +248,8 @@ export default function WorkPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10">
                 {filteredProjects.map((work, idx) => {
                   const isInternalCaseStudy = work.slug === "odl-ads" || work.slug === "omni-connects";
-                  const targetHref = isInternalCaseStudy ? `/work/${work.slug}` : "/contact";
+                  const targetHref = work.externalLink ? work.externalLink : isInternalCaseStudy ? `/work/${work.slug}` : "/contact";
+                  const isExternal = Boolean(work.externalLink);
 
                   return (
                     <article
@@ -243,8 +258,10 @@ export default function WorkPage() {
                     >
                       <div>
                         {/* Image Container with Smooth Aspect Ratio (Clean, No Distracting Badges) */}
-                        <Link
+                        <a
                           href={targetHref}
+                          target={isExternal ? "_blank" : undefined}
+                          rel={isExternal ? "noopener noreferrer" : undefined}
                           className="relative block overflow-hidden rounded-[16px] bg-neutral-100 border border-black/[0.04] mb-6 cursor-pointer"
                           aria-label={`View ${work.client} project`}
                         >
@@ -259,7 +276,7 @@ export default function WorkPage() {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-60" />
                           </div>
-                        </Link>
+                        </a>
 
                         {/* Discipline Meta Label */}
                         <span className="text-[11px] font-medium uppercase tracking-[0.15em] text-[#9B1C22] block font-mono mb-2">
@@ -268,9 +285,14 @@ export default function WorkPage() {
 
                         {/* Client Name */}
                         <h3 className="text-[24px] sm:text-[28px] font-semibold text-[#1D1D1F] tracking-tight leading-snug mb-2.5 group-hover:text-[#9B1C22] transition-colors">
-                          <Link href={targetHref} className="hover:underline">
+                          <a
+                            href={targetHref}
+                            target={isExternal ? "_blank" : undefined}
+                            rel={isExternal ? "noopener noreferrer" : undefined}
+                            className="hover:underline"
+                          >
                             {work.client}
-                          </Link>
+                          </a>
                         </h3>
 
                         {/* Concise Editorial Copy */}
@@ -307,13 +329,15 @@ export default function WorkPage() {
                             </a>
                           )}
 
-                          <Link
+                          <a
                             href={targetHref}
+                            target={isExternal ? "_blank" : undefined}
+                            rel={isExternal ? "noopener noreferrer" : undefined}
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-[12px] font-medium tracking-wide bg-gradient-to-b from-[#A8242A] to-[#9B1C22] hover:from-[#9B1C22] hover:to-[#82151B] text-white transition-all duration-200 border border-[#9B1C22]/40 shadow-sm hover:shadow-[0_4px_16px_rgba(155,28,34,0.35)] min-h-[40px] active:scale-95 text-center"
                           >
-                            <span>{isInternalCaseStudy ? "View Case Study" : "Start Project"}</span>
+                            <span>{work.externalLink ? "Live Preview" : isInternalCaseStudy ? "View Case Study" : "Start Project"}</span>
                             <ArrowUpRight className="w-3.5 h-3.5 stroke-[2.5]" />
-                          </Link>
+                          </a>
                         </div>
                       </div>
                     </article>
