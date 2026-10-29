@@ -10,7 +10,7 @@ interface WorkProject {
   client: string;
   title: string;
   headline: string;
-  category: "all" | "branding" | "digital" | "production";
+  category: "all" | "branding" | "web" | "ads";
   discipline: string;
   metric: string;
   year: string;
@@ -22,11 +22,25 @@ interface WorkProject {
 
 const ALL_WORKS: WorkProject[] = [
   {
+    id: "kazi-canvas",
+    client: "Kazi Canvas Gallery",
+    title: "Fine Art eCommerce & Digital Gallery Architecture",
+    headline: "Engineered an immersive online fine art platform, curating hand-painted canvas artworks, calligraphy, and bespoke exhibition collections.",
+    category: "web",
+    discipline: "Fine Art eCommerce & Web Architecture",
+    metric: "FINE ART DIGITAL GALLERY",
+    year: "2026",
+    slug: "kazi-canvas",
+    image: "/images/kazi_canvas_showcase.png",
+    tags: ["Fine Art Gallery", "eCommerce Architecture", "Next.js", "Visual Commerce"],
+    externalLink: "https://kazicanvasgallery.com/",
+  },
+  {
     id: "rafsan-rohan",
     client: "Rafsan Rohan",
     title: "Visual Strategist & Creative Direction Platform",
     headline: "Engineered a high-performance minimalist portfolio and digital brand experience showcasing visual strategy and creative direction.",
-    category: "digital",
+    category: "web",
     discipline: "Digital Brand Experience & Web Architecture",
     metric: "PERSONAL DIGITAL SHOWCASE",
     year: "2026",
@@ -40,7 +54,7 @@ const ALL_WORKS: WorkProject[] = [
     client: "ODL Developers Ltd.",
     title: "Real Estate OOH & Billboard Architecture",
     headline: "Transforming high-rise development visibility into an undisputed architectural statement across prime metropolitan zones.",
-    category: "production",
+    category: "ads",
     discipline: "OOH Strategy & Spatial Graphics",
     metric: "NATIONWIDE CAMPAIGN REACH",
     year: "2025",
@@ -67,13 +81,13 @@ const ALL_WORKS: WorkProject[] = [
 
 const CATEGORY_TABS = [
   { key: "all", label: "All Projects" },
+  { key: "web", label: "Web & Digital" },
+  { key: "ads", label: "Creative Ads" },
   { key: "branding", label: "Brand Strategy" },
-  { key: "digital", label: "Digital & Web" },
-  { key: "production", label: "Creative Production" },
 ] as const;
 
 export default function WorkPage() {
-  const [activeCategory, setActiveCategory] = useState<"all" | "branding" | "digital" | "production">("all");
+  const [activeCategory, setActiveCategory] = useState<"all" | "branding" | "web" | "ads">("all");
 
   const filteredProjects = activeCategory === "all" 
     ? ALL_WORKS 
