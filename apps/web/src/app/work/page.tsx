@@ -63,32 +63,6 @@ const ALL_WORKS: WorkProject[] = [
     tags: ["Brand Architecture", "Corporate Marks", "Design Tokens", "SaaS Dashboard"],
     externalLink: "https://www.omniconnects.com",
   },
-  {
-    id: "elcardo-industrial",
-    client: "Elcardo Industrial",
-    title: "Global Industrial Commerce Platform",
-    headline: "Engineered modern digital architecture and conversion pathways for a multinational industrial manufacturer.",
-    category: "digital",
-    discipline: "Digital Platform & Architecture",
-    metric: "+140% CONVERSION EFFICIENCY",
-    year: "2026",
-    slug: "elcardo-industrial",
-    image: "/images/project real.png",
-    tags: ["Industrial UI/UX", "Next.js 16", "Global Catalog", "Platform Engineering"],
-  },
-  {
-    id: "atobd-logistics",
-    client: "AtoBD Logistics",
-    title: "Enterprise Logistics Product System",
-    headline: "Zero-latency telemetry dashboard, shipment tracking telemetry, and mission-critical fleet management interface.",
-    category: "digital",
-    discipline: "Product Interface & Telemetry",
-    metric: "99.8% UPTIME ARCHITECTURE",
-    year: "2025",
-    slug: "atobd-logistics",
-    image: "/images/omni_branding.png",
-    tags: ["Fleet Telematics", "React Architecture", "Design System", "Real-Time UX"],
-  },
 ];
 
 const CATEGORY_TABS = [
